@@ -157,4 +157,4 @@ Problems seen that no check covers:
 ## Working rules for whoever runs this
 
 - Commits and pull requests carry no co-author trailer. Commit with the GitHub noreply address, and keep personal details out of every file in this public repository.
-- The heavy Windows CI jobs run on demand (`gh workflow run windows-ci.yml --ref win/lightweight`); group fixes before triggering one.
+- The heavy Windows CI jobs run on demand (`gh workflow run windows-ci.yml --ref win/lightweight --repo <owner>/myna`); group fixes before triggering one.

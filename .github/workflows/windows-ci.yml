@@ -7,7 +7,7 @@ name: Windows CI
 #
 # The two Windows jobs take 15 to 25 minutes on a cold cache, so they run on
 # demand only:
-#   gh workflow run windows-ci.yml --ref <branch>
+#   gh workflow run windows-ci.yml --ref <branch> --repo <owner>/myna
 # The cheap Linux `ui` job still runs on every push to `win/**`.
 
 on:
