@@ -42,8 +42,22 @@ jobs:
 
       # Serial: the audio tests enumerate devices through cpal/COM, and
       # CLAUDE.md requires device-touching tests to run one at a time.
+      # The `system_sources_naming` tests are skipped here and run in the
+      # informational step below: the hosted runner has no audio endpoint
+      # and the test binary dies with STATUS_ACCESS_VIOLATION there, which
+      # would otherwise hide every other result.
       - name: Test libraries
-        run: cargo test --locked -p myna-wasapi-probe -p myna-audio -p myna-stt -p myna-llm -- --test-threads=1
+        run: >
+          cargo test --locked -p myna-wasapi-probe -p myna-audio -p myna-stt -p myna-llm --
+          --test-threads=1
+          --skip all_output_source
+          --skip no_source_name_looks
+          --skip application_sources_are_sorted
+          --skip current_process_is_never
+
+      - name: Device enumeration tests (informational, needs real audio hardware)
+        continue-on-error: true
+        run: cargo test --locked -p myna-audio --test system_sources_naming -- --test-threads=1 --nocapture
 
   # UI checks are platform-neutral and `npm test` uses POSIX env syntax, so
   # they run on Linux rather than under Windows' cmd.exe.

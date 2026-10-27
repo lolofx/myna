@@ -527,6 +527,7 @@ fn emit_model_event(app: &AppHandle, event: ModelDownloadEvent) {
 }
 
 #[cfg(test)]
+#[cfg_attr(windows, allow(dead_code, unused_imports))]
 mod tests {
     use std::fs;
     use std::time::Instant;
@@ -736,7 +737,12 @@ mod tests {
         let path = init_script_path(true, Path::new("/repo"), None);
 
         // Assert
-        assert_eq!(path, PathBuf::from("/repo/scripts/download-models.sh"));
+        assert_eq!(
+            path,
+            PathBuf::from("/repo")
+                .join("scripts")
+                .join(SCRIPT_FILE_NAME)
+        );
     }
 
     #[test]
@@ -747,7 +753,9 @@ mod tests {
         // Assert
         assert_eq!(
             path,
-            PathBuf::from("/App/Resources/scripts/download-models.sh")
+            PathBuf::from("/App/Resources")
+                .join("scripts")
+                .join(SCRIPT_FILE_NAME)
         );
     }
 
@@ -757,7 +765,7 @@ mod tests {
         let path = init_script_path(false, Path::new("/repo"), None);
 
         // Assert
-        assert_eq!(path, PathBuf::from("download-models.sh"));
+        assert_eq!(path, PathBuf::from(SCRIPT_FILE_NAME));
     }
 
     #[test]
@@ -772,6 +780,40 @@ mod tests {
         assert!(matches!(resolved, Err(AppError::NotFound(_))));
     }
 
+    #[cfg(windows)]
+    #[test]
+    fn build_child_path_appends_the_user_local_bin_after_the_inherited_path() {
+        // Arrange
+        let home = Path::new(r"C:\Users\tester");
+        let current = OsStr::new(r"C:\Windows;C:\Windows\System32");
+
+        // Act
+        let joined = build_child_path(Some(home), Some(current));
+
+        // Assert: inherited entries first, then the user's .local\bin; no
+        // macOS-style append directories on Windows.
+        let parts: Vec<PathBuf> = env::split_paths(&joined).collect();
+        assert_eq!(
+            parts,
+            vec![
+                PathBuf::from(r"C:\Windows"),
+                PathBuf::from(r"C:\Windows\System32"),
+                PathBuf::from(r"C:\Users\tester\.local\bin"),
+            ]
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn build_child_path_is_empty_without_home_and_current_on_windows() {
+        // Act
+        let joined = build_child_path(None, None);
+
+        // Assert
+        assert!(joined.is_empty(), "PATH was: {joined:?}");
+    }
+
+    #[cfg(not(windows))]
     #[test]
     fn build_child_path_appends_gui_unfriendly_dirs_after_the_inherited_path() {
         // Arrange
@@ -793,6 +835,7 @@ mod tests {
         assert_eq!(parts[4], Path::new("/usr/local/bin"));
     }
 
+    #[cfg(not(windows))]
     #[test]
     fn build_child_path_handles_missing_home_and_current() {
         // Act
@@ -912,6 +955,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         }
     }
 
+    #[cfg(unix)]
     #[test]
     fn run_sequence_downloads_missing_artifacts_until_all_present() {
         // Arrange: fresh-install queue now includes diarization (4 artifacts).
@@ -964,6 +1008,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         assert!(!manager.is_running());
     }
 
+    #[cfg(unix)]
     #[test]
     fn run_sequence_emits_done_success_without_spawning_when_nothing_is_missing() {
         // Arrange: all 4 artifacts present, so the derived artifact list is
@@ -1009,6 +1054,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         assert_eq!(events.len(), 1, "no progress events expected");
     }
 
+    #[cfg(unix)]
     #[test]
     fn run_sequence_reports_failure_when_the_script_exits_non_zero() {
         // Arrange
@@ -1035,6 +1081,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         assert!(!models_status_at(&models_root).all_present);
     }
 
+    #[cfg(unix)]
     #[test]
     fn run_sequence_reports_cancelled_when_never_started() {
         // Arrange: a fresh manager whose `running` flag was never set.
@@ -1060,6 +1107,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         assert_eq!(events.len(), 1);
     }
 
+    #[cfg(unix)]
     #[test]
     fn cancel_kills_the_running_child_and_reports_cancelled() {
         // Arrange
@@ -1104,6 +1152,7 @@ printf '%s' "$PATH" > "$dest/path.txt"
         assert!(!models_status_at(&models_root).all_present);
     }
 
+    #[cfg(unix)]
     #[test]
     fn child_process_receives_augmented_path() {
         // Arrange
