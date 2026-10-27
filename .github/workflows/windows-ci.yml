@@ -4,6 +4,11 @@ name: Windows CI
 # and LLM crates (job `rust`), then the Tauri app crate and the UI bundle it
 # embeds (job `app`). Same static-CRT env as release.yml (see the comment
 # there).
+#
+# The two Windows jobs take 15 to 25 minutes on a cold cache, so they run on
+# demand only:
+#   gh workflow run windows-ci.yml --ref <branch>
+# The cheap Linux `ui` job still runs on every push to `win/**`.
 
 on:
   push:
@@ -14,8 +19,15 @@ on:
 permissions:
   contents: read
 
+# One run per ref at a time; a newer request waits instead of cancelling, so
+# a half-finished run still saves its build cache.
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   rust:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     env:
       LLAMA_STATIC_CRT: "1"
@@ -86,6 +98,7 @@ jobs:
           npm test -- --watch=false
 
   app:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     env:
       LLAMA_STATIC_CRT: "1"
