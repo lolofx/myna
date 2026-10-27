@@ -31,6 +31,26 @@ describe('mapMeetingDtoToDomain', () => {
     expect('transcript' in meeting).toBe(false);
   });
 
+  it('carries transcriptionPending only when the backend sets it', () => {
+    const dto = {
+      id: 'm-3',
+      title: 'Captured',
+      createdAt: '2026-01-15T09:00:00Z',
+      durationSec: 60,
+      audioPath: null,
+      transcript: null,
+      summaries: [],
+      archived: false,
+      hasAudio: true,
+      hasSystemTrack: true,
+      droppedAudioChunks: 0,
+    };
+
+    expect(mapMeetingDtoToDomain({ ...dto, transcriptionPending: true }).transcriptionPending).toBe(true);
+    expect('transcriptionPending' in mapMeetingDtoToDomain({ ...dto, transcriptionPending: false })).toBe(false);
+    expect('transcriptionPending' in mapMeetingDtoToDomain(dto)).toBe(false);
+  });
+
   it('maps a fully populated meeting, including transcript and summary refs', () => {
     const meeting = mapMeetingDtoToDomain({
       id: 'm-2',

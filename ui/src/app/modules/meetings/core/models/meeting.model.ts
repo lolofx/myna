@@ -26,6 +26,8 @@ export interface Meeting {
   /** Display names keyed by flat speaker label (e.g. `'others:1'` -> `'Jean'`).
       Absent on meetings persisted before speaker naming. */
   readonly speakerNames?: Readonly<Record<string, string>>;
+  /** Set only on the meeting returned right after a capture-only recording: the audio is saved but not yet transcribed, so the facade starts the transcription (the "Re-transcribe" path). Absent otherwise. */
+  readonly transcriptionPending?: boolean;
 }
 
 /**

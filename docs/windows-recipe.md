@@ -91,6 +91,15 @@ Use Task Manager (Details tab) on a packaged build when possible.
 
 Note: all figures, and which build (dev or packaged). Add them to `docs/perf-baseline.md` as a Windows section.
 
+### T6b. Deferred transcription (capture only, then transcribe)
+
+1. Check the mode is `after` (the Windows default). To force it: `$env:MYNA_TRANSCRIPTION = "after"` before starting the app.
+2. Record a 10 minute **Both** meeting. While recording, Task Manager must show no speech-model memory: the `myna.exe` working set stays far below a live recording's.
+3. Stop. Expect the import progress to appear at once and the transcript to land when it ends, without pressing anything.
+4. Note: time from stop to transcript against the audio length, peak working set and CPU during that time, whether the PC stayed usable (browser, Teams).
+5. Repeat with `$env:MYNA_TRANSCRIPTION = "live"` and compare memory and CPU during the recording.
+6. Set `{"transcription":{"threads":4}}` under `preferences.json` in `%USERPROFILE%\myna` (or the configured data folder) and note the change in transcription time. The engine is cached, so restart the app between runs.
+
 ### T7. French and English
 
 1. Record or import a French meeting of about 10 minutes and an English webinar.
@@ -136,6 +145,7 @@ Build: dev / packaged
 | T4 device change | | |
 | T5 Bluetooth | | |
 | T6 memory and CPU | | |
+| T6b deferred transcription | | |
 | T7 French / English | | |
 | T8 speaker labels | | |
 | Summary 1.5B / 3B / 7B | | |

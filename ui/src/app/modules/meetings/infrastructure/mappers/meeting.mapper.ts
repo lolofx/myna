@@ -28,6 +28,7 @@ export function mapMeetingDtoToDomain(dto: MeetingDto): Meeting {
     ...(dto.speakerNames && Object.keys(dto.speakerNames).length > 0
       ? { speakerNames: dto.speakerNames }
       : {}),
+    ...(dto.transcriptionPending === true ? { transcriptionPending: true } : {}),
   };
 }
 

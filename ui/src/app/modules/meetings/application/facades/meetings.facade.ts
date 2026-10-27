@@ -201,7 +201,7 @@ export class MeetingsFacade {
   }
 
   async stopRecording(): Promise<void> {
-    await runStopRecording(this.store, this.stopRecordingUseCase);
+    await runStopRecording(this.store, this.stopRecordingUseCase, (id) => this.retranscribeMeeting(id, false));
   }
 
   async cancelRecording(): Promise<void> {

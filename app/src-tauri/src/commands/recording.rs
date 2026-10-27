@@ -38,6 +38,7 @@ use crate::session_manifest::{self, SessionManifest};
 use crate::state::{AppState, StoppingGuard};
 use crate::store::fs_store::FsMeetingStore;
 use crate::store::MeetingStore;
+use crate::transcription_prefs::{self, TranscriptionMode};
 
 /// Directory name (under the resolved models root) containing the Silero
 /// VAD model artifact.
@@ -139,7 +140,13 @@ fn start_recording_blocking(
             .unwrap_or("<none>"),
         effective_system_source_id.as_deref().unwrap_or("<all>")
     );
-    let engine = state.stt_engine(app)?;
+    // Deferred transcription (the Windows default, ADR 0017) loads no speech
+    // model here: the session only captures audio, and the meeting is
+    // transcribed after it stops, so nothing heavy runs next to the meeting.
+    let engine = match transcription_prefs::current_mode() {
+        TranscriptionMode::Live => Some(state.stt_engine(app)?),
+        TranscriptionMode::After => None,
+    };
     let vad_cfg = VadConfig {
         model_path: paths::models_root(app)
             .join(VAD_MODEL_DIR_NAME)
@@ -235,6 +242,7 @@ fn stop_recording_blocking(app: &AppHandle) -> Result<MeetingDto, AppError> {
     let meeting_id = session.meeting_id;
     let duration_sec = session.elapsed_sec();
     let source = session.source;
+    let capture_only = session.capture_only;
     let system_source = session.system_source();
 
     emit_recording_state(
@@ -308,11 +316,19 @@ fn stop_recording_blocking(app: &AppHandle) -> Result<MeetingDto, AppError> {
         emit_dropped_audio_warning(app);
     }
 
+    // A capture-only recording has audio but no transcript yet: tell the UI
+    // to transcribe it, through the same path as "Re-transcribe". Nothing is
+    // pending when no track was captured, since there is nothing to decode.
+    let has_system_track = crate::ingest::has_audio(&state.store.system_track_path(meeting_id));
+    let has_mic_track = crate::ingest::has_audio(&state.store.mic_track_path(meeting_id));
+    let transcription_pending = capture_only && (has_mic_track || has_system_track);
+
     Ok(MeetingDto::from_meeting(
         updated,
         crate::ingest::has_audio(&audio_path),
-        crate::ingest::has_audio(&state.store.system_track_path(meeting_id)),
-    ))
+        has_system_track,
+    )
+    .with_transcription_pending(transcription_pending))
 }
 
 /// Stop-path fallback: the recording worker died mid-capture, so

@@ -47,8 +47,17 @@ export async function runStartRecording(
  * for it would leave the start row (duration 0, no transcript) on screen.
  * The completed stream stays subscribed as a best-effort mirror; its upsert
  * filters by id, so a double landing is exactly-once, never a duplicate.
+ *
+ * A capture-only recording (ADR 0017) comes back with `transcriptionPending`:
+ * it is saved without a transcript, so `transcribe` runs right after the stop,
+ * through the same path as "Re-transcribe", and its progress and errors
+ * surface exactly as they do there.
  */
-export async function runStopRecording(store: MeetingsStore, stopRecordingUseCase: StopRecordingUseCase): Promise<void> {
+export async function runStopRecording(
+  store: MeetingsStore,
+  stopRecordingUseCase: StopRecordingUseCase,
+  transcribe?: (id: MeetingId) => Promise<void>,
+): Promise<void> {
   store.setRecordingState('stopping');
   try {
     const meeting = await stopRecordingUseCase.stop();
@@ -60,6 +69,9 @@ export async function runStopRecording(store: MeetingsStore, stopRecordingUseCas
     // `runStartRecording`.
     store.setSpeakerHistory([]);
     store.clearError();
+    if (meeting.transcriptionPending === true && transcribe) {
+      await transcribe(meeting.id);
+    }
   } catch (caught) {
     store.setError(toErrorInfo(caught));
   }

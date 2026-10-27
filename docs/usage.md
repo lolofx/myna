@@ -134,6 +134,24 @@ After recording, choose a summary template:
   outcomes).
 - **Decisions** — highlight decisions made and any dissent.
 
+### When transcription runs
+
+On Windows, Myna records first and transcribes once you stop: during the
+meeting only audio is captured, so memory and CPU stay low, and the
+transcript appears a few minutes after the recording ends, with the same
+progress as **Re-transcribe**. Elsewhere, transcription is live while you
+record.
+
+To switch, set `MYNA_TRANSCRIPTION=live` (or `after`) in the environment, or
+add this to `preferences.json` in the data folder:
+
+```json
+{ "transcription": { "mode": "after", "threads": 2 } }
+```
+
+`threads` (1 to 4, default 2 in `after` mode) sets how many CPU threads the
+speech model uses; fewer is lighter on the machine and slower to finish.
+
 ### Summary model
 
 The summary model is optional. In **Settings > Summary model** pick one of

@@ -1,6 +1,6 @@
 # ADR 0017: Record Then Transcribe on Windows, Markdown Export as the Interface
 
-**Status**: Proposed (Windows fork, Phase 0)
+**Status**: Accepted. Capture-only recording and the post-stop transcription trigger are implemented; the lowered process priority and the markdown export are not yet.
 **Date**: 2026-10-27
 **Builds on**: [ADR 0006: System Audio Capture](0006-system-audio-capture.md), [ADR 0008: Dual-Track Audio with Speaker Attribution](0008-dual-track-audio-with-speaker-attribution.md), [ADR 0011: Disk-Backed Session State](0011-session-resilience.md), [ADR 0013: Summarization Model](0013-summarization-model-qwen25-7b.md)
 **Context**: `docs/perf-baseline.md` measures live recording at about 250 to 270% CPU with 21 to 23 ORT threads and about 1 GB RSS on an Apple M5 Pro (15 cores). The Qwen2.5-7B summary adds a 4.7 GB model and several GB of RAM while loaded. On a typical Windows PC used for meetings at the same time, this competes with Teams or a browser.
@@ -15,7 +15,16 @@ On Windows, the default pipeline becomes capture first, decode after.
 - **Summary**: the in-app Qwen summary stays in the code but is off by default on Windows, so the 7B model is neither required nor loaded. Summaries are produced outside the app from the exported markdown.
 - **UI**: kept. The window can be closed to the tray while capture continues.
 
-Live mode stays available behind a setting so upstream behavior is preserved and the change can be proposed upstream.
+Live mode stays available so upstream behavior is preserved and the change can be proposed upstream.
+
+### How it works
+
+- `app/src-tauri/src/transcription_prefs.rs` resolves the mode: `MYNA_TRANSCRIPTION=live|after`, then `preferences.json` (`{"transcription":{"mode":"after","threads":2}}`), then the platform default (`after` on Windows, `live` elsewhere).
+- In `after` mode `start_recording` loads no speech model and builds no streamer, so the decode worker discards what it receives. Memory and CPU stay at the level of plain capture.
+- `stop_recording` returns the meeting with `transcriptionPending` when audio tracks were captured. The facade then calls the existing re-transcribe path, so progress events, cancellation and errors behave as for "Re-transcribe".
+- Speech-model threads: the configured `threads` (1 to 4), else 2 in `after` mode, else the previous CPU-count heuristic in `live` mode. The engine is cached, so a change applies from the next model load.
+
+There is no settings screen for the mode yet.
 
 ## Rationale
 

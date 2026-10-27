@@ -42,6 +42,7 @@ export class InMemoryRecorderFake extends RecorderPort {
   private lastRequestedSource: CaptureSource | undefined;
   private lastRequestedSystemSource: string | undefined;
   private effectiveSystemSource: AudioSource | null = null;
+  private stopOverrides: Partial<Meeting> = {};
 
   override async start(
     title: string,
@@ -99,12 +100,14 @@ export class InMemoryRecorderFake extends RecorderPort {
     if (!meeting) {
       throw new Error('No recording in progress.');
     }
+    const stopped: Meeting = { ...meeting, ...this.stopOverrides };
+    this.stopOverrides = {};
     this.currentState = 'idle';
     this.currentMeeting = undefined;
     this.fakeElapsedSec = null;
-    this.completedSubject.next(meeting);
+    this.completedSubject.next(stopped);
     this.stateSubject.next(this.currentState);
-    return meeting;
+    return stopped;
   }
 
   override async cancel(): Promise<StopAcknowledgement> {
@@ -184,6 +187,11 @@ export class InMemoryRecorderFake extends RecorderPort {
 
   override async requestSystemAudioPermission(): Promise<SystemAudioStatus> {
     return this.audioStatus;
+  }
+
+  /** Test helper: fields the next stop() merges into the finalized meeting (e.g. `transcriptionPending`). */
+  seedStopResult(overrides: Partial<Meeting>): void {
+    this.stopOverrides = overrides;
   }
 
   /** Test helper: push a synthetic audio level onto the levels() stream. */

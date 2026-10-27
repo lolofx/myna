@@ -323,6 +323,10 @@ pub struct MeetingDto {
     /// (empty map when unnamed), so the speakers panel can render the
     /// name registry without a second round-trip.
     pub speaker_names: BTreeMap<String, String>,
+    /// True right after a capture-only recording stopped: audio is saved but
+    /// not yet transcribed, and the UI should start the transcription (the
+    /// same path as "Re-transcribe"). `false` for every other meeting.
+    pub transcription_pending: bool,
 }
 
 impl MeetingDto {
@@ -334,6 +338,12 @@ impl MeetingDto {
             has_system_track,
             ..Self::from(meeting)
         }
+    }
+
+    /// Marks the meeting as awaiting its deferred transcription.
+    pub fn with_transcription_pending(mut self, pending: bool) -> Self {
+        self.transcription_pending = pending;
+        self
     }
 }
 
@@ -355,6 +365,7 @@ impl From<Meeting> for MeetingDto {
             has_system_track: false,
             folder_id: meeting.folder_id.map(|id| id.to_string()),
             speaker_names: meeting.speaker_names,
+            transcription_pending: false,
         }
     }
 }

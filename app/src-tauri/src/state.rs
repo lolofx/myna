@@ -18,6 +18,7 @@ use crate::store::folder_store::FsFolderStore;
 use crate::store::fs_store::FsMeetingStore;
 use crate::summary_models;
 use crate::summary_prefs;
+use crate::transcription_prefs;
 
 /// Directory name (under the resolved models root) containing the
 /// Parakeet-TDT STT model artifacts.
@@ -75,6 +76,11 @@ pub const STT_ENGINE_THREADS_FALLBACK: i32 = 4;
 /// constant (previously `2`) left most cores idle during decode; measured
 /// decode RTF was ~0.13 at 2 threads.
 fn stt_engine_threads() -> i32 {
+    // An explicit setting, or deferred transcription's small default, wins
+    // over the CPU-count heuristic below.
+    if let Some(threads) = transcription_prefs::current_engine_threads() {
+        return threads;
+    }
     let detected = std::thread::available_parallelism()
         .map(|n| n.get() as i32)
         .ok();

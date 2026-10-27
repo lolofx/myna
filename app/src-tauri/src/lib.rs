@@ -23,6 +23,7 @@ pub mod store;
 pub mod summary_models;
 pub mod summary_prefs;
 pub mod template_prefs;
+pub mod transcription_prefs;
 pub mod update_prefs;
 
 use std::path::Path;

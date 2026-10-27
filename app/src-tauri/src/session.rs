@@ -427,6 +427,10 @@ pub struct RecordingSession {
     stop: Arc<AtomicBool>,
     worker: JoinHandle<Result<(Transcript, u32), AppError>>,
     started_at: Instant,
+    /// True when the session was started without a speech model: it only
+    /// captures audio, and the meeting is transcribed after it stops (see
+    /// [`RecordingSession::start`]).
+    pub capture_only: bool,
 }
 
 /// Grouped capture-selection parameters for [`RecordingSession::start`] —
@@ -533,6 +537,9 @@ impl RecordingSession {
     /// Starts a new recording session for `meeting_id`, capturing per
     /// `selection`.
     ///
+    /// With `engine` set to `None` the session only captures audio (see
+    /// [`RecordingSession::capture_only`]).
+    ///
     /// The mic/system WAV recorders and STT streamers are built
     /// synchronously so setup failures (an unwritable path, a missing VAD
     /// model) surface immediately to the caller; only the device capture
@@ -551,9 +558,14 @@ impl RecordingSession {
         meeting_id: MeetingId,
         selection: CaptureSelection,
         audio_paths: AudioPaths,
-        engine: Arc<SttEngine>,
+        engine: Option<Arc<SttEngine>>,
         vad_cfg: &VadConfig,
     ) -> Result<Self, AppError> {
+        // Without an engine the session only captures audio: no streamer is
+        // built, the decode worker discards what it receives, and the
+        // transcript comes back empty. The caller transcribes the saved
+        // tracks after the stop (ADR 0017).
+        let capture_only = engine.is_none();
         let CaptureSelection {
             source,
             device,
@@ -594,12 +606,16 @@ impl RecordingSession {
         // `VAD_BUFFER_SECS` (60 s ring, `VAD_WINDOW` 512, `NUM_THREADS` 1),
         // so dual-track capture costs exactly 2x that bounded ring — never
         // an unbounded buffer.
-        let mic_streamer = source_has_mic(source)
-            .then(|| SimulatedStreamer::new(Arc::clone(&engine), vad_cfg))
-            .transpose()?;
-        let system_streamer = source_has_system(source)
-            .then(|| SimulatedStreamer::new(Arc::clone(&engine), vad_cfg))
-            .transpose()?;
+        let build_streamer = |wanted: bool| -> Result<Option<SimulatedStreamer>, AppError> {
+            match engine.as_ref() {
+                Some(engine) if wanted => {
+                    Ok(Some(SimulatedStreamer::new(Arc::clone(engine), vad_cfg)?))
+                }
+                _ => Ok(None),
+            }
+        };
+        let mic_streamer = build_streamer(source_has_mic(source))?;
+        let system_streamer = build_streamer(source_has_system(source))?;
 
         let worker_state = Arc::new(Mutex::new(WorkerState {
             playback_wav: None,
@@ -644,6 +660,7 @@ impl RecordingSession {
             stop,
             worker,
             started_at: Instant::now(),
+            capture_only,
         })
     }
 
