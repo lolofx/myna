@@ -18,12 +18,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 #[cfg(target_os = "windows")]
 use std::sync::mpsc;
 #[cfg(target_os = "windows")]
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 #[cfg(target_os = "windows")]
 use std::thread::{self, JoinHandle};
 #[cfg(target_os = "windows")]
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
+#[cfg(target_os = "windows")]
+use windows::core::HRESULT;
 #[cfg(target_os = "windows")]
 use windows::Win32::Media::Audio::Endpoints::IAudioMeterInformation;
 #[cfg(target_os = "windows")]
@@ -31,8 +33,8 @@ use windows::Win32::Media::Audio::{eConsole, eRender};
 #[cfg(target_os = "windows")]
 use windows::Win32::Media::Audio::{
     IAudioCaptureClient, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
-    AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_E_DEVICE_INVALIDATED, AUDCLNT_SHAREMODE_SHARED,
-    AUDCLNT_STREAMFLAGS_LOOPBACK, WAVEFORMATEX, WAVE_FORMAT_PCM,
+    AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_E_DEVICE_INVALIDATED, AUDCLNT_E_SERVICE_NOT_RUNNING,
+    AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, WAVEFORMATEX, WAVE_FORMAT_PCM,
 };
 #[cfg(target_os = "windows")]
 use windows::Win32::Media::KernelStreaming::{KSDATAFORMAT_SUBTYPE_PCM, WAVE_FORMAT_EXTENSIBLE};
@@ -57,6 +59,22 @@ const ENGINE_BUFFER_100NS: i64 = 10_000_000;
 /// Idle sleep between packet-size polls when the engine has no packet ready.
 #[cfg(target_os = "windows")]
 const POLL_IDLE_SLEEP: Duration = Duration::from_millis(10);
+
+/// How often the capture thread checks that the default render endpoint is
+/// still the one it opened. Shared-mode loopback keeps capturing the old
+/// device after the default changes, so without this check a newly plugged
+/// headset would be missed until the old device disappears.
+#[cfg(target_os = "windows")]
+const DEVICE_CHECK_INTERVAL: Duration = Duration::from_secs(1);
+
+/// Reopen attempts after the endpoint changed or was invalidated, spaced by
+/// [`REOPEN_RETRY_DELAY`] (about 5s in total) so a device that is still
+/// settling does not end the capture.
+#[cfg(target_os = "windows")]
+const REOPEN_ATTEMPTS: u32 = 20;
+
+#[cfg(target_os = "windows")]
+const REOPEN_RETRY_DELAY: Duration = Duration::from_millis(250);
 
 /// Peak-meter level counted as genuine render activity rather than meter
 /// floor noise.
@@ -170,6 +188,7 @@ pub fn is_loopback_rendering() -> bool {
 #[cfg(target_os = "windows")]
 pub struct LoopbackCapture {
     stop: Arc<AtomicBool>,
+    failure: Arc<Mutex<Option<String>>>,
     thread: Option<JoinHandle<()>>,
 }
 
@@ -185,16 +204,21 @@ impl LoopbackCapture {
         on_frames: impl FnMut(&[f32], u16) + Send + 'static,
     ) -> Result<(Self, u32, u16), String> {
         let stop = Arc::new(AtomicBool::new(false));
+        let failure = Arc::new(Mutex::new(None));
         let (report_tx, report_rx) = mpsc::channel();
         let thread_stop = Arc::clone(&stop);
+        let thread_failure = Arc::clone(&failure);
         let thread = thread::Builder::new()
             .name("wasapi-loopback".to_string())
-            .spawn(move || run_loopback(thread_stop, Box::new(on_frames), report_tx))
+            .spawn(move || {
+                run_loopback(thread_stop, thread_failure, Box::new(on_frames), report_tx);
+            })
             .map_err(|error| format!("failed to spawn WASAPI loopback thread: {error}"))?;
         match report_rx.recv_timeout(STARTUP_TIMEOUT) {
             Ok(Ok((rate, channels))) => Ok((
                 Self {
                     stop,
+                    failure,
                     thread: Some(thread),
                 },
                 rate,
@@ -210,6 +234,14 @@ impl LoopbackCapture {
                 Err("WASAPI loopback startup timed out".to_string())
             }
         }
+    }
+
+    /// Why the capture thread ended on its own, if it did: a WASAPI error
+    /// it could not recover from, or a replacement device it could not
+    /// follow (for example one with a different sample rate). `None` while
+    /// the capture is running or after a normal [`LoopbackCapture::stop`].
+    pub fn failure(&self) -> Option<String> {
+        self.failure.lock().ok().and_then(|failure| failure.clone())
     }
 
     /// Stops the capture and joins its thread.
@@ -235,9 +267,46 @@ impl Drop for LoopbackCapture {
 struct OpenedLoopback {
     client: IAudioClient,
     capture: IAudioCaptureClient,
+    device_id: String,
     sample_rate: u32,
     channels: u16,
     layout: SampleLayout,
+}
+
+/// Owns the `GetMixFormat` buffer and frees it on drop, so it stays valid
+/// through `Initialize` and no error path can leak or double-free it.
+#[cfg(target_os = "windows")]
+struct MixFormat(*mut WAVEFORMATEX);
+
+#[cfg(target_os = "windows")]
+impl Drop for MixFormat {
+    fn drop(&mut self) {
+        // SAFETY: the pointer came from `GetMixFormat`, which allocates it
+        // with `CoTaskMemAlloc`, and nothing else frees it.
+        unsafe { CoTaskMemFree(Some(self.0 as _)) };
+    }
+}
+
+/// Id of the endpoint, as the enumerator reports it, or `None` when it
+/// cannot be read.
+#[cfg(target_os = "windows")]
+fn endpoint_id(device: &windows::Win32::Media::Audio::IMMDevice) -> Option<String> {
+    let id = unsafe { device.GetId() }.ok()?;
+    // SAFETY: `GetId` returns a NUL-terminated string allocated with
+    // `CoTaskMemAlloc`; read it, then free it.
+    let text = unsafe { id.to_string() }.ok();
+    unsafe { CoTaskMemFree(Some(id.0 as _)) };
+    text
+}
+
+/// Id of the current default render endpoint, or `None` when there is none.
+/// The calling thread must already have COM initialized.
+#[cfg(target_os = "windows")]
+fn default_render_id() -> Option<String> {
+    let enumerator: IMMDeviceEnumerator =
+        unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }.ok()?;
+    let device = unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) }.ok()?;
+    endpoint_id(&device)
 }
 
 #[cfg(target_os = "windows")]
@@ -247,16 +316,17 @@ fn open_loopback() -> Result<OpenedLoopback, String> {
             .map_err(|error| format!("no audio device enumerator: {error}"))?;
     let device = unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) }
         .map_err(|error| format!("no default output device for loopback capture: {error}"))?;
+    let device_id = endpoint_id(&device).unwrap_or_default();
     let client: IAudioClient = unsafe { device.Activate(CLSCTX_ALL, None) }
         .map_err(|error| format!("WASAPI client activation failed: {error}"))?;
-    let mix_format = unsafe { client.GetMixFormat() }
-        .map_err(|error| format!("WASAPI mix format query failed: {error}"))?;
-    // SAFETY: `GetMixFormat` buffer, valid until the `CoTaskMemFree` below;
-    // read the scalars and layout out, then free immediately so no error
-    // path below can leak it.
-    let mix: WAVEFORMATEX = unsafe { *mix_format };
-    let layout = sample_layout(mix_format);
-    unsafe { CoTaskMemFree(Some(mix_format as _)) };
+    let mix_format = MixFormat(
+        unsafe { client.GetMixFormat() }
+            .map_err(|error| format!("WASAPI mix format query failed: {error}"))?,
+    );
+    // SAFETY: `GetMixFormat` buffer, owned by `mix_format` and valid until
+    // it drops at the end of this function, after `Initialize` has used it.
+    let mix: WAVEFORMATEX = unsafe { *mix_format.0 };
+    let layout = sample_layout(mix_format.0);
     // `WAVEFORMATEX` is packed, so its fields cannot be borrowed; copy the
     // scalars out before formatting.
     let tag = mix.wFormatTag;
@@ -272,7 +342,7 @@ fn open_loopback() -> Result<OpenedLoopback, String> {
             AUDCLNT_STREAMFLAGS_LOOPBACK,
             ENGINE_BUFFER_100NS,
             0,
-            mix_format,
+            mix_format.0,
             None,
         )
     }
@@ -282,10 +352,19 @@ fn open_loopback() -> Result<OpenedLoopback, String> {
     Ok(OpenedLoopback {
         client,
         capture,
+        device_id,
         sample_rate: mix.nSamplesPerSec,
         channels: mix.nChannels,
         layout,
     })
+}
+
+/// Whether a WASAPI error means the endpoint went away or the audio service
+/// restarted, so reopening on the current default is worth trying. Any other
+/// error ends the capture.
+#[cfg(target_os = "windows")]
+fn is_recoverable(code: HRESULT) -> bool {
+    code == AUDCLNT_E_DEVICE_INVALIDATED || code == AUDCLNT_E_SERVICE_NOT_RUNNING
 }
 
 #[cfg(target_os = "windows")]
@@ -327,9 +406,127 @@ fn push_packet_as_f32(
     }
 }
 
+/// Why [`pump`] returned.
+#[cfg(target_os = "windows")]
+enum PumpEnd {
+    Stopped,
+    /// The default endpoint changed, or the device or audio service went
+    /// away: reopen on whatever is the default now.
+    Reopen,
+    Failed(String),
+}
+
+/// Reads engine packets and forwards them until stopped, the default
+/// endpoint changes, or WASAPI reports an error.
+#[cfg(target_os = "windows")]
+fn pump(
+    opened: &OpenedLoopback,
+    stop: &AtomicBool,
+    on_frames: &mut dyn FnMut(&[f32], u16),
+) -> PumpEnd {
+    let mut scratch = Vec::<f32>::new();
+    let mut last_device_check = Instant::now();
+    loop {
+        if stop.load(Ordering::Relaxed) {
+            return PumpEnd::Stopped;
+        }
+        if last_device_check.elapsed() >= DEVICE_CHECK_INTERVAL {
+            last_device_check = Instant::now();
+            if !opened.device_id.is_empty()
+                && default_render_id().is_some_and(|id| id != opened.device_id)
+            {
+                return PumpEnd::Reopen;
+            }
+        }
+        let available = match unsafe { opened.capture.GetNextPacketSize() } {
+            Ok(frames) => frames,
+            Err(error) if is_recoverable(error.code()) => return PumpEnd::Reopen,
+            Err(error) => {
+                return PumpEnd::Failed(format!("WASAPI packet size query failed: {error}"))
+            }
+        };
+        if available == 0 {
+            thread::sleep(POLL_IDLE_SLEEP);
+            continue;
+        }
+        let mut data: *mut u8 = std::ptr::null_mut();
+        let mut frames = 0;
+        let mut flags = 0;
+        match unsafe {
+            opened
+                .capture
+                .GetBuffer(&mut data, &mut frames, &mut flags, None, None)
+        } {
+            Ok(()) => {}
+            Err(error) if is_recoverable(error.code()) => return PumpEnd::Reopen,
+            Err(error) => return PumpEnd::Failed(format!("WASAPI buffer read failed: {error}")),
+        }
+        let silent = (flags & (AUDCLNT_BUFFERFLAGS_SILENT.0 as u32)) != 0;
+        push_packet_as_f32(
+            data,
+            frames,
+            opened.channels,
+            opened.layout,
+            silent,
+            &mut scratch,
+        );
+        if !scratch.is_empty() {
+            on_frames(&scratch, opened.channels);
+        }
+        if let Err(error) = unsafe { opened.capture.ReleaseBuffer(frames) } {
+            return if is_recoverable(error.code()) {
+                PumpEnd::Reopen
+            } else {
+                PumpEnd::Failed(format!("WASAPI buffer release failed: {error}"))
+            };
+        }
+    }
+}
+
+/// Reopens loopback capture on the current default endpoint, retrying while
+/// the device settles. `Ok(None)` means a stop was requested while waiting.
+/// The sample rate must match the one reported to the caller at start,
+/// because downstream buffers are sized from it; a device with another rate
+/// ends the capture rather than feeding mismatched audio.
+#[cfg(target_os = "windows")]
+fn reopen(stop: &AtomicBool, sample_rate: u32) -> Result<Option<OpenedLoopback>, String> {
+    let mut last_error = String::new();
+    for _ in 0..REOPEN_ATTEMPTS {
+        if stop.load(Ordering::Relaxed) {
+            return Ok(None);
+        }
+        match open_loopback() {
+            Ok(next) if next.sample_rate != sample_rate => {
+                return Err(format!(
+                    "default output changed sample rate from {sample_rate} Hz to {} Hz",
+                    next.sample_rate
+                ));
+            }
+            Ok(next) => match unsafe { next.client.Start() } {
+                Ok(()) => return Ok(Some(next)),
+                Err(error) => last_error = format!("WASAPI capture restart failed: {error}"),
+            },
+            Err(message) => last_error = message,
+        }
+        thread::sleep(REOPEN_RETRY_DELAY);
+    }
+    Err(format!("could not reopen loopback capture: {last_error}"))
+}
+
+#[cfg(target_os = "windows")]
+fn record_failure(failure: &Mutex<Option<String>>, message: String) {
+    // Debug-only: release builds keep device and error detail out of logs.
+    #[cfg(debug_assertions)]
+    eprintln!("myna-wasapi-probe: loopback capture ended: {message}");
+    if let Ok(mut slot) = failure.lock() {
+        *slot = Some(message);
+    }
+}
+
 #[cfg(target_os = "windows")]
 fn run_loopback(
     stop: Arc<AtomicBool>,
+    failure: Arc<Mutex<Option<String>>>,
     mut on_frames: Box<dyn FnMut(&[f32], u16) + Send>,
     report: mpsc::Sender<Result<(u32, u16), String>>,
 ) {
@@ -338,7 +535,7 @@ fn run_loopback(
         return;
     }
     let _com = ComGuard;
-    let opened = match open_loopback() {
+    let mut opened = match open_loopback() {
         Ok(opened) => opened,
         Err(message) => {
             let _ = report.send(Err(message));
@@ -356,49 +553,26 @@ fn run_loopback(
         let _ = unsafe { opened.client.Stop() };
         return;
     }
-    let mut scratch = Vec::<f32>::new();
+    let sample_rate = opened.sample_rate;
     loop {
-        if stop.load(Ordering::Relaxed) {
-            break;
-        }
-        let available = match unsafe { opened.capture.GetNextPacketSize() } {
-            Ok(frames) => frames,
-            Err(error) if error.code() == AUDCLNT_E_DEVICE_INVALIDATED => break,
-            Err(_) => break,
-        };
-        if available == 0 {
-            thread::sleep(POLL_IDLE_SLEEP);
-            continue;
-        }
-        let mut data: *mut u8 = std::ptr::null_mut();
-        let mut frames = 0;
-        let mut flags = 0;
-        match unsafe {
-            opened
-                .capture
-                .GetBuffer(&mut data, &mut frames, &mut flags, None, None)
-        } {
-            Ok(()) => {}
-            Err(error) if error.code() == AUDCLNT_E_DEVICE_INVALIDATED => break,
-            Err(_) => break,
-        }
-        let silent = (flags & (AUDCLNT_BUFFERFLAGS_SILENT.0 as u32)) != 0;
-        push_packet_as_f32(
-            data,
-            frames,
-            opened.channels,
-            opened.layout,
-            silent,
-            &mut scratch,
-        );
-        if !scratch.is_empty() {
-            on_frames(&scratch, opened.channels);
-        }
-        if unsafe { opened.capture.ReleaseBuffer(frames) }.is_err() {
-            break;
+        let end = pump(&opened, &stop, &mut *on_frames);
+        let _ = unsafe { opened.client.Stop() };
+        match end {
+            PumpEnd::Stopped => return,
+            PumpEnd::Failed(message) => {
+                record_failure(&failure, message);
+                return;
+            }
+            PumpEnd::Reopen => match reopen(&stop, sample_rate) {
+                Ok(Some(next)) => opened = next,
+                Ok(None) => return,
+                Err(message) => {
+                    record_failure(&failure, message);
+                    return;
+                }
+            },
         }
     }
-    let _ = unsafe { opened.client.Stop() };
 }
 
 /// Non-Windows stub: identical signatures, always unavailable.
@@ -435,4 +609,22 @@ impl LoopbackCapture {
 
     /// Non-Windows stub: identical signatures, no thread to join.
     pub fn stop(self) {}
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    use super::*;
+    use windows::Win32::Media::Audio::AUDCLNT_E_BUFFER_ERROR;
+
+    #[test]
+    fn device_loss_and_service_restart_are_recoverable() {
+        assert!(is_recoverable(AUDCLNT_E_DEVICE_INVALIDATED));
+        assert!(is_recoverable(AUDCLNT_E_SERVICE_NOT_RUNNING));
+    }
+
+    #[test]
+    fn other_errors_end_the_capture() {
+        assert!(!is_recoverable(AUDCLNT_E_BUFFER_ERROR));
+        assert!(!is_recoverable(HRESULT(0)));
+    }
 }
