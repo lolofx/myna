@@ -10,6 +10,8 @@ Myna is a **local-first AI meeting recorder/summarizer**: capture meeting audio,
 - **License**: MIT.
 - **Targets**: macOS-first; Windows/Linux planned and untested — do not claim support.
 
+**Fork note (Windows lightweight):** this fork works on Windows only (record-then-transcribe, markdown export). Read [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md), [aidd_docs/memory/backlog.md](aidd_docs/memory/backlog.md) and [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) first. Work on `win/*` branches, keep `main` equal to upstream.
+
 ## Stack & architecture
 
 Authoritative source: [docs/stack-proposal.md](docs/stack-proposal.md) — do not re-derive. Summary:
