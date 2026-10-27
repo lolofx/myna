@@ -154,8 +154,12 @@ fn storage_save_preserves_unrelated_keys() {
         raw.contains("unrelated"),
         "unrelated keys must survive a save, got: {raw}"
     );
-    assert!(
-        raw.contains(&pointed.path().to_string_lossy().into_owned()),
+    // Compare parsed JSON: a Windows path is stored with doubled backslashes,
+    // so the raw text never contains the path verbatim.
+    let saved: serde_json::Value = serde_json::from_str(&raw).expect("saved pointer is JSON");
+    assert_eq!(
+        saved["data_dir"],
+        serde_json::Value::String(pointed.path().to_string_lossy().into_owned()),
         "saved pointer must be updated, got: {raw}"
     );
     assert_eq!(
@@ -219,7 +223,8 @@ fn storage_pointer_load_accepts_alias_key() {
     // Arrange: a pointer written under an alternate key name.
     let config = tempfile::tempdir().expect("tempdir");
     let pointed = tempfile::tempdir().expect("tempdir");
-    let raw = format!("{{\"location\": \"{}\"}}", pointed.path().to_string_lossy());
+    // Built with serde_json so Windows backslashes are escaped properly.
+    let raw = serde_json::json!({ "location": pointed.path().to_string_lossy() }).to_string();
     fs::write(config.path().join("storage.json"), raw).expect("write pointer");
 
     // Act / Assert
@@ -235,10 +240,8 @@ fn storage_pointer_loads_from_namespaced_preferences_layout() {
     // `"storage"` key), with no dedicated `storage.json` present.
     let config = tempfile::tempdir().expect("tempdir");
     let pointed = tempfile::tempdir().expect("tempdir");
-    let raw = format!(
-        "{{\"storage\": {{\"data_dir\": \"{}\"}}}}",
-        pointed.path().to_string_lossy()
-    );
+    let raw = serde_json::json!({ "storage": { "data_dir": pointed.path().to_string_lossy() } })
+        .to_string();
     fs::write(config.path().join("preferences.json"), raw).expect("write preferences");
 
     // Act / Assert: either layout is honoured on load.

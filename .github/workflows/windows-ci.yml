@@ -60,7 +60,7 @@ jobs:
       # would otherwise hide every other result.
       - name: Test libraries
         run: >
-          cargo test --locked -p myna-wasapi-probe -p myna-audio -p myna-stt -p myna-llm --
+          cargo test --locked -p myna-wasapi-probe -p myna-audio -p myna-stt -p myna-llm --no-fail-fast --
           --test-threads=1
           --skip all_output_source
           --skip no_source_name_looks
@@ -141,4 +141,5 @@ jobs:
         run: cargo check --locked -p myna-app --all-targets
 
       - name: Test app crate
-        run: cargo test --locked -p myna-app -- --test-threads=1
+        # --no-fail-fast: report every failing test binary in one run.
+        run: cargo test --locked -p myna-app --no-fail-fast -- --test-threads=1
