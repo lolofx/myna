@@ -106,7 +106,7 @@ fn capture_sources_for_system_source_matches_the_reported_status() {
 /// See the `System`-source pair of tests above for why this is
 /// platform-gated the same way.
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 fn capture_sources_rejects_mixed_source_as_unavailable() {
     // Arrange
     let request = CaptureRequest {
@@ -151,7 +151,7 @@ fn capture_sources_rejects_mixed_source_as_unavailable() {
 /// in `src/capture.rs`, which fakes both the attach and mic-only steps.
 #[test]
 #[ignore = "requires real hardware: opens a real microphone input stream via the mic-only fallback"]
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn capture_sources_for_mixed_source_degrades_to_microphone_when_system_audio_is_unavailable() {
     if std::env::var("MYNA_LIVE_AUDIO_TESTS").is_err() {
         return;
