@@ -2,7 +2,7 @@
 # the same marker files, so model_init.rs drives either script interchangeably.
 param(
   [string]$Dest = "",
-  [ValidateSet("", "parakeet", "qwen", "vad", "diarization")]
+  [ValidateSet("", "parakeet", "qwen", "qwen-3b", "qwen-1.5b", "vad", "diarization")]
   [string]$Only = "",
   [switch]$Migrate,
   [switch]$Check
@@ -16,6 +16,8 @@ if (-not $Dest) {
 $LegacyDest = Join-Path $RepoRoot "models"
 $ParakeetBase = "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/main"
 $QwenBase = "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main"
+$Qwen3BBase = "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main"
+$Qwen15BBase = "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main"
 $VadUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx"
 $PyannoteUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2"
 $TitanetUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_titanet_small.onnx"
@@ -56,6 +58,20 @@ function Fetch-Qwen {
       Invoke-WebRequest -Uri "$QwenBase/$f" -OutFile (Join-Path $d $f)
     }
   }
+}
+# Single-file Qwen2.5 GGUFs (the 3B and 1.5B Q4_K_M builds are not sharded).
+function Fetch-QwenSingle([string]$Name, [string]$DirName, [string]$File, [string]$Base) {
+  Fetch-One $Name $DirName $File {
+    $d = Join-Path $Dest $DirName
+    New-Item -ItemType Directory -Force -Path $d | Out-Null
+    Invoke-WebRequest -Uri "$Base/$File" -OutFile (Join-Path $d $File)
+  }
+}
+function Fetch-Qwen3B {
+  Fetch-QwenSingle "Qwen2.5-3B-Instruct GGUF" "qwen2.5-3b-instruct" "qwen2.5-3b-instruct-q4_k_m.gguf" $Qwen3BBase
+}
+function Fetch-Qwen15B {
+  Fetch-QwenSingle "Qwen2.5-1.5B-Instruct GGUF" "qwen2.5-1.5b-instruct" "qwen2.5-1.5b-instruct-q4_k_m.gguf" $Qwen15BBase
 }
 function Fetch-Vad {
   Fetch-One "silero VAD" "silero-vad" "silero_vad.onnx" {
@@ -101,12 +117,20 @@ if ($Check) {
   $failed = $false
   foreach ($m in @(
     "parakeet-tdt-0.6b-v3-int8/encoder.int8.onnx",
-    "qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
-    "qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00002-of-00002.gguf",
     "silero-vad/silero_vad.onnx")) {
     $p = Join-Path $Dest $m
     if (Test-Path $p) { Write-Output "OK    $p" } else { Write-Output "MISSING $p"; $failed = $true }
   }
+  # The summary model is optional: any one of these is enough.
+  $summaryFound = $false
+  foreach ($m in @(
+    "qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+    "qwen2.5-3b-instruct/qwen2.5-3b-instruct-q4_k_m.gguf",
+    "qwen2.5-1.5b-instruct/qwen2.5-1.5b-instruct-q4_k_m.gguf")) {
+    $p = Join-Path $Dest $m
+    if (Test-Path $p) { Write-Output "OK    $p (optional - summary model)"; $summaryFound = $true }
+  }
+  if (-not $summaryFound) { Write-Output "NONE  no summary model installed (optional; pick one in the app or pass -Only qwen-3b)" }
   foreach ($m in @(
     "pyannote-segmentation-3-0/sherpa-onnx-pyannote-segmentation-3-0/model.int8.onnx",
     "nemo-titanet/nemo_en_titanet_small.onnx",
@@ -118,9 +142,11 @@ if ($Check) {
   if ($failed) { exit 1 } else { exit 0 }
 }
 switch ($Only) {
-  "" { Fetch-Parakeet; Fetch-Qwen; Fetch-Vad }
+  "" { Fetch-Parakeet; Fetch-Vad }
   "parakeet" { Fetch-Parakeet }
   "qwen" { Fetch-Qwen }
+  "qwen-3b" { Fetch-Qwen3B }
+  "qwen-1.5b" { Fetch-Qwen15B }
   "vad" { Fetch-Vad }
   "diarization" { Fetch-Pyannote; Fetch-Titanet; Fetch-Eres2net }
 }

@@ -38,6 +38,20 @@ describe('OnboardingPanelComponent', () => {
     expect(items.some((el) => el.classList.contains('present'))).toBe(true);
   });
 
+  it('does not ask for a summary model: it is optional and chosen in Settings', () => {
+    const withoutSummaryModel: ModelsStatus = {
+      ...notReady,
+      qwen: { present: false, expectedFiles: ['qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf'] },
+    };
+
+    const fixture = createFixture(withoutSummaryModel);
+
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Summaries');
+    expect(text).not.toContain('qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf');
+    expect(text).toContain('encoder.int8.onnx');
+  });
+
   it('emits recheckRequested when the recheck button is clicked', () => {
     const fixture = createFixture(notReady);
     const emitted: void[] = [];

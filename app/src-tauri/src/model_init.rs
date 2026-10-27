@@ -72,8 +72,12 @@ const CHILD_MUTEX_POISONED: &str = "model download child mutex poisoned";
 pub enum DownloadArtifact {
     /// Parakeet-TDT STT model (`--only parakeet`).
     Parakeet,
-    /// Qwen2.5-Instruct GGUF summarization model (`--only qwen`).
+    /// Qwen2.5-7B-Instruct GGUF summarization model (`--only qwen`).
     Qwen,
+    /// Qwen2.5-3B-Instruct GGUF summarization model (`--only qwen-3b`).
+    Qwen3B,
+    /// Qwen2.5-1.5B-Instruct GGUF summarization model (`--only qwen-1.5b`).
+    Qwen1_5B,
     /// Silero VAD ONNX model (`--only vad`).
     Vad,
     /// Speaker diarization models (pyannote + TitaNet) bundled as a single
@@ -88,6 +92,8 @@ impl DownloadArtifact {
         match self {
             Self::Parakeet => "parakeet",
             Self::Qwen => "qwen",
+            Self::Qwen3B => "qwen-3b",
+            Self::Qwen1_5B => "qwen-1.5b",
             Self::Vad => "vad",
             Self::Diarization => "diarization",
         }
@@ -97,6 +103,10 @@ impl DownloadArtifact {
 /// Derives the artifacts still missing from a [`ModelsStatusDto`] presence
 /// report, in the order the sequential runner should fetch them.
 ///
+/// The summary model is deliberately absent: it is optional and chosen by
+/// the user, so it is fetched on request (see
+/// `commands::models::start_summary_model_download`), never by default.
+///
 /// Extracted as a pure function over the presence oracle's output so the
 /// derivation is unit-testable against a `tempfile::tempdir()` without
 /// spawning any download.
@@ -104,9 +114,6 @@ pub fn missing_artifacts(status: &ModelsStatusDto) -> Vec<DownloadArtifact> {
     let mut missing = Vec::new();
     if !status.parakeet.present {
         missing.push(DownloadArtifact::Parakeet);
-    }
-    if !status.qwen.present {
-        missing.push(DownloadArtifact::Qwen);
     }
     if !status.silero.present {
         missing.push(DownloadArtifact::Vad);
@@ -542,7 +549,6 @@ mod tests {
             missing,
             vec![
                 DownloadArtifact::Parakeet,
-                DownloadArtifact::Qwen,
                 DownloadArtifact::Vad,
                 DownloadArtifact::Diarization
             ]
@@ -565,12 +571,34 @@ mod tests {
         // Assert
         assert_eq!(
             missing,
-            vec![
-                DownloadArtifact::Qwen,
-                DownloadArtifact::Vad,
-                DownloadArtifact::Diarization
-            ]
+            vec![DownloadArtifact::Vad, DownloadArtifact::Diarization]
         );
+    }
+
+    #[test]
+    fn missing_artifacts_never_includes_a_summary_model() {
+        // Arrange: nothing installed.
+        let dir = tempfile::tempdir().expect("tempdir");
+        let status = models_status_at(dir.path());
+
+        // Act
+        let missing = missing_artifacts(&status);
+
+        // Assert: the summary model is opt-in.
+        for artifact in [
+            DownloadArtifact::Qwen,
+            DownloadArtifact::Qwen3B,
+            DownloadArtifact::Qwen1_5B,
+        ] {
+            assert!(!missing.contains(&artifact));
+        }
+    }
+
+    #[test]
+    fn summary_artifacts_map_to_their_script_selectors() {
+        assert_eq!(DownloadArtifact::Qwen.as_str(), "qwen");
+        assert_eq!(DownloadArtifact::Qwen3B.as_str(), "qwen-3b");
+        assert_eq!(DownloadArtifact::Qwen1_5B.as_str(), "qwen-1.5b");
     }
 
     #[test]

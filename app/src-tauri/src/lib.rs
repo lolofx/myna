@@ -20,6 +20,7 @@ pub mod session_manifest;
 pub mod state;
 pub mod storage_prefs;
 pub mod store;
+pub mod summary_models;
 pub mod summary_prefs;
 pub mod template_prefs;
 pub mod update_prefs;
@@ -159,6 +160,8 @@ pub fn run() {
             commands::models::start_model_download,
             commands::models::start_diarization_download,
             commands::models::cancel_model_download,
+            commands::models::set_summary_model,
+            commands::models::start_summary_model_download,
             commands::export::export_meeting,
             commands::updates::update_consent,
             commands::updates::set_update_consent,

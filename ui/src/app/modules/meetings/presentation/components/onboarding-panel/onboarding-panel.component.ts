@@ -85,7 +85,6 @@ export class OnboardingPanelComponent {
     }
     return [
       { label: 'Transcription — turns speech into text', slot: current.parakeet },
-      { label: 'Summaries — key points from your meetings', slot: current.qwen },
       { label: 'Voice detection — knows when someone is speaking', slot: current.silero },
     ];
   });

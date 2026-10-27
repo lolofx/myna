@@ -285,6 +285,8 @@ export class MeetingsFacade {
   // delegations — see ModelsFacade / DevicesFacade / SpeakerFacade / TranscriptEditingFacade.
   initializeModels = (): Promise<void> => this.modelsFacade.initializeModels();
   initializeDiarizationModels = (): Promise<void> => this.modelsFacade.initializeDiarizationModels();
+  downloadSummaryModel = (modelId: string): Promise<void> => this.modelsFacade.downloadSummaryModel(modelId);
+  selectSummaryModel = (modelId: string | null): Promise<void> => this.modelsFacade.selectSummaryModel(modelId);
   cancelModelDownload = (): Promise<void> => this.modelsFacade.cancelModelDownload();
   loadDevices = (): Promise<void> => this.devicesFacade.loadDevices();
   selectDevice = (name: string): void => this.devicesFacade.selectDevice(name);

@@ -16,6 +16,14 @@ export class TauriModelInitializerAdapter extends ModelInitializerPort {
     await invokeCommand('start_diarization_download', {});
   }
 
+  override async startSummaryModel(modelId: string): Promise<void> {
+    await invokeCommand('start_summary_model_download', { modelId });
+  }
+
+  override async setSummaryModel(modelId: string | null): Promise<void> {
+    await invokeCommand('set_summary_model', { modelId });
+  }
+
   override async cancel(): Promise<void> {
     await invokeCommand('cancel_model_download', {});
   }

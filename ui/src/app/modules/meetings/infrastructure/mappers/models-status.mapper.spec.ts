@@ -33,3 +33,30 @@ describe('mapModelsStatusDtoToDomain', () => {
     });
   });
 });
+
+describe('mapModelsStatusDtoToDomain summary models', () => {
+  const base = {
+    parakeet: { present: true, path: '/models/parakeet', expectedFiles: ['a'] },
+    qwen: { present: true, path: '/models/qwen', expectedFiles: ['b'] },
+    silero: { present: true, path: '/models/silero', expectedFiles: ['c'] },
+    allPresent: true,
+  };
+
+  it('carries the summary model catalog through when the backend sends it', () => {
+    const summaryModels = [
+      { id: 'qwen2.5-3b', label: 'Qwen2.5 3B', approxSizeMb: 2100, present: true, selected: true },
+      { id: 'qwen2.5-7b', label: 'Qwen2.5 7B', approxSizeMb: 4690, present: false, selected: false },
+    ];
+
+    const status = mapModelsStatusDtoToDomain({ ...base, summaryModels, selectedSummaryModel: 'qwen2.5-3b' });
+
+    expect(status.summaryModels).toEqual(summaryModels);
+  });
+
+  it('omits the catalog for a backend that predates it', () => {
+    const status = mapModelsStatusDtoToDomain(base);
+
+    expect(status.summaryModels).toBeUndefined();
+  });
+});
+

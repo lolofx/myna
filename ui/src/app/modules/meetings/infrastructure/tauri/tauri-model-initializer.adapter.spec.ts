@@ -32,6 +32,37 @@ describe('TauriModelInitializerAdapter', () => {
     expect(receivedArgs).toEqual({});
   });
 
+  it('startSummaryModel() invokes start_summary_model_download with the model id', async () => {
+    let receivedCmd: string | undefined;
+    let receivedArgs: unknown;
+    installTauriInternalsStub((cmd, args) => {
+      receivedCmd = cmd;
+      receivedArgs = args;
+      return undefined;
+    });
+
+    await adapter.startSummaryModel('qwen2.5-3b');
+
+    expect(receivedCmd).toBe('start_summary_model_download');
+    expect(receivedArgs).toEqual({ modelId: 'qwen2.5-3b' });
+  });
+
+  it('setSummaryModel() invokes set_summary_model with the id, or null to clear it', async () => {
+    const received: unknown[] = [];
+    installTauriInternalsStub((cmd, args) => {
+      received.push([cmd, args]);
+      return undefined;
+    });
+
+    await adapter.setSummaryModel('qwen2.5-1.5b');
+    await adapter.setSummaryModel(null);
+
+    expect(received).toEqual([
+      ['set_summary_model', { modelId: 'qwen2.5-1.5b' }],
+      ['set_summary_model', { modelId: null }],
+    ]);
+  });
+
   it('cancel() invokes cancel_model_download with no arguments', async () => {
     let receivedCmd: string | undefined;
     let receivedArgs: unknown;

@@ -33,6 +33,10 @@ pub const MAX_GUIDELINE_CHARS: usize = 4000;
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct SummaryPrefs {
     pub guidelines: String,
+    /// Id of the summary model the user picked (see
+    /// [`crate::summary_models`]); `None` means "use the best one installed".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
 }
 
 /// Trims `raw` and caps it at [`MAX_GUIDELINE_CHARS`] Unicode scalars.
@@ -184,6 +188,7 @@ mod tests {
         let temp = tempfile::tempdir().expect("tempdir");
         let prefs = SummaryPrefs {
             guidelines: "Use bullet points.".into(),
+            model: None,
         };
 
         // Act
@@ -215,6 +220,7 @@ mod tests {
         .expect("seed file");
         let prefs = SummaryPrefs {
             guidelines: "Always list action items.".into(),
+            model: None,
         };
 
         // Act
@@ -243,6 +249,7 @@ mod tests {
         let temp = tempfile::tempdir().expect("tempdir");
         let prefs = SummaryPrefs {
             guidelines: "Summaries in French, bullet points only.".into(),
+            model: None,
         };
 
         // Act
@@ -288,5 +295,42 @@ mod tests {
     fn normalize_guidelines_leaves_short_text_untouched() {
         assert_eq!(normalize_guidelines("keep it brief"), "keep it brief");
         assert_eq!(normalize_guidelines("   "), "");
+    }
+
+    // --- model choice ----------------------------------------------------
+
+    #[test]
+    fn preferences_saved_before_model_choice_existed_still_load() {
+        // Arrange: a file written by an earlier release, no `model` key.
+        let temp = tempfile::tempdir().expect("tempdir");
+        std::fs::write(
+            temp.path().join(PREFERENCES_FILE),
+            br#"{"summary":{"guidelines":"Be brief."}}"#,
+        )
+        .expect("seed file");
+
+        // Act
+        let prefs = load(temp.path());
+
+        // Assert
+        assert_eq!(prefs.guidelines, "Be brief.");
+        assert_eq!(prefs.model, None);
+    }
+
+    #[test]
+    fn model_choice_round_trips_and_keeps_guidelines() {
+        // Arrange
+        let temp = tempfile::tempdir().expect("tempdir");
+        let prefs = SummaryPrefs {
+            guidelines: "Be brief.".into(),
+            model: Some("qwen2.5-3b".into()),
+        };
+
+        // Act
+        save(temp.path(), &prefs).expect("save should succeed");
+        let reloaded = load(temp.path());
+
+        // Assert
+        assert_eq!(reloaded, prefs);
     }
 }

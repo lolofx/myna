@@ -144,7 +144,8 @@ cancel. Tauri 2 shell (Rust + webview); macOS-first.
   `MYNA_MODELS_DIR` only override) — nothing synced to the cloud.
 - **No telemetry, no analytics.** **No bot joins your call.**
 - **The only network call:** one-time model download from Hugging Face
-  (~5.4 GB) via in-app **Download** or `./scripts/download-models.sh`.
+  (about 0.7 GB, plus an optional summary model of 1.1 to 4.7 GB) via in-app
+  **Download** or `./scripts/download-models.sh`.
   Then fully offline.
 
 **Optional update checks** (off by default, opt-in): one GitHub check at
@@ -171,7 +172,7 @@ your machine does the work.
 3. Onboarding: grant **Microphone** (always) and
    **Screen & System Audio Recording** (system/mixed only,
    macOS 14.4+, restart after granting).
-   Click **Download** for models (~5.4 GB, one time).
+   Click **Download** for models (about 0.7 GB, one time); the summary model is optional and picked in Settings.
    Decline update checks with no loss.
    Later updates: click **Update** in Settings; you'll be asked to
    re-grant the microphone after restart (ad-hoc signature).

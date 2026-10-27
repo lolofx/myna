@@ -50,7 +50,7 @@ ERES2NET_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-re
 usage() {
   cat <<'EOF'
 Usage: scripts/download-models.sh [--dest <dir>]
-                                   [--only parakeet|qwen|vad|diarization]
+                                   [--only parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization]
                                    [--migrate] [--check] [--help]
 
 Fetches local models into <dest> (default: $MYNA_MODELS_DIR, or ~/myna/models
@@ -58,8 +58,10 @@ if that's unset — the fixed location the packaged app reads from).
 MYNA_DATA_DIR and the Settings storage location never affect <dest>;
 they move meetings/preferences/folders only:
   - Parakeet STT v3 (sherpa-onnx, int8)
-  - Qwen2.5-7B-Instruct GGUF (Q4_K_M)
   - silero VAD (ONNX)
+  - [optional] a summary model, one of Qwen2.5 7B (`--only qwen`, ~4.7 GB),
+    3B (`--only qwen-3b`, ~2.1 GB) or 1.5B (`--only qwen-1.5b`, ~1.1 GB),
+    Q4_K_M GGUF. NOT fetched by default; the app asks for the one you pick.
   - [optional] speaker diarization: pyannote segmentation-3-0 + NeMo TitaNet
     speaker embedding. Only needed for speaker labels/detection; the app
     works fine without them, degrading to unlabelled speakers. NOT fetched
@@ -80,7 +82,7 @@ exact `mv`/`ln -s` command to relocate it — or performs the move itself when
 Options:
   --dest <dir>                 Destination directory (default:
                                 $MYNA_MODELS_DIR, else ~/myna/models).
-  --only parakeet|qwen|vad|diarization
+  --only parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization
                                 Fetch a single artifact (or, for
                                 "diarization", both optional speaker models
                                 together) instead of the default set.
@@ -226,6 +228,15 @@ fetch_qwen() {
     "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main"
 }
 
+# fetch_qwen_single <label> <dir_name> <file> <base_url>: the 3B and 1.5B
+# Q4_K_M builds are single-file (unlike the sharded 7B).
+fetch_qwen_single() {
+  fetch_artifact "$1" "$2" "$3" \
+    bash -c 'mkdir -p "$(dirname "$1")" && curl -fSL -o "$1" "$2"' _ \
+    "$DEST/$2/$3" \
+    "$4/$3"
+}
+
 fetch_vad() {
   fetch_artifact "silero VAD" "$VAD_DIR_NAME" "$VAD_MARKER_NAME" \
     bash -c 'mkdir -p "$(dirname "$1")" && curl -fSL -o "$1" "$2"' _ \
@@ -355,14 +366,24 @@ run_check() {
   local missing=0
   for marker in \
     "$(marker_path "$DEST" "$PARAKEET_DIR_NAME" "$PARAKEET_MARKER_NAME")" \
-    "$(marker_path "$DEST" "$QWEN_DIR_NAME" "$QWEN_MARKER_NAME")" \
-    "$(marker_path "$DEST" "$QWEN_DIR_NAME" "$QWEN_MARKER_NAME_2")" \
     "$(marker_path "$DEST" "$VAD_DIR_NAME" "$VAD_MARKER_NAME")"; do
     if [[ -e "$marker" ]]; then
       echo "OK    $marker"
     else
       echo "MISSING $marker"
       missing=1
+    fi
+  done
+  # Optional summary models: reported, but never fail --check — the app
+  # only needs one of them, and only to generate summaries.
+  for marker in \
+    "$(marker_path "$DEST" "$QWEN_DIR_NAME" "$QWEN_MARKER_NAME")" \
+    "$(marker_path "$DEST" "qwen2.5-3b-instruct" "qwen2.5-3b-instruct-q4_k_m.gguf")" \
+    "$(marker_path "$DEST" "qwen2.5-1.5b-instruct" "qwen2.5-1.5b-instruct-q4_k_m.gguf")"; do
+    if [[ -e "$marker" ]]; then
+      echo "OK    $marker (optional — summary model)"
+    else
+      echo "MISSING $marker (optional — summary model)"
     fi
   done
   # Optional diarization artifacts: reported, but never fail --check — the
@@ -398,7 +419,7 @@ while [[ $# -gt 0 ]]; do
     --only)
       only="${2:-}"
       if [[ -z "$only" ]]; then
-        echo "ERROR: --only requires an argument (parakeet|qwen|vad|diarization)" >&2
+        echo "ERROR: --only requires an argument (parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization)" >&2
         exit 1
       fi
       shift 2
@@ -438,7 +459,6 @@ fi
 case "$only" in
   "")
     fetch_parakeet
-    fetch_qwen
     fetch_vad
     ;;
   parakeet)
@@ -446,6 +466,16 @@ case "$only" in
     ;;
   qwen)
     fetch_qwen
+    ;;
+  qwen-3b)
+    fetch_qwen_single "Qwen2.5-3B-Instruct GGUF" "qwen2.5-3b-instruct" \
+      "qwen2.5-3b-instruct-q4_k_m.gguf" \
+      "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main"
+    ;;
+  qwen-1.5b)
+    fetch_qwen_single "Qwen2.5-1.5B-Instruct GGUF" "qwen2.5-1.5b-instruct" \
+      "qwen2.5-1.5b-instruct-q4_k_m.gguf" \
+      "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main"
     ;;
   vad)
     fetch_vad
@@ -456,7 +486,7 @@ case "$only" in
     fetch_eres2net
     ;;
   *)
-    echo "ERROR: invalid --only value: $only (expected parakeet|qwen|vad|diarization)" >&2
+    echo "ERROR: invalid --only value: $only (expected parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization)" >&2
     exit 1
     ;;
 esac

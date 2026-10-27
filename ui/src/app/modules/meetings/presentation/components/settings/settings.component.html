@@ -39,6 +39,41 @@
     </label>
   </section>
 
+  <section class="summary-model" aria-label="Summary model">
+    <h3>Summary model</h3>
+    <p class="model-helper">
+      Optional. Summaries are written on this PC by the model you pick; a smaller one uses less memory. You can also skip
+      it and use the exported transcript with another tool.
+    </p>
+    <label class="model-picker">
+      <span class="model-label">Model used to write summaries</span>
+      <select
+        aria-label="Summary model"
+        [disabled]="summaryModels().length === 0 || modelDownloadRunning()"
+        (change)="onSummaryModelChanged($event)"
+      >
+        <option value="" disabled [selected]="chosenModelId() === null">None selected</option>
+        @for (model of summaryModels(); track model.id) {
+          <option [value]="model.id" [selected]="model.id === chosenModelId()">{{ modelOptionLabel(model) }}</option>
+        }
+      </select>
+    </label>
+    @if (chosenModel(); as model) {
+      @if (model.present) {
+        <p class="model-installed">Installed and ready.</p>
+      } @else {
+        <div class="model-actions">
+          <button type="button" class="download-model" [disabled]="modelDownloadRunning()" (click)="requestSummaryModelDownload()">
+            {{ modelDownloadRunning() ? 'Downloading…' : 'Download ' + modelSizeLabel(model) }}
+          </button>
+        </div>
+      }
+    }
+    @if (modelDownloadError() !== null) {
+      <p class="model-error" role="alert">{{ modelDownloadError() }}</p>
+    }
+  </section>
+
   <section class="summary-guidelines" aria-label="General summary guidelines">
     <h3>General guidelines</h3>
     <label class="guidelines-helper" for="general-guidelines-input"

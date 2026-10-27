@@ -25,6 +25,14 @@ export class InitializeModelsUseCase {
     return this.initializer.startDiarization();
   }
 
+  async startSummaryModel(modelId: string): Promise<void> {
+    return this.initializer.startSummaryModel(modelId);
+  }
+
+  async setSummaryModel(modelId: string | null): Promise<void> {
+    return this.initializer.setSummaryModel(modelId);
+  }
+
   async cancel(): Promise<void> {
     return this.initializer.cancel();
   }

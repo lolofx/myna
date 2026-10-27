@@ -17,6 +17,10 @@ export interface SettingsControls {
   readonly guidelines: Signal<string>;
   /** Settings save-on-blur / Save click; the store slot updates only once the facade write succeeds. */
   readonly onGuidelinesChanged: (text: string) => void;
+  /** Settings summary-model picker: persists the choice through the facade. */
+  readonly onSummaryModelSelected: (modelId: string) => void;
+  /** Settings "Download" for the chosen summary model; progress arrives on the shared download slice. */
+  readonly onSummaryModelDownloadRequested: (modelId: string) => void;
   /** Effective meetings data root; `undefined` until `loadStorageLocation` resolves. */
   readonly storagePath: Signal<string | undefined>;
   /** True while recording/importing/summarizing or a storage move is in flight — disables Change/Reset. */
@@ -107,6 +111,12 @@ export function createSettingsControls(
     guidelines: facade.summaryGuidelines,
     onGuidelinesChanged: (text) => {
       void facade.setSummaryGuidelines(text);
+    },
+    onSummaryModelSelected: (modelId) => {
+      void facade.selectSummaryModel(modelId);
+    },
+    onSummaryModelDownloadRequested: (modelId) => {
+      void facade.downloadSummaryModel(modelId);
     },
     storagePath,
     storageBusy,

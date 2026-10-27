@@ -9,6 +9,7 @@ import {
   runCancelModelDownload,
   runInitializeDiarizationModels,
   runInitializeModels,
+  runInitializeSummaryModel,
   subscribeToModelDownloadEvents,
 } from './meetings-facade-models.support';
 
@@ -47,6 +48,20 @@ export class ModelsFacade implements OnDestroy {
 
   async initializeDiarizationModels(): Promise<void> {
     await runInitializeDiarizationModels(this.store, this.initializeModelsUseCase);
+  }
+
+  async downloadSummaryModel(modelId: string): Promise<void> {
+    await runInitializeSummaryModel(this.store, this.initializeModelsUseCase, modelId);
+  }
+
+  /** Persists the summary model choice, then refreshes `modelsStatus` so the picker reflects it. */
+  async selectSummaryModel(modelId: string | null): Promise<void> {
+    try {
+      await this.initializeModelsUseCase.setSummaryModel(modelId);
+      await this.checkModels();
+    } catch (caught) {
+      this.store.setError(toErrorInfo(caught));
+    }
   }
 
   async cancelModelDownload(): Promise<void> {

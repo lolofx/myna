@@ -16,6 +16,8 @@ use crate::paths;
 use crate::session::RecordingSession;
 use crate::store::folder_store::FsFolderStore;
 use crate::store::fs_store::FsMeetingStore;
+use crate::summary_models;
+use crate::summary_prefs;
 
 /// Directory name (under the resolved models root) containing the
 /// Parakeet-TDT STT model artifacts.
@@ -87,10 +89,6 @@ pub fn clamp_thread_count(detected: Option<i32>) -> i32 {
         .unwrap_or(STT_ENGINE_THREADS_FALLBACK)
         .clamp(STT_ENGINE_THREADS_MIN, STT_ENGINE_THREADS_MAX)
 }
-
-/// Directory name (under the resolved models root) containing the Qwen GGUF
-/// summarization model.
-const LLM_MODEL_DIR_NAME: &str = "qwen2.5-7b-instruct";
 
 /// How long the cached STT engine may sit unused after a recording (or
 /// import) completes before [`AppState::evict_stt_if_idle`] releases it.
@@ -440,10 +438,20 @@ impl AppState {
     pub fn summarizer(&self, app: &AppHandle) -> Result<Arc<Summarizer>, AppError> {
         self.evict_stt_if_idle();
         self.summarizer.get_or_load(|| {
-            let dir = paths::models_root(app).join(LLM_MODEL_DIR_NAME);
-            let model = paths::first_gguf(&dir)
+            let models_root = paths::models_root(app);
+            let selected = paths::data_root()
+                .ok()
+                .and_then(|root| summary_prefs::load(&root).model);
+            let model =
+                summary_models::resolve(&models_root, selected.as_deref()).ok_or_else(|| {
+                    AppError::NotFound(
+                        "no summary model installed; pick and download one in Settings".to_string(),
+                    )
+                })?;
+            let dir = models_root.join(model.dir_name);
+            let file = paths::first_gguf(&dir)
                 .ok_or_else(|| AppError::NotFound(format!("no GGUF model in {}", dir.display())))?;
-            Ok(Arc::new(Summarizer::load(&model)?))
+            Ok(Arc::new(Summarizer::load(&file)?))
         })
     }
 

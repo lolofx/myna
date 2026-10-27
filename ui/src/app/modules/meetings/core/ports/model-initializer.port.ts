@@ -7,7 +7,7 @@ import type { Observable } from 'rxjs';
  * that list. Mirrors `ModelsProgressPayloadDto`.
  */
 export interface ModelDownloadProgress {
-  /** Script selector of the artifact about to download (`parakeet` | `qwen` | `vad`). */
+  /** Script selector of the artifact about to download (`parakeet` | `qwen` | `qwen-3b` | `qwen-1.5b` | `vad` | `diarization`). */
   readonly artifact: string;
   readonly index: number;
   readonly total: number;
@@ -36,6 +36,10 @@ export interface ModelDownloadDone {
 export abstract class ModelInitializerPort {
   abstract start(): Promise<void>;
   abstract startDiarization(): Promise<void>;
+  /** Downloads one summary model from the catalog (`start_summary_model_download`); progress arrives on the same events. */
+  abstract startSummaryModel(modelId: string): Promise<void>;
+  /** Persists the chosen summary model (`set_summary_model`); `null` clears the choice. */
+  abstract setSummaryModel(modelId: string | null): Promise<void>;
   abstract cancel(): Promise<void>;
   abstract progress(): Observable<ModelDownloadProgress>;
   abstract done(): Observable<ModelDownloadDone>;

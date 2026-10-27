@@ -12,9 +12,10 @@ Grab the latest macOS `.dmg` from
 [GitHub Releases](https://github.com/fmflurry/myna/releases), open it and drag
 Myna to Applications, then launch. The Myna window opens. On first run, the
 onboarding screen shows which models are ready. Click **Download** and watch
-live progress; cancel anytime. This fetches Parakeet-TDT (640 MB),
-Qwen2.5-Instruct (4.7 GB), and Silero VAD (629 KB) from Hugging Face (~5.4 GB
-total, one time).
+live progress; cancel anytime. This fetches Parakeet-TDT (640 MB) and
+Silero VAD (629 KB) from Hugging Face (about 0.7 GB, one time). The summary
+model is optional and chosen later in **Settings > Summary model** (see
+[Summary model](#summary-model)).
 
 The manual/CLI alternative `./scripts/download-models.sh` still works
 (idempotent, safe to re-run).
@@ -36,8 +37,9 @@ npx tauri dev
 
 On first run, the onboarding screen shows which models are ready. Click
 **Download** and watch live progress; cancel anytime. This fetches
-Parakeet-TDT (640 MB), Qwen2.5-Instruct (4.7 GB), and Silero VAD (629 KB) from
-Hugging Face (~5.4 GB total, one time).
+Parakeet-TDT (640 MB) and Silero VAD (629 KB) from Hugging Face (about 0.7 GB,
+one time). The summary model is optional and chosen later in **Settings >
+Summary model** (see [Summary model](#summary-model)).
 
 The manual/CLI alternative `./scripts/download-models.sh` still works
 (idempotent, safe to re-run).
@@ -132,12 +134,31 @@ After recording, choose a summary template:
   outcomes).
 - **Decisions** — highlight decisions made and any dissent.
 
+### Summary model
+
+The summary model is optional. In **Settings > Summary model** pick one of
+three Qwen2.5-Instruct sizes and click **Download** once:
+
+| Model | Download | Notes |
+| ----- | -------- | ----- |
+| Qwen2.5 1.5B | about 1.1 GB | Lightest; quality is untested on long French meetings |
+| Qwen2.5 3B | about 2.1 GB | Balanced |
+| Qwen2.5 7B | about 4.7 GB | Best quality, most memory |
+
+Several can be installed side by side. With no explicit choice, the best
+installed one is used. Skip it entirely if you summarize the exported
+transcript with another tool; recording and transcription never need it.
+
+CLI: `./scripts/download-models.sh --only qwen-3b` (or `qwen-1.5b`, `qwen`).
+
 ### Generate a Summary
 
 1. Select a meeting from the list.
 2. Click **Summarize**.
 3. Choose a template.
-4. Myna runs Qwen2.5-Instruct on your transcript and generates a summary.
+4. Myna runs your chosen summary model on your transcript and generates a
+   summary. With no summary model installed it points you to **Settings >
+   Summary model** instead.
 5. The summary is saved to `~/myna/meetings/<id>/summaries/<template>.md`.
 
 ### Custom Templates
@@ -222,7 +243,7 @@ returns to `~/myna/` (restart required) and asks the same move-vs-stay choice.
 - If the custom folder goes missing (unplugged drive, deleted folder), Myna
   shows an error with a **Reset** option instead of silently using `~/myna/`
   — so your library never splits across two places.
-- Model weights (~5.4 GB) stay fixed at `~/myna/models` (`MYNA_MODELS_DIR`
+- Model weights (about 0.7 GB, plus the optional summary model) stay fixed at `~/myna/models` (`MYNA_MODELS_DIR`
   only override); they never migrate with meetings, migration skips top-level
   `models/`, and `MYNA_DATA_DIR` never affects models.
 
@@ -283,7 +304,7 @@ Myna requires microphone access. If you denied permission on first run:
 
 ### Slow Summary Generation
 
-- **First run**: Qwen2.5-Instruct (4.7 GB) loads into memory. A short
+- **First run**: the summary model (Qwen2.5, 1.1 to 4.7 GB depending on the size you picked) loads into memory. A short
   transcript takes roughly 4–11s to summarize (cold first call ~11s, warm
   ~4s); for a 30-minute meeting expect up to ~1 minute, since most of the
   time is spent prefilling the transcript.

@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
+import type { ModelDownloadState } from '../../../application/stores/meetings.store';
+import type { SummaryModelSlot } from '../../../core/models/models-status.model';
 import type { SummaryLanguage } from '../../../core/models/summary-language.model';
 import type { UpdateCheck, UpdateConsent } from '../../../core/models/update.model';
 
 /**
  * The minimal honest settings surface: only controls whose state is fully
  * wired to the facade render here — update-check consent + manual check
- * (same semantics as About > Updates), the summary output language, and the
+ * (same semantics as About > Updates), the summary output language, the
+ * optional summary model (choose and download), and the
  * general summary guidelines (save-on-blur plus an explicit Save button that
  * stays disabled while unchanged).
  * Injects nothing; the shell owns every `MeetingsFacade` call.
@@ -27,6 +30,10 @@ export class SettingsComponent {
   /** The Rust-owned language list (`SummarizerPort.listLanguages()` via the store) — never a second hardcoded copy. */
   readonly summaryLanguages = input<readonly SummaryLanguage[]>([]);
   readonly selectedSummaryLanguage = input.required<string>();
+  /** The selectable summary models with their presence, from `modelsStatus().summaryModels`; empty until the status loads. */
+  readonly summaryModels = input<readonly SummaryModelSlot[]>([]);
+  /** Download slice of the store, shown inline while a summary model downloads. */
+  readonly modelDownload = input<ModelDownloadState | undefined>(undefined);
   /** The persisted general summary guidelines (`facade.summaryGuidelines()` via the shell); `''` until loaded. */
   readonly guidelines = input('');
   /**
@@ -46,6 +53,10 @@ export class SettingsComponent {
   readonly updateConsentChanged = output<UpdateConsent>();
   readonly checkNowRequested = output<void>();
   readonly summaryLanguageSelected = output<string>();
+  /** The id of the summary model picked; the shell persists it, never this component. */
+  readonly summaryModelSelected = output<string>();
+  /** Download requested for the summary model currently chosen. */
+  readonly summaryModelDownloadRequested = output<string>();
   /** The trimmed guidelines text; emitted on blur and on Save — the shell persists it, never this component. */
   readonly guidelinesChanged = output<string>();
   /**
@@ -65,6 +76,20 @@ export class SettingsComponent {
   protected readonly checkNowDisabled = computed(() => this.checking() || this.recording());
   /** Session-only: no timestamp exists in `UpdateCheck`, so this never claims a precise elapsed time — just whether a check has run since launch. */
   protected readonly lastCheckedLabel = computed(() => (this.lastCheck() === undefined ? 'Not this session' : 'Just now'));
+
+  /** Pick made in this session; wins over the persisted selection until the status refresh catches up, so a chosen-but-not-yet-installed model stays shown. */
+  private readonly pickedModelId = signal<string | null>(null);
+
+  protected readonly chosenModelId = computed(
+    () => this.pickedModelId() ?? this.summaryModels().find((model) => model.selected)?.id ?? null,
+  );
+  protected readonly chosenModel = computed(() => this.summaryModels().find((model) => model.id === this.chosenModelId()));
+  protected readonly modelDownloadRunning = computed(() => this.modelDownload()?.phase === 'running');
+  /** A failure worth showing: cancellation is the user's own doing, so it stays silent. */
+  protected readonly modelDownloadError = computed((): string | null => {
+    const download = this.modelDownload();
+    return download?.phase === 'failed' && !download.cancelled ? (download.message ?? 'Download failed.') : null;
+  });
 
   /** Uncommitted textarea value, bound to the guidelines text it started from — a later input change can never clobber typing, and vice versa. */
   private readonly guidelinesEdit = signal<{ readonly source: string; readonly value: string } | null>(null);
@@ -91,6 +116,30 @@ export class SettingsComponent {
     this.summaryLanguageSelected.emit((event.target as HTMLSelectElement).value);
   }
 
+  onSummaryModelChanged(event: Event): void {
+    const modelId = (event.target as HTMLSelectElement).value;
+    if (modelId !== '') {
+      this.pickedModelId.set(modelId);
+      this.summaryModelSelected.emit(modelId);
+    }
+  }
+
+  requestSummaryModelDownload(): void {
+    const modelId = this.chosenModelId();
+    if (modelId !== null) {
+      this.summaryModelDownloadRequested.emit(modelId);
+    }
+  }
+
+  /** "Qwen2.5 3B (balanced) — 2.1 GB", with a mark once installed. */
+  modelOptionLabel(model: SummaryModelSlot): string {
+    return `${model.label} — ${formatModelSize(model.approxSizeMb)}${model.present ? ' (installed)' : ''}`;
+  }
+
+  protected modelSizeLabel(model: SummaryModelSlot): string {
+    return formatModelSize(model.approxSizeMb);
+  }
+
   onGuidelinesInput(event: Event): void {
     this.guidelinesEdit.set({ source: this.guidelines(), value: (event.target as HTMLTextAreaElement).value });
   }
@@ -106,4 +155,9 @@ export class SettingsComponent {
       this.guidelinesChanged.emit(text);
     }
   }
+}
+
+/** Megabytes as a short human size: `1.1 GB`, `850 MB`. */
+export function formatModelSize(megabytes: number): string {
+  return megabytes >= 1000 ? `${(megabytes / 1000).toFixed(1)} GB` : `${megabytes} MB`;
 }

@@ -53,6 +53,26 @@ export async function runInitializeDiarizationModels(
 }
 
 /**
+ * Starts the download of one summary model. Same running/failed slice
+ * discipline as {@link runInitializeModels}; the terminal `models://done`
+ * event refreshes `modelsStatus` so the model shows as installed.
+ */
+export async function runInitializeSummaryModel(
+  store: MeetingsStore,
+  initializeModelsUseCase: InitializeModelsUseCase,
+  modelId: string,
+): Promise<void> {
+  store.setModelDownload({ ...IDLE_MODEL_DOWNLOAD, phase: 'running' });
+  try {
+    await initializeModelsUseCase.startSummaryModel(modelId);
+    store.clearError();
+  } catch (caught) {
+    store.setError(toErrorInfo(caught));
+    store.setModelDownload({ ...IDLE_MODEL_DOWNLOAD, phase: 'failed', message: toErrorInfo(caught).message });
+  }
+}
+
+/**
  * Cancels the in-flight model download. The backend kills the current
  * child and emits a cancelled `models://done`, which
  * {@link subscribeToModelDownloadEvents} lands as phase `'failed'` with

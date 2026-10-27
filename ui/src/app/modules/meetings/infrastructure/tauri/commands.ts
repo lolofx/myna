@@ -66,6 +66,8 @@ export const COMMAND_NAMES = [
   'start_model_download',
   'start_diarization_download',
   'cancel_model_download',
+  'set_summary_model',
+  'start_summary_model_download',
   'get_meeting_audio_path',
   'get_meeting_audio_chunks',
   'update_consent',
@@ -327,6 +329,8 @@ export interface CommandSignatures {
   readonly start_model_download: { args: NoArgs; result: void };
   readonly start_diarization_download: { args: NoArgs; result: void };
   readonly cancel_model_download: { args: NoArgs; result: void };
+  readonly set_summary_model: { args: { readonly modelId: string | null }; result: void };
+  readonly start_summary_model_download: { args: { readonly modelId: string }; result: void };
   readonly get_meeting_audio_path: { args: { readonly id: string }; result: string | null };
   /**
    * Ordered playable chunks of a segmented WAV recording — the Rust

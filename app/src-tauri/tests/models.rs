@@ -8,7 +8,7 @@ use std::fs;
 use std::os::unix::fs::symlink;
 use std::path::Path;
 
-use myna_app::commands::models::models_status_at;
+use myna_app::commands::models::{models_status_at, models_status_with};
 use myna_app::paths;
 
 /// Creates an empty file at `path`, creating parent directories as needed.
@@ -168,6 +168,88 @@ fn reports_all_present_with_complete_artifacts() {
         status.parakeet.path,
         parakeet_dir.to_string_lossy().into_owned()
     );
+}
+
+/// Seeds the two required models (Parakeet and Silero) and nothing else.
+fn seed_required_models(root: &Path) {
+    let parakeet_dir = root.join("parakeet-tdt-0.6b-v3-int8");
+    for file in [
+        "encoder.int8.onnx",
+        "decoder.int8.onnx",
+        "joiner.int8.onnx",
+        "tokens.txt",
+    ] {
+        touch(&parakeet_dir.join(file));
+    }
+    touch(&root.join("silero-vad").join("silero_vad.onnx"));
+}
+
+#[test]
+fn onboarding_does_not_require_a_summary_model() {
+    // Arrange: Parakeet and Silero only, no summary model.
+    let dir = tempfile::tempdir().expect("tempdir");
+    seed_required_models(dir.path());
+
+    // Act
+    let status = models_status_at(dir.path());
+
+    // Assert
+    assert!(status.all_present, "summary model must be optional");
+    assert!(!status.qwen.present);
+    assert_eq!(status.selected_summary_model, None);
+    assert_eq!(status.summary_models.len(), 3);
+    assert!(status.summary_models.iter().all(|slot| !slot.present));
+}
+
+#[test]
+fn a_smaller_summary_model_counts_as_a_summary_model() {
+    // Arrange: only the 3B model installed.
+    let dir = tempfile::tempdir().expect("tempdir");
+    seed_required_models(dir.path());
+    touch(
+        &dir.path()
+            .join("qwen2.5-3b-instruct")
+            .join("qwen2.5-3b-instruct-q4_k_m.gguf"),
+    );
+
+    // Act
+    let status = models_status_at(dir.path());
+
+    // Assert
+    assert!(status.qwen.present);
+    assert_eq!(status.selected_summary_model.as_deref(), Some("qwen2.5-3b"));
+}
+
+#[test]
+fn the_chosen_summary_model_is_the_selected_one() {
+    // Arrange: 7B and 1.5B installed, 1.5B chosen.
+    let dir = tempfile::tempdir().expect("tempdir");
+    seed_required_models(dir.path());
+    touch(
+        &dir.path()
+            .join("qwen2.5-7b-instruct")
+            .join("qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf"),
+    );
+    touch(
+        &dir.path()
+            .join("qwen2.5-1.5b-instruct")
+            .join("qwen2.5-1.5b-instruct-q4_k_m.gguf"),
+    );
+
+    // Act
+    let status = models_status_with(dir.path(), Some("qwen2.5-1.5b"));
+
+    // Assert
+    assert_eq!(
+        status.selected_summary_model.as_deref(),
+        Some("qwen2.5-1.5b")
+    );
+    let selected: Vec<_> = status
+        .summary_models
+        .iter()
+        .filter(|slot| slot.selected)
+        .collect();
+    assert_eq!(selected.len(), 1);
 }
 
 /// [`paths::resolve_models_root`] takes its `MYNA_MODELS_DIR` override and
