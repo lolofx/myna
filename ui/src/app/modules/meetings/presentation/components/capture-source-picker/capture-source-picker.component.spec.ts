@@ -95,12 +95,28 @@ describe('CaptureSourcePickerComponent', () => {
     expect(emissions.length).toBe(1);
   });
 
-  it('shows the restart hint when restartRequired is true', () => {
-    const fixture = createFixture({ kind: 'permission_denied', restartRequired: true });
+  it('shows the restart hint when restartRequired is true on macOS', () => {
+    // The hint is macOS-only, so pin the platform: the default comes from the
+    // host user agent, which made this spec pass only on a Mac.
+    const fixture = TestBed.createComponent(CaptureSourcePickerComponent);
+    fixture.componentRef.setInput('captureSource', 'microphone');
+    fixture.componentRef.setInput('systemAudioStatus', { kind: 'permission_denied', restartRequired: true });
+    fixture.componentRef.setInput('platform', 'macos');
+    fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.restart-hint')?.textContent).toContain(
       'Restart Myna'
     );
+  });
+
+  it('never shows the restart hint on Windows, where loopback needs no permission', () => {
+    const fixture = TestBed.createComponent(CaptureSourcePickerComponent);
+    fixture.componentRef.setInput('captureSource', 'microphone');
+    fixture.componentRef.setInput('systemAudioStatus', { kind: 'permission_denied', restartRequired: true });
+    fixture.componentRef.setInput('platform', 'windows');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.restart-hint')).toBeNull();
   });
 
   it('does not show the restart hint when restartRequired is false', () => {
