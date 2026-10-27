@@ -12,6 +12,15 @@ Myna is a **local-first AI meeting recorder/summarizer**: capture meeting audio,
 
 **Fork note (Windows lightweight):** this fork works on Windows only (record-then-transcribe, markdown export). Read [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md), [aidd_docs/memory/backlog.md](aidd_docs/memory/backlog.md) and [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) first. Work on `win/*` branches, keep `main` equal to upstream.
 
+**Fork working rules** (this repository is public):
+
+- No `Co-Authored-By` trailer and no "Generated with" line in commits or pull request bodies.
+- No personal information in any file or commit: no real names, e-mail addresses, employers, machine specs or private tooling. Commit with the GitHub `noreply` address (`git config user.email "<id>+<login>@users.noreply.github.com"`).
+- Commits are short and conventional. One concern per commit, Windows fixes apart from fork-specific features, so they can be proposed upstream.
+- The Windows CI jobs (15 to 25 minutes cold) run on demand: `gh workflow run windows-ci.yml --ref <branch>`. Verify what you can locally, group fixes, then trigger one run. The Linux `ui` job runs on every push.
+- Do not claim Windows support in docs until [docs/windows-recipe.md](docs/windows-recipe.md) has passed on a real PC.
+- Decisions: [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) (record then transcribe), [ADR 0018](docs/adr/0018-optional-selectable-summary-model.md) (optional summary model).
+
 ## Stack & architecture
 
 Authoritative source: [docs/stack-proposal.md](docs/stack-proposal.md) — do not re-derive. Summary:
