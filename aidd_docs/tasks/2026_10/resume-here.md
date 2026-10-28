@@ -57,17 +57,28 @@ To do:
 2. Commands `get_remote_summary`, `set_remote_summary`, `test_remote_summary` (the last one calls `list_remote_models` and returns the model names, so Settings can offer a picker). Register them in `lib.rs` and `commands.ts`.
 3. In `summarize_and_persist` (`commands/summary.rs`), when the server is enabled use `RemoteSummarizer::summarize_transcript` and skip `state.summarizer(app)?`, which also removes the "no model installed" error. Keep the same token streaming and cancel flag.
 4. Settings section: enable switch, address, model picker filled by "Test connection", with a plain warning that the meeting text leaves the machine. Off by default. Never write the address anywhere but the local `preferences.json`.
-5. Write ADR 0020 (privacy exception, private-network guard, why native route). Update the README note on "no data leaves the machine" to describe the opt-in exception.
+5. Write ADR 0021 (privacy exception, private-network guard, why native route). The README privacy section already describes the opt-in exception.
 
 ### 3. Interface language, English and French (phase 6)
 
 There is no i18n library today and all UI text is hard-coded English in templates and in a few Rust strings (menu labels, default meeting title, error messages). The summary language is a separate, already working setting; do not merge the two.
 
-Proposal for the ADR: Transloco (runtime switching, lazy JSON per language, typed keys), `en` and `fr` JSON files under `ui/src/assets/i18n`, language stored in `preferences.json` and applied at startup, default from the OS locale with English as fallback. Rust-side strings that reach the user either move to message codes translated in the UI or get a small catalogue. Do it in two steps so every commit stays reviewable: infrastructure plus the Settings window first, then the remaining components. Add a spec that fails when a key exists in one language and not in the other.
+Decided in [ADR 0020](../../../docs/adr/0020-interface-language-with-transloco.md) (Proposed): Transloco, `en` and `fr` JSON files, language stored in `preferences.json`, applied before the first render, a parity spec, the Markdown export left untranslated on purpose. Do it in two steps so every commit stays reviewable: infrastructure plus the Settings window first, then the remaining components one feature area at a time. Expect merge conflicts in templates upstream also edits.
 
-### 4. Update channel (phase 7, decision needed)
+### 4. Beta releases and the fork's update channel (phase 7)
 
-`app/src-tauri/tauri.conf.json` sets the updater endpoint to the **upstream project's** `releases/latest/download/latest.json` with the upstream public key. The fork therefore checks the upstream releases, which are macOS builds. It is consent-gated and the Windows platform key will not match, so it reports "up to date", but it is the wrong source for a Windows fork. Options: (a) disable the update check in the fork until it publishes its own signed Windows releases; (b) point the endpoint at the fork's releases and generate the fork's own signing key (private key kept out of the repository, public key in `tauri.conf.json`). Recommended: (a) now, (b) when phase 4's installer exists.
+`app/src-tauri/tauri.conf.json` still sets the updater endpoint to the **upstream project's** `releases/latest/download/latest.json` with the upstream public key. The fork has to publish its own signed releases and point there. Decided: the fork gets its own channel. Prepared, not yet switched on:
+
+- `.github/workflows/beta-windows.yml`: Windows-only, runs on `v*-beta*` tags, builds the NSIS installer (an MSI cannot carry a `-beta.1` version), publishes a GitHub pre-release and refreshes a rolling `beta-manifest` release that holds `latest.json`. GitHub's `releases/latest` ignores pre-releases, hence the rolling manifest.
+- `scripts/make-latest-json-windows.ps1`: Windows-only manifest, with the tag-versus-version guard.
+- `.github/workflows/release.yml` (upstream's macOS plus Windows flow) now skips beta tags.
+- [docs/releasing-windows-beta.md](../../../docs/releasing-windows-beta.md): the one-time key setup and the release steps.
+
+Remaining, in order: generate the fork's updater key pair (private key outside the repository, never committed), store it as the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets, put the public key and the new endpoint in `tauri.conf.json` in the same commit, bump the version to `0.7.0-beta.1`, validate the packaged installer locally, then tag. Decide the product name and identifier too: the fork still installs as "Myna" with the upstream identifier, which collides with an upstream install.
+
+### 4b. Keep the three platforms honest (phase 8)
+
+Add a CI job that compiles and tests the Rust workspace on macOS and Linux, so a fork change cannot silently break upstream's platform. Fix the local-time gap of the Markdown export off Windows (ADR 0019, open risks).
 
 ### 5. Tray, hotkey, installer (phase 4)
 

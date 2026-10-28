@@ -8,9 +8,9 @@ Myna is a **local-first AI meeting recorder/summarizer**: capture meeting audio,
 - **Summarization**: Qwen2.5-Instruct (GGUF) via llama.cpp, templated.
 - **Fully local**: STT and summaries run on-device; **no data is sent to the cloud**.
 - **License**: MIT.
-- **Targets**: macOS-first; Windows/Linux planned and untested — do not claim support.
+- **Targets**: macOS-first upstream; Windows and Linux are being added by the fork and untested until their recipe passes — do not claim support.
 
-**Fork note (Windows lightweight):** this fork works on Windows only (record-then-transcribe, markdown export). Read [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md), [aidd_docs/memory/backlog.md](aidd_docs/memory/backlog.md) and [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) first. Work on `win/*` branches, keep `main` equal to upstream.
+**Fork note (Windows lightweight):** this fork is to ship on Windows, macOS and Linux. macOS comes from upstream and must keep building; Windows is the current work (record-then-transcribe, markdown export); Linux follows. Every fork change must compile and stay correct on the other platforms, or be gated with `cfg`. Read [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md), [aidd_docs/memory/backlog.md](aidd_docs/memory/backlog.md) and [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) first. Work on `win/*` branches, keep `main` equal to upstream.
 
 **Fork working rules** (this repository is public):
 

@@ -49,5 +49,6 @@ Diarization and speaker renames change the file the reader sees, and a summary c
 ## Open Risks
 
 - No `language` or `source` field yet.
+- **The local time is only right on Windows today.** The `time` crate reports no local offset on macOS and Linux once the process has several threads, so the front matter `date` and the file name fall back to UTC there. This must be fixed before the macOS and Linux builds ship, for example with a time-zone-aware crate, or by reading the offset once in `main` before any thread starts; the second option is wrong across daylight-saving changes for older meetings.
 - A title change leaves the previous file behind.
 - Mixed-language meetings carry no per-line language marker.

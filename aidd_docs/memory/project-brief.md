@@ -3,7 +3,8 @@
 ## What it is
 
 - Fork of [fmflurry/myna](https://github.com/fmflurry/myna) (MIT), a local-first meeting recorder, transcriber and summarizer built on Tauri 2 + Rust + Angular.
-- Goal of the fork: a Windows build that stays light on RAM and CPU, used for Teams, Slack and any online meeting or video (YouTube, webinars).
+- Goal of the fork: one engine for transcribing, summarizing and exporting a meeting, a video or a webinar, delivered on **Windows, macOS and Linux**. macOS is upstream's; Windows is the current work, a build that stays light on RAM and CPU for Teams, Slack and any online meeting or video (YouTube, webinars); Linux follows.
+- Scope: upstream's near-term list (global search, more export formats, model picker, custom vocabulary) plus what the fork already added (Windows capture, Markdown export contract and folder, summary on the user's own server, interface language). Upstream's mid-term and long-term items are out of scope.
 - The fork keeps macOS code and the Angular UI so upstream changes keep merging. Windows-specific work stays in small, separable commits so it can be proposed upstream.
 
 ## Why it exists
@@ -34,8 +35,8 @@
 
 ## Non-goals
 
-- No cloud calls from the app, no API key, no bot joining a meeting.
-- No Linux support work.
+- No cloud calls from the app, no API key, no bot joining a meeting. The one exception is an opt-in summary server on the user's own private network.
+- No Linux work before the Windows recipe has passed; Linux is a goal, not a non-goal.
 
 ## Open questions
 

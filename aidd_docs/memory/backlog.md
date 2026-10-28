@@ -6,7 +6,7 @@
 | --- | --- |
 | GitHub Issues on this fork | defects and evolutions |
 | `aidd_docs/tasks/` | PRD, plans, run summaries, [resume-here.md](../tasks/2026_10/resume-here.md) |
-| `docs/adr/` | decisions (next free number: 0020) |
+| `docs/adr/` | decisions (next free number: 0021) |
 
 ## Roadmap
 
@@ -20,10 +20,15 @@ Status: **done**, **partly**, **todo**, **decide**. "Real PC" means the item nee
 | 3 | Markdown export contract (front matter and timestamped speaker lines) and a configurable export folder | **partly**: implemented, [ADR 0019](../../docs/adr/0019-markdown-export-contract-and-export-folder.md); recipe check T9 pending; `language` and `source` fields left out because the app does not store them |
 | 3b | **Settings coverage**: every setting the fork promises is reachable from the Settings window | **partly**, see the table below |
 | 4 | Tray icon, global hotkey, close-to-tray while capturing, installer | todo (real PC) |
-| 5 | Optional summary on the user's own server (Ollama on the local network) | **partly**: engine written and tested in `crates/myna-llm/src/remote.rs`; not wired into the app yet; ADR 0020 to write |
-| 6 | Interface language: English and French, switchable in Settings | todo; an ADR first, see resume-here |
-| 7 | Update channel: the update check still points at the upstream project's releases | **decide**, see resume-here |
-| 8 | Smaller local summary model evaluation, forced language, Whisper fallback | decide later |
+| 5 | Optional summary on the user's own server (Ollama on the local network) | **partly**: engine written and tested in `crates/myna-llm/src/remote.rs`; not wired into the app yet; ADR 0021 to write |
+| 6 | Interface language: English and French, switchable in Settings | ADR 0020 proposed (Transloco); implementation todo |
+| 7 | Beta releases and the fork's own update channel (the update check still points at the upstream project's releases) | **partly**: Windows-only beta workflow, manifest script and guide prepared; needs the fork's signing key, then the endpoint switch |
+| 8 | Cross-platform guard: macOS and Linux builds keep compiling and passing tests; correct local time off Windows (see ADR 0019) | todo |
+| 9 | Linux: loopback and microphone capture, packaging, CI, recipe | todo, after the Windows recipe passes |
+| 10 | Upstream's near-term items: global search, more export formats (TXT, SRT, VTT, PDF, Obsidian, Notion), model picker (7B, 14B and larger), custom vocabulary | todo; prefer upstream's implementation when it ships, build here only what is needed sooner |
+| 11 | Smaller local summary model evaluation, forced language, Whisper fallback | decide later |
+
+Scope: the fork ships on Windows, macOS (upstream's) and Linux, and adds only what is listed above. Upstream's mid-term and long-term items (calendar, RAG chat, sync, team features, and so on) are out of scope.
 
 ### Settings coverage (phase 3b)
 
