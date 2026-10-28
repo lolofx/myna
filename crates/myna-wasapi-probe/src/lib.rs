@@ -523,11 +523,15 @@ fn record_failure(failure: &Mutex<Option<String>>, message: String) {
     }
 }
 
+/// Per-packet sink: interleaved f32 frames and the channel count.
+#[cfg(target_os = "windows")]
+type FrameSink = Box<dyn FnMut(&[f32], u16) + Send>;
+
 #[cfg(target_os = "windows")]
 fn run_loopback(
     stop: Arc<AtomicBool>,
     failure: Arc<Mutex<Option<String>>>,
-    mut on_frames: Box<dyn FnMut(&[f32], u16) + Send>,
+    mut on_frames: FrameSink,
     report: mpsc::Sender<Result<(u32, u16), String>>,
 ) {
     if let Err(error) = unsafe { CoInitializeEx(None, COINIT_MULTITHREADED).ok() } {

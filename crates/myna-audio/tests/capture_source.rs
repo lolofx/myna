@@ -11,9 +11,11 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
 use myna_audio::{
-    capture_sources, request_system_audio_permission, system_audio_status, AudioError,
-    CaptureConfig, CaptureRequest, CaptureSource, SystemAudioStatus,
+    capture_sources, system_audio_status, CaptureConfig, CaptureRequest, CaptureSource,
+    SystemAudioStatus,
 };
+#[cfg(not(target_os = "windows"))]
+use myna_audio::{request_system_audio_permission, AudioError};
 
 #[test]
 fn capture_source_defaults_to_mixed() {
@@ -50,7 +52,7 @@ fn capture_source_serializes_to_lowercase_names() {
 /// attached?) — see `capture_sources_for_system_source_matches_the_reported_status`
 /// below for the platform-agnostic invariant that replaces this on macOS.
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 fn capture_sources_rejects_system_source_as_unavailable() {
     // Arrange
     let request = CaptureRequest {
@@ -184,7 +186,7 @@ fn capture_sources_for_mixed_source_degrades_to_microphone_when_system_audio_is_
 /// below — a real backend's status depends on this machine's actual
 /// permission/display state, not just "no backend".
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 fn system_audio_status_reports_unavailable_without_a_platform_backend() {
     // Act
     let status = system_audio_status();
@@ -210,7 +212,7 @@ fn system_audio_status_is_deterministic_on_macos() {
 /// See `system_audio_status_reports_unavailable_without_a_platform_backend`
 /// for why this is platform-gated the same way.
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 fn requesting_system_audio_permission_reports_the_same_unavailable_status() {
     // Act
     let status = request_system_audio_permission();
