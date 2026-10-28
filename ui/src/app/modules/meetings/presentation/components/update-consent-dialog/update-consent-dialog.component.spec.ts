@@ -9,14 +9,25 @@ describe('UpdateConsentDialogComponent', () => {
     return fixture;
   };
 
-  it('shows the unsigned-build mic caveat by default (signed defaults to false)', () => {
-    const fixture = createFixture();
+  it('shows the unsigned-build mic caveat on macOS (signed defaults to false)', () => {
+    const fixture = TestBed.createComponent(UpdateConsentDialogComponent);
+    fixture.componentRef.setInput('macos', true);
+    fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.caveat')).toBeTruthy();
   });
 
+  it('hides the macOS-only caveat on other platforms', () => {
+    const fixture = TestBed.createComponent(UpdateConsentDialogComponent);
+    fixture.componentRef.setInput('macos', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.caveat')).toBeNull();
+  });
+
   it('hides the unsigned-build mic caveat when signed is true', () => {
     const fixture = createFixture();
+    fixture.componentRef.setInput('macos', true);
     fixture.componentRef.setInput('signed', true);
     fixture.detectChanges();
 

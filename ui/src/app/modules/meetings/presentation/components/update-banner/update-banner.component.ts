@@ -2,14 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 
 import type { MeetingsErrorCode } from '../../../core/models/recording-state.model';
 import type { UpdateCheck, UpdateInstallState } from '../../../core/models/update.model';
+import { isMacOs } from '../../platform.util';
 
 /**
  * Release page shown by the fallback "Copy release link" action when the
  * check payload's `downloadUrl` is not a GitHub release-download URL we can
  * transform (empty, foreign host, unexpected shape). Matches the updater
- * endpoint's repo (`tauri.conf.json` → `github.com/fmflurry/myna`).
+ * endpoint's repo (`tauri.conf.json` → `github.com/lolofx/mynota`).
  */
-export const FALLBACK_RELEASES_URL = 'https://github.com/fmflurry/myna/releases';
+export const FALLBACK_RELEASES_URL = 'https://github.com/lolofx/mynota/releases';
 
 /** GitHub release asset URL shape: `https://github.com/{owner}/{repo}/releases/download/{tag}/{asset}`. */
 const GITHUB_DOWNLOAD_URL = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\/releases\/download\/([^/]+)\//;
@@ -70,6 +71,8 @@ export class UpdateBannerComponent {
   readonly dismissedVersion = input<string | null>(null);
   /** Drives the unsigned-build mic-permission-reset caveat; always `false` today — no signed build exists yet. */
   readonly signed = input(false);
+  /** The permission-reset caveat is about macOS, so it shows on macOS only. */
+  readonly macos = input(isMacOs());
   /** Snapshot of the facade's install state machine; `'idle'` renders the plain "update available" view. */
   readonly installState = input<UpdateInstallState>({ status: 'idle' });
   /** True while a recording is in progress — [Restart now] refuses to fire over a live session. */

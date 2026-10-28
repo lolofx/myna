@@ -88,15 +88,28 @@ describe('UpdateBannerComponent', () => {
     expect(emitted.length).toBe(1);
   });
 
-  it('shows the unsigned-build mic-permission caveat by default', () => {
-    const fixture = createFixture();
+  it('shows the unsigned-build mic-permission caveat on macOS', () => {
+    const fixture = TestBed.createComponent(UpdateBannerComponent);
+    fixture.componentRef.setInput('check', available);
+    fixture.componentRef.setInput('macos', true);
+    fixture.detectChanges();
 
     expect(banner(fixture)!.querySelector('.caveat')).toBeTruthy();
+  });
+
+  it('hides the macOS-only caveat on other platforms', () => {
+    const fixture = TestBed.createComponent(UpdateBannerComponent);
+    fixture.componentRef.setInput('check', available);
+    fixture.componentRef.setInput('macos', false);
+    fixture.detectChanges();
+
+    expect(banner(fixture)!.querySelector('.caveat')).toBeNull();
   });
 
   it('hides the mic-permission caveat when signed is true', () => {
     const fixture = TestBed.createComponent(UpdateBannerComponent);
     fixture.componentRef.setInput('check', available);
+    fixture.componentRef.setInput('macos', true);
     fixture.componentRef.setInput('signed', true);
     fixture.detectChanges();
 

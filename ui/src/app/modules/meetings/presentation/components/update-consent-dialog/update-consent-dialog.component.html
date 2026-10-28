@@ -26,12 +26,12 @@
 
     <p>
       Your version number isn't sent either. Mynota downloads the same public file every user downloads and compares
-      versions here on your Mac.
+      versions here on your computer.
     </p>
 
     <p>Mynota will only <em>tell you</em> an update exists. It will never download or install one on its own.</p>
 
-    @if (!signed()) {
+    @if (!signed() && macos()) {
       <p class="caveat">
         <strong>Note:</strong> this build isn't signed with an Apple Developer ID. Replacing Mynota with a new version
         changes its identity as far as macOS is concerned, so macOS will drop Mynota's microphone permission and you'll

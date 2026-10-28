@@ -11,7 +11,7 @@
           </details>
           <button type="button" class="dismiss" aria-label="Dismiss update notice" (click)="dismiss()">&times;</button>
         </div>
-        @if (!signed()) {
+        @if (!signed() && macos()) {
           <p class="caveat">Installing this will reset Mynota's microphone permission &mdash; you'll re-grant it in System Settings.</p>
         }
       }

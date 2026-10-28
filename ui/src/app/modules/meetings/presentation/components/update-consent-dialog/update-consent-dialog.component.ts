@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
 
+import { isMacOs } from '../../platform.util';
+
 /**
  * First-run (and every-launch-until-decided) consent modal for the
  * check-for-update feature. Purely dumb: knows nothing about
@@ -18,6 +20,8 @@ import { ChangeDetectionStrategy, Component, HostListener, input, output } from 
 export class UpdateConsentDialogComponent {
   /** Drives the unsigned-build mic caveat; always `false` today — no signed build exists yet. */
   readonly signed = input(false);
+  /** The unsigned-build note is about macOS permissions, so it shows on macOS only. */
+  readonly macos = input(isMacOs());
 
   readonly granted = output<void>();
   readonly declined = output<void>();
