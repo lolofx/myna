@@ -254,7 +254,7 @@ modelDownload: signal(undefined),
 
     const brand = fixture.nativeElement.querySelector('.brand');
     expect(brand.getAttribute('type')).toBe('button');
-    expect(brand.getAttribute('aria-label')).toBe('Myna — go to meetings');
+    expect(brand.getAttribute('aria-label')).toBe('Mynota — go to meetings');
     expect(fixture.nativeElement.querySelector('app-record-control')).toBeTruthy();
   });
 

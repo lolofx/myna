@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Myna",
+  "productName": "Mynota",
   "version": "0.6.2",
-  "identifier": "app.myna.desktop",
+  "identifier": "app.mynota.desktop",
   "build": {
     "frontendDist": "../../ui/dist",
     "devUrl": "http://localhost:4200",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Myna",
+        "title": "Mynota",
         "width": 1180,
         "height": 780,
         "minWidth": 900,
@@ -32,8 +32,8 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": ["app", "dmg", "nsis", "msi"],
-    "publisher": "Myna",
-    "copyright": "Copyright © 2026 Myna. MIT licensed.",
+    "publisher": "Mynota",
+    "copyright": "Copyright © 2026 Mynota contributors. MIT licensed. Based on Myna.",
     "category": "Productivity",
     "shortDescription": "Local-first AI meeting recorder and summarizer",
     "icon": [

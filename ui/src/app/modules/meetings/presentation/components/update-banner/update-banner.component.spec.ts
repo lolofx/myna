@@ -63,7 +63,7 @@ describe('UpdateBannerComponent', () => {
     const fixture = createFixture();
 
     const text: string = banner(fixture)!.textContent ?? '';
-    expect(text).toContain('Myna 0.4.0 is available.');
+    expect(text).toContain('Mynota 0.4.0 is available.');
     expect(text).toContain('Faster startup and a fixed crash on import.');
   });
 
@@ -136,7 +136,7 @@ describe('UpdateBannerComponent', () => {
     const fixture = createFixture(available, { status: 'ready', version: '0.4.0' });
 
     const text: string = banner(fixture)!.textContent ?? '';
-    expect(text).toContain('Myna 0.4.0 is installed.');
+    expect(text).toContain('Mynota 0.4.0 is installed.');
     expect(banner(fixture)!.querySelector('.restart')).toBeTruthy();
     expect(banner(fixture)!.querySelector('.copy')!.textContent).toContain('Copy release link');
   });

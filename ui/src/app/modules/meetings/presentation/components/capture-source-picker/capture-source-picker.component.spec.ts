@@ -105,7 +105,7 @@ describe('CaptureSourcePickerComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.restart-hint')?.textContent).toContain(
-      'Restart Myna'
+      'Restart Mynota'
     );
   });
 

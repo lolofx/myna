@@ -2,7 +2,7 @@
   <div class="update-banner" role="status" aria-live="polite">
     @switch (mode()) {
       @case ('available') {
-        <p class="message message--available">Myna {{ info.version }} is available.</p>
+        <p class="message message--available">Mynota {{ info.version }} is available.</p>
         <div class="actions">
           <button type="button" class="install" (click)="update()">Update</button>
           <details class="whats-new">
@@ -12,11 +12,11 @@
           <button type="button" class="dismiss" aria-label="Dismiss update notice" (click)="dismiss()">&times;</button>
         </div>
         @if (!signed()) {
-          <p class="caveat">Installing this will reset Myna's microphone permission &mdash; you'll re-grant it in System Settings.</p>
+          <p class="caveat">Installing this will reset Mynota's microphone permission &mdash; you'll re-grant it in System Settings.</p>
         }
       }
       @case ('downloading') {
-        <p class="message">Myna {{ info.version }} is downloading.</p>
+        <p class="message">Mynota {{ info.version }} is downloading.</p>
         <div class="actions">
           <button type="button" class="install" disabled aria-busy="true">Downloading&hellip; {{ percentLabel() }}</button>
         </div>

@@ -90,7 +90,7 @@ describe('WelcomePanelComponent', () => {
 
     const heading = fixture.nativeElement.querySelector('h1, h2');
 
-    expect(heading?.textContent?.trim()).toBe('Welcome to Myna');
+    expect(heading?.textContent?.trim()).toBe('Welcome to Mynota');
     expect((fixture.nativeElement.textContent as string)).toContain('Everything stays on this device.');
   });
 });

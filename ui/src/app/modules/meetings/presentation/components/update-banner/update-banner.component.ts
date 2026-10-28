@@ -118,7 +118,7 @@ export class UpdateBannerComponent {
       return '';
     }
     return state.version.length > 0
-      ? `Myna ${state.version} is installed. Restart to apply.`
+      ? `Mynota ${state.version} is installed. Restart to apply.`
       : 'Installed, version unknown. Restart to apply.';
   });
 

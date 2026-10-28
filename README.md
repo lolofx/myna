@@ -1,11 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)"
-    srcset="myna-brand-kit/myna-logo-horizontal-dark.svg">
-  <img alt="Myna"
-    src="myna-brand-kit/myna-logo-horizontal.svg" width="320">
-</picture>
-
-# Myna for Windows (unofficial fork)
+# Mynota
 
 **A local engine that turns a meeting, a video or a webinar into a transcript, a summary and a Markdown file, on your own PC.**
 
@@ -13,7 +6,7 @@
 [![Platform: Windows beta](https://img.shields.io/badge/platform-Windows%20(beta)-0F1115?style=flat-square)](docs/windows-recipe.md)
 [![Runs locally](https://img.shields.io/badge/runs-locally-6366F1?style=flat-square)](#privacy)
 
-This is a fork of [Myna by fmflurry](https://github.com/fmflurry/myna), the local-first meeting recorder for macOS. It keeps the upstream engine and interface and reworks the parts that matter for a PC that is also running the meeting software. The goal is one app for **Windows, macOS and Linux**: macOS comes from upstream, Windows is what this fork is building now, and Linux follows. It is **not** the official project and is not endorsed by its author. Bugs in this fork belong in this repository's issues.
+Mynota is a fork of [Myna by fmflurry](https://github.com/fmflurry/myna), the local-first meeting recorder for macOS, renamed so that the two stay distinct. It keeps the upstream engine and interface and reworks the parts that matter for a PC that is also running the meeting software. The goal is one app for **Windows, macOS and Linux**: macOS comes from upstream, Windows is what this fork is building now, and Linux follows. It is **not** the official Myna project and is not endorsed by its author. Bugs in Mynota belong in this repository's issues.
 
 ## Status: beta, partly verified
 
@@ -110,7 +103,7 @@ Everything else upstream plans (calendar, RAG chat, sync, team features…) is o
 
 ## Credits and licenses
 
-Myna is © its upstream author and contributors, **MIT** licensed; this fork keeps the [LICENSE](LICENSE) and follows the upstream project at [fmflurry/myna](https://github.com/fmflurry/myna).
+Mynota is based on Myna, © its upstream author and contributors, **MIT** licensed; this fork keeps the [LICENSE](LICENSE) and follows the upstream project at [fmflurry/myna](https://github.com/fmflurry/myna).
 
 Third-party components:
 

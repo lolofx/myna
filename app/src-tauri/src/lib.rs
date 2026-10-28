@@ -71,8 +71,8 @@ pub fn run() {
             // which build is asking. `pubkey`/`endpoints` come from
             // `tauri.conf.json` (`plugins.updater`), not here.
             tauri_plugin_updater::Builder::new()
-                .header("User-Agent", "Myna")
-                .expect("\"Myna\" is a valid header value")
+                .header("User-Agent", "Mynota")
+                .expect("\"Mynota\" is a valid header value")
                 .build(),
         )
         .setup(|app| {

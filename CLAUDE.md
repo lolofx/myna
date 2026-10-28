@@ -2,7 +2,7 @@
 
 ## Project context
 
-Myna is a **local-first AI meeting recorder/summarizer**: capture meeting audio, get live transcripts, review key points, and remember takeaways.
+Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first AI meeting recorder/summarizer**: capture meeting audio, get live transcripts, review key points, and remember takeaways.
 
 - **STT**: Parakeet-TDT (ONNX) via sherpa-onnx, with VAD-segmented simulated streaming.
 - **Summarization**: Qwen2.5-Instruct (GGUF) via llama.cpp, templated.

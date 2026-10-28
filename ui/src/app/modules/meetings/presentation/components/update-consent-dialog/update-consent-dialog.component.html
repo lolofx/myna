@@ -5,14 +5,14 @@
     <h2 id="update-consent-title">Check for updates?</h2>
 
     <p>
-      Myna does everything on this Mac. Recording, transcription and summaries never leave it, and nothing is sent
+      Mynota does everything on this computer. Recording, transcription and summaries never leave it, and nothing is sent
       anywhere by default.
     </p>
 
     <p>Update checks are the one exception, and they are off until you turn them on.</p>
 
     <p>
-      If you turn them on, at every launch Myna asks GitHub whether a newer version of Myna exists (never while you
+      If you turn them on, at every launch Mynota asks GitHub whether a newer version of Mynota exists (never while you
       are recording). That request sends:
     </p>
 
@@ -25,18 +25,18 @@
     </ul>
 
     <p>
-      Your version number isn't sent either. Myna downloads the same public file every user downloads and compares
+      Your version number isn't sent either. Mynota downloads the same public file every user downloads and compares
       versions here on your Mac.
     </p>
 
-    <p>Myna will only <em>tell you</em> an update exists. It will never download or install one on its own.</p>
+    <p>Mynota will only <em>tell you</em> an update exists. It will never download or install one on its own.</p>
 
     @if (!signed()) {
       <p class="caveat">
-        <strong>Note:</strong> this build isn't signed with an Apple Developer ID. Replacing Myna with a new version
-        changes its identity as far as macOS is concerned, so macOS will drop Myna's microphone permission and you'll
+        <strong>Note:</strong> this build isn't signed with an Apple Developer ID. Replacing Mynota with a new version
+        changes its identity as far as macOS is concerned, so macOS will drop Mynota's microphone permission and you'll
         have to switch it back on in System Settings &rsaquo; Privacy &amp; Security &rsaquo; Microphone. That's why
-        Myna hands you a download link instead of installing updates for you.
+        Mynota hands you a download link instead of installing updates for you.
       </p>
     }
 

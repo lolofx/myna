@@ -114,9 +114,9 @@ describe('OnboardingPanelComponent', () => {
     expect(progress.textContent).toContain('1 of 3');
     // Static guidance must live OUTSIDE the aria-live region, or every
     // progress tick re-announces it to screen readers.
-    expect(progress.textContent).not.toContain('Please keep Myna open');
+    expect(progress.textContent).not.toContain('Please keep Mynota open');
     const hint: HTMLElement = fixture.nativeElement.querySelector('.download-hint');
-    expect(hint.textContent).toContain('Please keep Myna open until it finishes.');
+    expect(hint.textContent).toContain('Please keep Mynota open until it finishes.');
     expect(hint.getAttribute('role')).toBeNull();
     expect(hint.closest('[aria-live]')).toBeNull();
 

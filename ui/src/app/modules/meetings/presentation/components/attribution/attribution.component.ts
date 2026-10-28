@@ -8,7 +8,7 @@ interface LicenceEntry {
   readonly note: string;
 }
 
-/** Fixed licence obligations for the third-party models and runtimes Myna embeds. */
+/** Fixed licence obligations for the third-party models and runtimes Mynota embeds. */
 const LICENCE_ENTRIES: readonly LicenceEntry[] = [
   {
     name: 'Parakeet-TDT weights',
@@ -31,9 +31,14 @@ const LICENCE_ENTRIES: readonly LicenceEntry[] = [
     note: 'Brand and product UI typefaces, self-hosted — no external font requests.',
   },
   {
+    name: 'Mynota',
+    licence: 'MIT',
+    note: 'This application, a fork of Myna.',
+  },
+  {
     name: 'Myna',
     licence: 'MIT',
-    note: 'This application.',
+    note: 'The upstream project this application is forked from.',
   },
 ];
 
