@@ -19,6 +19,7 @@ Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first AI 
 - Commits are short and conventional. One concern per commit, Windows fixes apart from fork-specific features, so they can be proposed upstream.
 - The Windows CI jobs (15 to 25 minutes cold) run on demand: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/mynota` (in a fork, `gh` targets the upstream repository by default, so always pass `--repo`). Verify what you can locally, group fixes, then trigger one run. The Linux `ui` job runs on every push.
 - Do not claim Windows support in docs until [docs/windows-recipe.md](docs/windows-recipe.md) has passed on a real PC.
+- Nothing is sent to the upstream repository (no pull request, issue or push) unless its maintainer asks for it.
 - Decisions: [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) (record then transcribe), [ADR 0018](docs/adr/0018-optional-selectable-summary-model.md) (optional summary model).
 
 ## Stack & architecture
