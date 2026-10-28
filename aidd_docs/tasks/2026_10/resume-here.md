@@ -9,7 +9,7 @@ Where the fork stands and what to do next. Read [project-brief.md](../../memory/
 - No `Co-Authored-By`, no "Generated with" line, no session link, in commits or pull requests.
 - No personal data in any file or commit: no real names, e-mail addresses, IP addresses, host names, machine models or specs, or private tooling. Examples use generic values (`http://ollama-host:11434`). Performance figures are relative and never name the PC.
 - One concern per commit, conventional and short. Windows fixes apart from fork-specific features.
-- Windows CI runs on demand only: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/myna` (always pass `--repo`). Verify locally, group fixes, trigger once.
+- Windows CI runs on demand only: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/mynota` (always pass `--repo`). Verify locally, group fixes, trigger once.
 
 ## Set up a Windows PC
 

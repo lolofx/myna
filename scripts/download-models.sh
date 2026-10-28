@@ -3,7 +3,7 @@
 # GGUF, and the silero VAD ONNX model. Idempotent: re-running skips any
 # artifact whose marker file already exists on disk.
 #
-# Downloads to the fixed models location `~/myna/models` by default
+# Downloads to the fixed models location `~/mynota/models` by default
 # (matching `paths::models_root()` in release builds), overridable via
 # `MYNA_MODELS_DIR` or `--dest` only. `MYNA_DATA_DIR` and the Settings
 # storage location never affect this destination — they move
@@ -12,9 +12,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Fixed models root: MYNA_MODELS_DIR wins when set, else ~/myna/models.
+# Fixed models root: MYNA_MODELS_DIR wins when set, else ~/mynota/models.
 # MYNA_DATA_DIR never applies here — it moves meetings only.
-DEFAULT_DEST="${MYNA_MODELS_DIR:-$HOME/myna/models}"
+DEFAULT_DEST="${MYNA_MODELS_DIR:-$HOME/mynota/models}"
 LEGACY_DEST="$REPO_ROOT/models"
 
 PARAKEET_DIR_NAME="parakeet-tdt-0.6b-v3-int8"
@@ -53,7 +53,7 @@ Usage: scripts/download-models.sh [--dest <dir>]
                                    [--only parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization]
                                    [--migrate] [--check] [--help]
 
-Fetches local models into <dest> (default: $MYNA_MODELS_DIR, or ~/myna/models
+Fetches local models into <dest> (default: $MYNA_MODELS_DIR, or ~/mynota/models
 if that's unset — the fixed location the packaged app reads from).
 MYNA_DATA_DIR and the Settings storage location never affect <dest>;
 they move meetings/preferences/folders only:
@@ -81,7 +81,7 @@ exact `mv`/`ln -s` command to relocate it — or performs the move itself when
 
 Options:
   --dest <dir>                 Destination directory (default:
-                                $MYNA_MODELS_DIR, else ~/myna/models).
+                                $MYNA_MODELS_DIR, else ~/mynota/models).
   --only parakeet|qwen|qwen-3b|qwen-1.5b|vad|diarization
                                 Fetch a single artifact (or, for
                                 "diarization", both optional speaker models

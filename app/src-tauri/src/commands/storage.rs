@@ -2,7 +2,7 @@
 //! plus the data migration that moves an archive between roots.
 //!
 //! The effective data root is resolved by [`crate::paths::effective_data_root_for_app`]
-//! (`MYNA_DATA_DIR` > persisted pointer > `~/myna`); these commands only ever
+//! (`MYNA_DATA_DIR` > persisted pointer > `~/mynota`); these commands only ever
 //! read or rewrite the persisted-pointer layer via [`crate::storage_prefs`].
 //! Validation reuses [`crate::paths::validate_storage_location`], and the
 //! busy guard reuses [`crate::state::AppState::guard_storage_change`] — a
@@ -47,7 +47,7 @@ pub struct StorageLocationResult {
 }
 
 /// Returns the current effective storage location (the data root the app
-/// booted on: `MYNA_DATA_DIR` > persisted pointer > `~/myna`).
+/// booted on: `MYNA_DATA_DIR` > persisted pointer > `~/mynota`).
 ///
 /// A persisted pointer naming a missing directory surfaces
 /// [`AppError::StorageMissing`] — never a silent fallback — so the UI can
@@ -103,7 +103,7 @@ pub fn refuse_when_data_dir_pinned_with(
     Ok(())
 }
 
-/// Whether `path` lies inside the Tauri asset-protocol scope: `~/myna`,
+/// Whether `path` lies inside the Tauri asset-protocol scope: `~/mynota`,
 /// iCloud Drive (`~/Library/Mobile Documents/`), or one of `extra_roots`
 /// (the app-data parent/dir and resource dir in production).
 ///
@@ -111,7 +111,7 @@ pub fn refuse_when_data_dir_pinned_with(
 /// and Tauri dirs internally — so the scope decision is unit-testable
 /// against tempdirs without booting Tauri.
 pub fn storage_path_in_scope(path: &Path, home: &Path, extra_roots: &[PathBuf]) -> bool {
-    if path.starts_with(home.join("myna")) {
+    if path.starts_with(home.join("mynota")) {
         return true;
     }
     if path.starts_with(home.join("Library").join("Mobile Documents")) {
@@ -121,7 +121,7 @@ pub fn storage_path_in_scope(path: &Path, home: &Path, extra_roots: &[PathBuf]) 
 }
 
 /// Rejects a candidate storage location outside the Tauri asset-protocol
-/// scope (`tauri.conf.json`: `$RESOURCE`, `$APPDATA`, `$HOME/myna`,
+/// scope (`tauri.conf.json`: `$RESOURCE`, `$APPDATA`, `$HOME/mynota`,
 /// `$HOME/Library/Mobile Documents`). Migrating the archive somewhere the
 /// webview cannot read would move the bytes and then break every
 /// recording/transcript/summary load — including audio playback — with no
@@ -146,7 +146,7 @@ fn check_storage_scope(app: &AppHandle, path: &Path) -> Result<(), AppError> {
         return Ok(());
     }
     Err(AppError::Path(format!(
-        "storage location must be inside ~/myna, iCloud Drive (~/Library/Mobile Documents/), \
+        "storage location must be inside ~/mynota, iCloud Drive (~/Library/Mobile Documents/), \
          or the app data directory — {} is outside the readable scope",
         path.display()
     )))
@@ -244,7 +244,7 @@ fn set_storage_location_blocking(
 }
 
 /// Clears the custom storage location, moving the archive back to the default
-/// root (`~/myna`) so the next boot lands there. Refuses with
+/// root (`~/mynota`) so the next boot lands there. Refuses with
 /// [`AppError::Path`] while `MYNA_DATA_DIR` pins the effective root — the
 /// override would win over the cleared pointer, so a reset could never move
 /// the live root.
@@ -293,7 +293,7 @@ fn reset_storage_location_blocking(
 
     let current = paths::effective_data_root_for_app(app).map_err(map_root_error)?;
     // While `MYNA_DATA_DIR` is unset the reset target is always the
-    // `~/myna` default (the pinned-override case refused above, so the
+    // `~/mynota` default (the pinned-override case refused above, so the
     // target can never be an override that wins over the cleared pointer).
     let target = paths::default_data_root().map_err(|err| AppError::Path(err.to_string()))?;
     if paths::paths_equal(&current, &target) {
@@ -353,7 +353,7 @@ fn reset_storage_location_blocking(
 /// can neither redirect the migration nor escape it.
 ///
 /// A top-level `models/` entry is never migrated on any path: model weights
-/// live at the fixed `~/myna/models` (see [`crate::paths::models_root`]) and
+/// live at the fixed `~/mynota/models` (see [`crate::paths::models_root`]) and
 /// must not be dragged along with the meetings archive. The entry is skipped
 /// with a stderr log and contributes 0 to the moved count; the destination
 /// never gains a `models/` dir.
@@ -384,7 +384,7 @@ pub fn migrate_data_root_with_test_options(
         return Ok(0);
     }
 
-    // Models live at the fixed `~/myna/models`, never inside the migrating
+    // Models live at the fixed `~/mynota/models`, never inside the migrating
     // archive: a top-level `models/` entry forces the per-entry path below
     // (which skips it) instead of the whole-tree `rename`/whole-tree-copy
     // fast paths, either of which would drag the multi-GB weights along.
@@ -415,7 +415,7 @@ pub fn migrate_data_root_with_test_options(
         };
         if name.to_str() == Some(paths::MODELS_DIR_NAME) {
             eprintln!(
-                "myna-app: storage migration: skipping models/ — model weights stay at the fixed ~/myna/models"
+                "myna-app: storage migration: skipping models/ — model weights stay at the fixed ~/mynota/models"
             );
             continue;
         }
@@ -494,7 +494,7 @@ fn corrupt_first_copy_for_test(root: &Path) -> Result<bool, AppError> {
 ///
 /// A top-level `models/` entry is never moved (defense in depth with the
 /// caller's skip, and a guard for direct calls): model weights live at the
-/// fixed `~/myna/models`, so the entry is skipped with a stderr log and
+/// fixed `~/mynota/models`, so the entry is skipped with a stderr log and
 /// contributes 0.
 fn move_entry(
     from: &Path,
@@ -504,7 +504,7 @@ fn move_entry(
 ) -> Result<u64, AppError> {
     if from.file_name().and_then(|name| name.to_str()) == Some(paths::MODELS_DIR_NAME) {
         eprintln!(
-            "myna-app: storage migration: skipping models/ — model weights stay at the fixed ~/myna/models"
+            "myna-app: storage migration: skipping models/ — model weights stay at the fixed ~/mynota/models"
         );
         return Ok(0);
     }

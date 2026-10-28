@@ -54,7 +54,7 @@ fn models_roots() -> Vec<PathBuf> {
         roots.push(PathBuf::from(dir));
     }
     if let Some(home) = std::env::var_os("HOME") {
-        roots.push(PathBuf::from(home).join("myna").join("models"));
+        roots.push(PathBuf::from(home).join("mynota").join("models"));
     }
     roots.push(repo_root().join("models"));
     roots

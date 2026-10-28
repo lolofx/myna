@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 if (-not $Dest) {
   if ($env:MYNA_MODELS_DIR) { $Dest = $env:MYNA_MODELS_DIR }
-  else { $Dest = Join-Path $env:USERPROFILE "myna\models" }
+  else { $Dest = Join-Path $env:USERPROFILE "mynota\models" }
 }
 $LegacyDest = Join-Path $RepoRoot "models"
 $ParakeetBase = "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/main"

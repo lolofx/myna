@@ -440,7 +440,7 @@ fn storage_pinned_absent_allows_location_change() {
 fn storage_scope_accepts_inside_home_myna() {
     // Arrange: a tempdir standing in for $HOME.
     let home = tempfile::tempdir().expect("tempdir");
-    let candidate = home.path().join("myna").join("archive");
+    let candidate = home.path().join("mynota").join("archive");
 
     // Act / Assert
     assert!(
@@ -459,7 +459,7 @@ fn storage_scope_accepts_inside_mobile_documents() {
         .join("Library")
         .join("Mobile Documents")
         .join("com~apple~CloudDocs")
-        .join("myna");
+        .join("mynota");
 
     // Act / Assert
     assert!(

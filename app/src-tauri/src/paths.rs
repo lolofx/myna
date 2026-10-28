@@ -23,7 +23,7 @@ pub enum PathError {
     },
     /// The persisted storage pointer names a directory that no longer
     /// exists. Loud by design (see [`effective_data_root`]): silently
-    /// recreating it or falling back to `~/myna` would split the library
+    /// recreating it or falling back to `~/mynota` would split the library
     /// across two roots.
     #[error("storage location is missing: {}", path.display())]
     StorageMissing { path: PathBuf },
@@ -32,12 +32,12 @@ pub enum PathError {
 const DATA_DIR_ENV: &str = "MYNA_DATA_DIR";
 const MODELS_DIR_ENV: &str = "MYNA_MODELS_DIR";
 const TEMPLATES_DIR_ENV: &str = "MYNA_TEMPLATES_DIR";
-const DATA_DIR_NAME: &str = "myna";
+const DATA_DIR_NAME: &str = "mynota";
 const MEETINGS_DIR_NAME: &str = "meetings";
 pub(crate) const MODELS_DIR_NAME: &str = "models";
 const TEMPLATES_DIR_NAME: &str = "templates";
 
-/// Resolves the Myna data root path (`~/myna` by default) without creating
+/// Resolves the Myna data root path (`~/mynota` by default) without creating
 /// it, given an explicit `MYNA_DATA_DIR` override (or `None` to fall back
 /// to the home-directory default).
 ///
@@ -54,14 +54,14 @@ fn data_root_path_with(data_dir_override: Option<PathBuf>) -> Result<PathBuf, Pa
     }
 }
 
-/// Resolves the Myna data root path (`~/myna` by default) without creating
+/// Resolves the Myna data root path (`~/mynota` by default) without creating
 /// it. Honours `MYNA_DATA_DIR` as an override for dev/tests, which takes
 /// precedence over the home-directory default.
 fn data_root_path() -> Result<PathBuf, PathError> {
     data_root_path_with(env::var_os(DATA_DIR_ENV).map(PathBuf::from))
 }
 
-/// Resolves the Myna data root (`~/myna` by default), creating it if missing.
+/// Resolves the Myna data root (`~/mynota` by default), creating it if missing.
 ///
 /// Honours `MYNA_DATA_DIR` as an override for dev/tests, which takes
 /// precedence over the home-directory default.
@@ -81,20 +81,20 @@ pub fn meetings_root() -> Result<PathBuf, PathError> {
 /// Resolves the models directory.
 ///
 /// Models are ~5.4 GB of weights that must never be bundled into the app;
-/// they live at the fixed user path `~/myna/models` on macOS
-/// (`%USERPROFILE%\myna\models` on Windows — [`home_dir`] reads `USERPROFILE`
+/// they live at the fixed user path `~/mynota/models` on macOS
+/// (`%USERPROFILE%\mynota\models` on Windows — [`home_dir`] reads `USERPROFILE`
 /// there, and Tauri's `$HOME` scope entry resolves to the same directory),
 /// downloaded there by `scripts/download-models.sh` (default
 /// `${MYNA_MODELS_DIR:-$HOME/myna/models}`).
 ///
 /// Meetings follow the effective data root (dev override > persisted
-/// pointer > home-joined `myna`); models never do — a storage-location move
+/// pointer > home-joined `mynota`); models never do — a storage-location move
 /// or a data-dir override must not drag the multi-GB weights along or
 /// strand the app looking for them under a custom root.
 ///
 /// In dev builds, the repo-relative `models/` directory is only a legacy
 /// fallback, honoured when it holds actual weights (a subdirectory) but the
-/// fixed home-joined `myna/models` does not exist yet — a git-kept
+/// fixed home-joined `mynota/models` does not exist yet — a git-kept
 /// placeholder (README only) must never shadow a populated fixed path.
 ///
 /// Honours `MYNA_MODELS_DIR` as an override, which takes precedence over
@@ -139,8 +139,8 @@ pub fn templates_root(app: &tauri::AppHandle) -> PathBuf {
     resolve_resource_dir(app, TEMPLATES_DIR_ENV, TEMPLATES_DIR_NAME)
 }
 
-/// Fixed models path (home-joined `myna/models`: `~/myna/models` on macOS,
-/// `%USERPROFILE%\myna\models` on Windows), ensuring the parent home-joined
+/// Fixed models path (home-joined `mynota/models`: `~/mynota/models` on macOS,
+/// `%USERPROFILE%\mynota\models` on Windows), ensuring the parent home-joined
 /// `myna` exists (`0700` on Unix; platform default elsewhere — see
 /// [`create_dir_all_0700`]). Returns `None` only when the home directory
 /// itself cannot be resolved. Deliberately ignores the effective data root
@@ -152,7 +152,7 @@ fn fixed_models_root() -> Option<PathBuf> {
     Some(root.join(MODELS_DIR_NAME))
 }
 
-/// Dev-mode models root: prefers the fixed home-joined `myna/models`
+/// Dev-mode models root: prefers the fixed home-joined `mynota/models`
 /// directory (the downloader's canonical destination) when it exists; falls
 /// back to the repo's `models/` directory only when that holds actual
 /// weights (a subdirectory — not the git-kept README placeholder) and the
@@ -188,17 +188,17 @@ fn dir_contains_subdirectory(dir: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// Release-mode models root: the fixed home-joined `myna/models`
-/// (`~/myna/models` on macOS, `%USERPROFILE%\myna\models` on Windows). The
+/// Release-mode models root: the fixed home-joined `mynota/models`
+/// (`~/mynota/models` on macOS, `%USERPROFILE%\mynota\models` on Windows). The
 /// directory itself is populated by `scripts/download-models.sh`, not
-/// created eagerly here — only the parent home-joined `myna` is ensured to
+/// created eagerly here — only the parent home-joined `mynota` is ensured to
 /// exist (see [`fixed_models_root`]).
 fn resolve_release_models_root() -> PathBuf {
     fixed_models_root().unwrap_or_else(|| PathBuf::from(MODELS_DIR_NAME))
 }
 
 /// Detects model weights stranded under a custom storage location: returns
-/// `Some(<effective_root>/models)` when the fixed `~/myna/models` is missing
+/// `Some(<effective_root>/models)` when the fixed `~/mynota/models` is missing
 /// or incomplete AND `<effective_root>/models` holds the complete core set
 /// (Parakeet + Qwen + Silero) — i.e. a past migration dragged the multi-GB
 /// weights along before the migration learned to skip them.
@@ -293,7 +293,7 @@ pub(crate) fn repo_root() -> PathBuf {
 /// Resolves the user's home directory: `USERPROFILE` on Windows, `HOME`
 /// elsewhere. Tauri's `$HOME` asset-scope entry resolves to the same
 /// directory on each OS, so a storage location accepted by
-/// [`validate_storage_location`] under the home-joined `myna` subtree is
+/// [`validate_storage_location`] under the home-joined `mynota` subtree is
 /// also inside the webview-readable scope on Windows.
 fn home_dir() -> Result<PathBuf, PathError> {
     #[cfg(windows)]
@@ -321,7 +321,7 @@ fn ensure_dir(path: &Path) -> Result<(), PathError> {
 /// Creates `path` and every missing parent directory, restricting each
 /// newly created directory to owner-only access (`0700`) on Unix from the
 /// moment it is created — there is no window where a meeting's directory is
-/// world- or group-readable. `~/myna` is not a TCC-protected location, so
+/// world- or group-readable. `~/mynota` is not a TCC-protected location, so
 /// this is the only thing standing between an unsandboxed process on the
 /// same machine and a user's full meeting archive.
 ///
@@ -388,7 +388,7 @@ pub(crate) fn home_dir_for_export() -> Result<PathBuf, PathError> {
 /// Those two helpers only take effect the moment a path is *created* —
 /// `ensure_dir` short-circuits on `path.exists()` — so any meeting recorded
 /// before this hardening shipped is stuck at the process umask default
-/// (typically `0755`/`0644`, world- and group-readable). `~/myna` is not a
+/// (typically `0755`/`0644`, world- and group-readable). `~/mynota` is not a
 /// TCC-protected location, so this migration is the only thing standing
 /// between the pre-existing archive and any other local account or
 /// unsandboxed process on the machine.
@@ -504,7 +504,7 @@ fn tighten_mode_if_looser(path: &Path, target_mode: u32) {
     }
 }
 
-/// Default data root (home-joined `myna`: `~/myna` on macOS,
+/// Default data root (home-joined `mynota`: `~/mynota` on macOS,
 /// `%USERPROFILE%\myna` on Windows), without creating it — the location
 /// [`effective_data_root`] falls back to when neither the `MYNA_DATA_DIR`
 /// override nor the persisted pointer names a directory. Exposed so
@@ -514,7 +514,7 @@ pub fn default_data_root() -> Result<PathBuf, PathError> {
     Ok(home_dir()?.join(DATA_DIR_NAME))
 }
 
-// --- Effective data root: env override > persisted pointer > ~/myna ------
+// --- Effective data root: env override > persisted pointer > ~/mynota ------
 
 /// Resolves the effective data root, creating it (`0700`, hardened) on first
 /// use.
@@ -530,7 +530,7 @@ pub fn default_data_root() -> Result<PathBuf, PathError> {
 ///    [`PathError::StorageMissing`] — it is never silently recreated and
 ///    never falls through to the default (either would split the library
 ///    across two roots).
-/// 3. Otherwise the home-joined `myna` default (`~/myna` on macOS,
+/// 3. Otherwise the home-joined `mynota` default (`~/mynota` on macOS,
 ///    `%USERPROFILE%\myna` on Windows).
 ///
 /// `config_dir` is a parameter — rather than resolving the Tauri app config
@@ -573,7 +573,7 @@ fn effective_data_root_with_pointer(
         // recreating it would resurrect an empty library over the user's
         // real archive, and falling through to the default would split the
         // library across two roots. The UI surfaces this with a Reset
-        // affordance that clears the pointer back to `~/myna`.
+        // affordance that clears the pointer back to `~/mynota`.
         if !pointed.exists() {
             return Err(PathError::StorageMissing { path: pointed });
         }
@@ -612,7 +612,7 @@ fn absolutize_pointer(pointed: PathBuf) -> Result<PathBuf, PathError> {
 
 /// Creates `root` if missing (`0700` via [`ensure_dir`]) and hardens
 /// pre-existing entries, so the first use of a fresh custom location lands
-/// under the same at-rest policy as `~/myna`. Hardening failures are logged
+/// under the same at-rest policy as `~/mynota`. Hardening failures are logged
 /// and swallowed — one stray unreadable file must not block startup (see
 /// [`harden_existing_data_root`]).
 fn ensure_effective_root(root: PathBuf) -> Result<PathBuf, PathError> {
@@ -783,7 +783,7 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
 
         // Arrange: a fresh path that does not exist yet, standing in for
-        // `data_root()`'s `~/myna` on a first run.
+        // `data_root()`'s `~/mynota` on a first run.
         let parent = tempfile::tempdir().expect("tempdir");
         let target = parent.path().join("data-root");
 
@@ -794,7 +794,7 @@ mod tests {
         // Confirmed this fails against the pre-fix code, which delegated to
         // plain `fs::create_dir_all` and left the directory at the process
         // umask default (0755 on a typical dev machine) -- i.e. world- and
-        // group-readable, even though `~/myna` is not a TCC-protected path.
+        // group-readable, even though `~/mynota` is not a TCC-protected path.
         let mode = fs::metadata(&target)
             .expect("metadata")
             .permissions()
@@ -911,7 +911,7 @@ mod tests {
     // forbids `unsafe_code` outright (see `[workspace.lints]` in the root
     // `Cargo.toml`). Models never consult the data-dir override or the persisted
     // storage pointer: meetings follow the effective data root, models stay
-    // pinned to the fixed `~/myna/models`. This also means these tests are
+    // pinned to the fixed `~/mynota/models`. This also means these tests are
     // free of the process-global-state races that env-var mutation would
     // otherwise introduce between parallel `#[test]` fns.
 
@@ -959,7 +959,7 @@ mod tests {
     #[test]
     fn release_build_resolves_to_fixed_models_root() {
         // Arrange: no MYNA_MODELS_DIR override — the release path is the
-        // fixed `~/myna/models`, never `<effective_data_root>/models`.
+        // fixed `~/mynota/models`, never `<effective_data_root>/models`.
 
         // Act
         let resolved = resolve_models_root(None, false);
@@ -974,7 +974,7 @@ mod tests {
 
     #[test]
     fn dev_build_prefers_fixed_models_dir_when_both_exist() {
-        // Arrange: the fixed `~/myna/models` stand-in exists (the
+        // Arrange: the fixed `~/mynota/models` stand-in exists (the
         // downloader's canonical destination) while the repo checkout also
         // has one — the fixed dir wins so `npx tauri dev` checks the same
         // place `scripts/download-models.sh` writes.

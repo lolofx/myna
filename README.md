@@ -59,7 +59,7 @@ Everything else (storage layout, templates, speaker detection, the meeting libra
 ## Privacy
 
 - Recording, transcription and the optional local summary run on your machine. No audio and no transcript is sent anywhere by default.
-- Your meetings live in `%USERPROFILE%\myna\` (changeable in Settings). The export folder is wherever you point it.
+- Your meetings live in `%USERPROFILE%\mynota\` (changeable in Settings). The export folder is wherever you point it.
 - No telemetry, no analytics, no bot joining your call.
 - The network is used for: the one-time model download from Hugging Face (about 0.7 GB, plus an optional summary model); an **optional, opt-in** update check, which never installs anything without your click; and, only if you turn it on, a summary server you name yourself. A summary server must be on a private network (loopback, LAN or VPN address) and is reached over plain `http`; only the transcript text is sent, never audio.
 

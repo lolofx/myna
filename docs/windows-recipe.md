@@ -51,7 +51,7 @@ Note: the printed figures.
 ### T2. Mixed recording, two tracks
 
 1. In the app choose capture source **Both** (microphone and system audio). Play a YouTube video in French and speak over it for 60 s. Stop.
-2. Expect: `track-mic.wav` and `track-system.wav` in the meeting folder (`%USERPROFILE%\myna\meetings\<id>\`), both about 60 s, and a transcript with `Me` and `Others` labels.
+2. Expect: `track-mic.wav` and `track-system.wav` in the meeting folder (`%USERPROFILE%\mynota\meetings\<id>\`), both about 60 s, and a transcript with `Me` and `Others` labels.
 
 Note: both durations, and whether the transcript text matches what was said.
 
@@ -99,7 +99,7 @@ Note: all figures, and which build (dev or packaged). Add them to `docs/perf-bas
 3. Stop. Expect the import progress to appear at once and the transcript to land when it ends, without pressing anything.
 4. Note: time from stop to transcript against the audio length, peak working set and CPU during that time, whether the PC stayed usable (browser, Teams).
 5. Repeat with `$env:MYNA_TRANSCRIPTION = "live"` and compare memory and CPU during the recording.
-6. Set `{"transcription":{"threads":4}}` under `preferences.json` in `%USERPROFILE%\myna` (or the configured data folder) and note the change in transcription time. The engine is cached, so restart the app between runs.
+6. Set `{"transcription":{"threads":4}}` under `preferences.json` in `%USERPROFILE%\mynota` (or the configured data folder) and note the change in transcription time. The engine is cached, so restart the app between runs.
 
 ### T7. French and English
 
@@ -169,4 +169,4 @@ Problems seen that no check covers:
 ## Working rules for whoever runs this
 
 - Commits and pull requests carry no co-author trailer. Commit with the GitHub noreply address, and keep personal details out of every file in this public repository.
-- The heavy Windows CI jobs run on demand (`gh workflow run windows-ci.yml --ref win/lightweight --repo <owner>/myna`); group fixes before triggering one.
+- The heavy Windows CI jobs run on demand (`gh workflow run windows-ci.yml --ref win/lightweight --repo <owner>/mynota`); group fixes before triggering one.

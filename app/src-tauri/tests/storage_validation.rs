@@ -349,7 +349,7 @@ fn storage_validator_accepts_icloud_style_nested_path() {
         .join("Library")
         .join("Mobile Documents")
         .join("com~apple~CloudDocs")
-        .join("myna");
+        .join("mynota");
 
     // Act / Assert
     validate_storage_location(&icloud).expect("iCloud-style nested path should validate");
@@ -391,7 +391,7 @@ fn storage_scope_helper_accepts_home_myna_and_mobile_documents() {
     // Act / Assert: both first-party roots are in scope without any extra
     // app-data/resource dirs.
     assert!(storage_path_in_scope(
-        &home.path().join("myna").join("archive"),
+        &home.path().join("mynota").join("archive"),
         home.path(),
         &[]
     ));
@@ -401,7 +401,7 @@ fn storage_scope_helper_accepts_home_myna_and_mobile_documents() {
             .join("Library")
             .join("Mobile Documents")
             .join("com~apple~CloudDocs")
-            .join("myna"),
+            .join("mynota"),
         home.path(),
         &[]
     ));

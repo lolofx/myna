@@ -6,7 +6,7 @@ Dev helpers per `docs/stack-proposal.md`.
 
 Fetches the local models Myna needs — Parakeet STT v3 (sherpa-onnx, int8),
 Qwen2.5-7B-Instruct GGUF (Q4_K_M, two shards), and the silero VAD ONNX model — into
-`~/myna/models` by default, the same location the packaged app reads from
+`~/mynota/models` by default, the same location the packaged app reads from
 (`paths::models_root()` in release builds). Idempotent — re-running skips
 any artifact already present.
 
@@ -15,7 +15,7 @@ TitaNet) are **not** part of the default fetch — pass `--only diarization`
 to download both (they are useless apart). The app works without them.
 
 Override the destination with `MYNA_MODELS_DIR` (same env var the app
-honours) or `--dest <dir>`. Models are fixed at `~/myna/models`
+honours) or `--dest <dir>`. Models are fixed at `~/mynota/models`
 (`MYNA_MODELS_DIR` only override): `MYNA_DATA_DIR` and the Settings storage
 location never affect this destination — they move
 meetings/preferences/folders only.
@@ -31,7 +31,7 @@ re-download or duplicate the ~5.4 GB of weights — it prints the exact
 pass `--migrate`.
 
 ```bash
-# Fetch the default set into ~/myna/models (skips artifacts already on disk)
+# Fetch the default set into ~/mynota/models (skips artifacts already on disk)
 scripts/download-models.sh
 
 # Fetch into a custom destination

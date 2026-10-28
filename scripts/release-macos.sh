@@ -73,8 +73,8 @@ log "Removing stale build artifacts"
 rm -f "$REPO_ROOT/target/release/myna"
 rm -rf "$BUNDLE_DIR"
 
-if [ ! -d "$HOME/myna/models" ]; then
-  warn "$HOME/myna/models does not exist — the packaged app will report every model missing at runtime."
+if [ ! -d "$HOME/mynota/models" ]; then
+  warn "$HOME/mynota/models does not exist — the packaged app will report every model missing at runtime."
 fi
 
 # --- 2. Resolve signing identity ----------------------------------------

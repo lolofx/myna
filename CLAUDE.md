@@ -17,7 +17,7 @@ Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first AI 
 - No `Co-Authored-By` trailer and no "Generated with" line in commits or pull request bodies.
 - No personal information in any file or commit: no real names, e-mail addresses, employers, machine specs or private tooling. Commit with the GitHub `noreply` address (`git config user.email "<id>+<login>@users.noreply.github.com"`).
 - Commits are short and conventional. One concern per commit, Windows fixes apart from fork-specific features, so they can be proposed upstream.
-- The Windows CI jobs (15 to 25 minutes cold) run on demand: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/myna` (in a fork, `gh` targets the upstream repository by default, so always pass `--repo`). Verify what you can locally, group fixes, then trigger one run. The Linux `ui` job runs on every push.
+- The Windows CI jobs (15 to 25 minutes cold) run on demand: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/mynota` (in a fork, `gh` targets the upstream repository by default, so always pass `--repo`). Verify what you can locally, group fixes, then trigger one run. The Linux `ui` job runs on every push.
 - Do not claim Windows support in docs until [docs/windows-recipe.md](docs/windows-recipe.md) has passed on a real PC.
 - Decisions: [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) (record then transcribe), [ADR 0018](docs/adr/0018-optional-selectable-summary-model.md) (optional summary model).
 
@@ -99,7 +99,7 @@ Myna supports three recording modes (set via `start_recording { "source": "..." 
 
 The `source` parameter is optional; default is `"mic"`.
 
-Each meeting produces up to three audio files (stored in `~/myna/meetings/{id}/`):
+Each meeting produces up to three audio files (stored in `~/mynota/meetings/{id}/`):
 - **`audio.wav`** — device-native stereo format (typically 48 kHz, ~920 MB/h), listenable and exportable to other meeting tools.
 - **`track-mic.wav`** — 16 kHz mono, retained permanently for STT and future speaker diarization; absent if only system audio was captured.
 - **`track-system.wav`** — 16 kHz mono, retained permanently for STT and future speaker diarization; absent if only microphone was captured.
@@ -113,7 +113,7 @@ System audio capture uses **Core Audio process taps** (see [ADR 0007](docs/adr/0
 - **`models/`** is gitignored — downloaded artifacts (`.gguf`, `.onnx`) are never committed; fetched once via `./scripts/download-models.sh` and stored locally.
 - **`templates/`** is user-extensible JSON — same files drive both the CLI and the GUI; add new summary types without recompiling.
 - **`data/`** is machine-local runtime data (gitignored) — never commit recordings, transcripts, or caches.
-- **`~/myna`** is the meetings data root (meetings, preferences, folders). Configurable via `MYNA_DATA_DIR` > Settings pointer > `~/myna`. Models are fixed at `~/myna/models` (`MYNA_MODELS_DIR` only override) — `MYNA_DATA_DIR` never affects models. Note: the directory is **not** `~/.myna` (no dot prefix).
+- **`~/mynota`** is the meetings data root (meetings, preferences, folders). Configurable via `MYNA_DATA_DIR` > Settings pointer > `~/mynota`. Models are fixed at `~/mynota/models` (`MYNA_MODELS_DIR` only override) — `MYNA_DATA_DIR` never affects models. Note: the directory is **not** `~/.mynota` (no dot prefix).
 
 ## Verification
 
@@ -183,7 +183,7 @@ npx tauri info && npx tauri dev && npx tauri build --no-bundle
 
 - **`cargo` is not on the non-interactive PATH.** Prefix every invocation with `export PATH="$HOME/.cargo/bin:$PATH"; `. Prevents "cargo: command not found" in non-login shells.
 - `unsafe_code = "forbid"` is workspace-wide and has never needed an override—keep it that way; the chosen crates all expose safe APIs.
-- Models are fixed at `~/myna/models` (`MYNA_MODELS_DIR` only override) — `MYNA_DATA_DIR` never affects models. Templates are bundled into the app as Tauri resources.
+- Models are fixed at `~/mynota/models` (`MYNA_MODELS_DIR` only override) — `MYNA_DATA_DIR` never affects models. Templates are bundled into the app as Tauri resources.
 - Self-host fonts; never `@import` from a CDN. The CSP is `default-src 'self'` and the product promise is fully local.
 
 ### Working with the user

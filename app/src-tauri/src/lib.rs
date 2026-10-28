@@ -38,7 +38,7 @@ use crate::store::folder_store::FsFolderStore;
 use crate::store::fs_store::FsMeetingStore;
 
 /// Logs a loud boot warning when complete model weights are stranded under
-/// the effective data root while the fixed `~/myna/models` is missing or
+/// the effective data root while the fixed `~/mynota/models` is missing or
 /// incomplete — i.e. a pre-skip migration dragged them along. Read-only:
 /// `models_status` keeps reporting the fixed path, stranded weights are
 /// never read back silently.
@@ -50,7 +50,7 @@ fn log_stranded_models(root: &Path) {
                     .to_string_lossy()
                     .into_owned()
             })
-            .unwrap_or_else(|_| "~/myna/models".to_string());
+            .unwrap_or_else(|_| "~/mynota/models".to_string());
         eprintln!(
             "myna-app: WARNING: complete model weights found stranded at {} \
              while the fixed models root ({fixed}) is missing or incomplete — \
