@@ -429,6 +429,7 @@ fn edit_transcript_segment_blocking(
     }
     let updated = meeting.with_transcript(edited);
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), updated.id);
     Ok(MeetingDto::from_meeting(
         updated,
         has_audio,
@@ -553,6 +554,7 @@ fn transcript_structure_command(
     }
     let updated = meeting.with_transcript(edited);
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), updated.id);
     Ok(MeetingDto::from_meeting(
         updated,
         has_audio,
@@ -590,6 +592,7 @@ pub async fn rename_speaker(
             }
             let updated = meeting.with_speaker_names(speaker_names);
             state.store.save(&updated)?;
+            crate::auto_export::after_save(state.store.as_ref(), updated.id);
             meeting_dto(state.store.as_ref(), updated, id)
         })
     })
@@ -641,6 +644,7 @@ pub async fn remove_speaker(
                 updated
             };
             state.store.save(&updated)?;
+            crate::auto_export::after_save(state.store.as_ref(), updated.id);
             meeting_dto(state.store.as_ref(), updated, id)
         })
     })
@@ -692,6 +696,7 @@ pub async fn set_segment_speaker(
             segments[segment_index] = retargeted;
             let updated = meeting.with_transcript(myna_stt::Transcript { segments });
             state.store.save(&updated)?;
+            crate::auto_export::after_save(state.store.as_ref(), updated.id);
             meeting_dto(state.store.as_ref(), updated, id)
         })
     })

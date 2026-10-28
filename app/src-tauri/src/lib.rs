@@ -4,6 +4,7 @@
 //! `paths` resolves the on-disk locations the rest of the app (data root,
 //! models, templates) read from and write to.
 
+pub mod auto_export;
 pub mod commands;
 pub mod diarize_judge;
 pub mod domain;
@@ -164,6 +165,9 @@ pub fn run() {
             commands::models::set_summary_model,
             commands::models::start_summary_model_download,
             commands::export::export_meeting,
+            commands::export::get_export_prefs,
+            commands::export::set_export_folder,
+            commands::export::export_meeting_to_folder,
             commands::updates::update_consent,
             commands::updates::set_update_consent,
             commands::updates::check_for_update,

@@ -27,7 +27,7 @@ hound = "3.5"
 rubato = "5"
 ctrlc = "3.4"
 uuid = { version = "1", features = ["v4", "serde"] }
-time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
+time = { version = "0.3", features = ["serde", "formatting", "parsing", "local-offset"] }
 sherpa-onnx = "1.13"
 llama-cpp-2 = "0.1.154"
 encoding_rs = "0.8"

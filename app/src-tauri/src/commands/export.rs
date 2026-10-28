@@ -12,6 +12,7 @@ use myna_stt::{Speaker, SpeakerRole, TranscriptSegment};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+use crate::auto_export;
 use crate::domain::{Meeting, MeetingId, Summary};
 use crate::error::AppError;
 use crate::paths;
@@ -50,6 +51,60 @@ pub async fn export_meeting(
     .unwrap_or_else(|_| {
         Err(AppError::Store(
             "export_meeting worker thread panicked".to_string(),
+        ))
+    })
+}
+
+/// Export settings as the UI sees them.
+#[derive(Serialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportPrefsDto {
+    /// Absolute export folder, or `None` when exporting is off.
+    pub folder: Option<String>,
+}
+
+/// Reads the export folder setting.
+#[tauri::command]
+pub fn get_export_prefs() -> Result<ExportPrefsDto, AppError> {
+    let root = paths::data_root().map_err(|err| AppError::Path(err.to_string()))?;
+    Ok(ExportPrefsDto {
+        folder: auto_export::load(&root).folder,
+    })
+}
+
+/// Sets the export folder, or turns exporting off with `None` or a blank
+/// value. The folder is created when it does not exist yet.
+#[tauri::command]
+pub fn set_export_folder(folder: Option<String>) -> Result<(), AppError> {
+    let root = paths::data_root().map_err(|err| AppError::Path(err.to_string()))?;
+    let folder = match folder.as_deref().map(str::trim) {
+        None | Some("") => None,
+        Some(raw) => Some(auto_export::prepare_folder(raw)?),
+    };
+    auto_export::save(&root, &auto_export::ExportPrefs { folder })
+}
+
+/// Exports one meeting into the configured folder right now and returns the
+/// file's path. Fails with a readable message when no folder is configured.
+#[tauri::command]
+pub async fn export_meeting_to_folder(
+    app: AppHandle,
+    meeting_id: String,
+) -> Result<String, AppError> {
+    let id = parse_meeting_id(&meeting_id)?;
+    let store = app.state::<AppState>().store.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = paths::data_root().map_err(|err| AppError::Path(err.to_string()))?;
+        let folder = auto_export::load(&root).folder.ok_or_else(|| {
+            AppError::Path("no export folder is configured: choose one in Settings".to_string())
+        })?;
+        let path = auto_export::export_to_folder(store.as_ref(), id, Path::new(&folder))?;
+        Ok(path.display().to_string())
+    })
+    .await
+    .unwrap_or_else(|_| {
+        Err(AppError::Store(
+            "export_meeting_to_folder worker thread panicked".to_string(),
         ))
     })
 }
@@ -162,33 +217,151 @@ fn load_summaries(
         .collect()
 }
 
-/// Renders `meeting` and `summaries` as a Markdown document.
-fn render_markdown(meeting: &Meeting, summaries: &[Summary]) -> String {
-    let mut out = format!("# {}\n\n## Transcript\n\n", meeting.title);
+/// Loads `id` and renders it as the Markdown export contract. Shared by the
+/// save-dialog export and the export folder (see [`crate::auto_export`]).
+pub fn render_contract(
+    store: &dyn MeetingStore,
+    id: MeetingId,
+) -> Result<(Meeting, String), AppError> {
+    let meeting = store.get(id)?;
+    let summaries = load_summaries(store, id, &meeting)?;
+    let markdown = render_markdown(&meeting, &summaries);
+    Ok((meeting, markdown))
+}
 
-    if let Some(transcript) = &meeting.transcript {
-        for (speaker, run) in group_by_speaker(&transcript.segments) {
-            if let Some(name) = speaker_display_name(&speaker, &meeting.speaker_names) {
-                out.push_str(&format!("**{name}:**\n\n"));
-            }
-            for segment in run {
-                out.push_str(&format!(
-                    "- [{:.1}s - {:.1}s] {}\n",
-                    segment.start_sec, segment.end_sec, segment.text
-                ));
+/// Renders `meeting` and `summaries` as the fork's export contract
+/// (PRD R5): a YAML front matter, then one `[hh:mm:ss] Speaker: text` line
+/// per segment in chronological order, then any summaries.
+///
+/// The front matter only carries what the app really knows. `language` and
+/// `source` are left out on purpose: the meeting record stores neither, and
+/// guessing them would hand wrong metadata to the tooling that reads this
+/// file.
+fn render_markdown(meeting: &Meeting, summaries: &[Summary]) -> String {
+    let mut segments: Vec<&TranscriptSegment> = meeting
+        .transcript
+        .as_ref()
+        .map(|transcript| transcript.segments.iter().collect())
+        .unwrap_or_default();
+    // Stable: simultaneous segments of the two tracks keep their stored order.
+    segments.sort_by(|a, b| {
+        a.start_sec
+            .partial_cmp(&b.start_sec)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    let mut speakers: Vec<String> = Vec::new();
+    for segment in &segments {
+        if let Some(name) = speaker_display_name(&segment.speaker, &meeting.speaker_names) {
+            if !speakers.contains(&name) {
+                speakers.push(name);
             }
         }
     }
-    out.push('\n');
+
+    let duration_sec = if meeting.duration_sec > 0.0 {
+        meeting.duration_sec
+    } else {
+        meeting
+            .transcript
+            .as_ref()
+            .map_or(0.0, |transcript| transcript.duration().as_secs_f32())
+    };
+
+    let mut out = String::from("---\n");
+    out.push_str(&format!("title: {}\n", yaml_scalar(&meeting.title)));
+    out.push_str(&format!("date: {}\n", local_timestamp(meeting.created_at)));
+    out.push_str(&format!("duration: {}\n", clock(duration_sec)));
+    if !speakers.is_empty() {
+        let list: Vec<String> = speakers.iter().map(|name| yaml_scalar(name)).collect();
+        out.push_str(&format!("speakers: [{}]\n", list.join(", ")));
+    }
+    out.push_str(if summaries.is_empty() {
+        "status: to-summarize\n"
+    } else {
+        "status: summarized\n"
+    });
+    out.push_str("---\n\n");
+
+    for segment in &segments {
+        let text = segment
+            .text
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        match speaker_display_name(&segment.speaker, &meeting.speaker_names) {
+            Some(name) => out.push_str(&format!("[{}] {name}: {text}\n", clock(segment.start_sec))),
+            None => out.push_str(&format!("[{}] {text}\n", clock(segment.start_sec))),
+        }
+    }
 
     for summary in summaries {
         out.push_str(&format!(
-            "## Summary: {}\n\n{}\n\n",
+            "\n## Summary: {}\n\n{}\n",
             summary.template, summary.markdown
         ));
     }
 
     out
+}
+
+/// `hh:mm:ss` for a number of seconds (fractions dropped, negatives as 0).
+fn clock(seconds: f32) -> String {
+    let total = seconds.max(0.0) as u64;
+    format!(
+        "{:02}:{:02}:{:02}",
+        total / 3600,
+        (total % 3600) / 60,
+        total % 60
+    )
+}
+
+/// `at` expressed in the machine's local time zone, or UTC when the
+/// platform cannot tell (the `time` crate refuses in some multi-threaded
+/// Unix cases).
+pub(crate) fn to_local(at: time::OffsetDateTime) -> time::OffsetDateTime {
+    match time::UtcOffset::local_offset_at(at) {
+        Ok(offset) => at.to_offset(offset),
+        Err(_) => at,
+    }
+}
+
+/// Local wall-clock time as `YYYY-MM-DDThh:mm:ss`, without an offset: the
+/// reader (a person or a model) wants the time the meeting happened on the
+/// user's clock.
+fn local_timestamp(at: time::OffsetDateTime) -> String {
+    let local = to_local(at);
+    format!(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}",
+        local.year(),
+        u8::from(local.month()),
+        local.day(),
+        local.hour(),
+        local.minute(),
+        local.second()
+    )
+}
+
+/// A YAML scalar for `value`: plain when that is unambiguous, otherwise a
+/// double-quoted string (JSON escaping is valid YAML).
+fn yaml_scalar(value: &str) -> String {
+    let lower = value.to_ascii_lowercase();
+    let plain = !value.is_empty()
+        && value == value.trim()
+        && !value
+            .chars()
+            .any(|c| c.is_control() || ":#[]{},&*!|>'\"%@`\\".contains(c))
+        && !value.starts_with(['-', '?'])
+        && !matches!(
+            lower.as_str(),
+            "true" | "false" | "null" | "yes" | "no" | "on" | "off" | "~"
+        )
+        && value.parse::<f64>().is_err();
+    if plain {
+        value.to_string()
+    } else {
+        serde_json::to_string(value).unwrap_or_else(|_| "\"\"".to_string())
+    }
 }
 
 /// Renders `meeting` and `summaries` as plain text.

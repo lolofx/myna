@@ -169,6 +169,7 @@ fn run_import(
         .with_duration(total_sec)
         .with_audio_path(audio_dest.clone());
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), id);
 
     emit_import_progress(app, id, ImportPhase::Done, total_sec, total_sec);
 
@@ -388,6 +389,7 @@ fn run_retranscribe(
             state.store.save(&updated)?;
         }
     }
+    crate::auto_export::after_save(state.store.as_ref(), id);
 
     emit_import_progress(app, id, ImportPhase::Done, total_sec, total_sec);
 
@@ -614,6 +616,7 @@ fn diarize_and_relabel(
 
     let updated = meeting.with_transcript(judged);
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), updated.id);
 
     Ok(MeetingDto::from_meeting(
         updated,

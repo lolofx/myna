@@ -295,6 +295,7 @@ fn stop_recording_blocking(app: &AppHandle) -> Result<MeetingDto, AppError> {
         .with_audio_path(audio_path.clone())
         .with_dropped_audio_chunks(dropped_chunks);
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), meeting_id);
 
     // Durability artifacts are cleaned up only AFTER the finished meeting
     // is durably saved — the transcript now lives in `meeting.json`, so the

@@ -505,6 +505,7 @@ fn summarize_and_persist(
         stale: false,
     });
     state.store.save(&updated)?;
+    crate::auto_export::after_save(state.store.as_ref(), id);
 
     emit_done(
         app,
