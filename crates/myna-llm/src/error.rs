@@ -51,6 +51,10 @@ pub enum LlmError {
     #[error("template error: {0}")]
     Template(String),
 
+    /// The remote summary server could not be reached or answered badly.
+    #[error("summary server: {0}")]
+    Remote(String),
+
     /// An underlying I/O operation failed.
     #[error(transparent)]
     Io(#[from] std::io::Error),

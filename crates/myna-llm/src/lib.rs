@@ -9,6 +9,7 @@ mod engine;
 mod error;
 mod instructions;
 mod language;
+mod remote;
 mod template;
 
 pub use engine::{
@@ -19,5 +20,9 @@ pub use error::LlmError;
 pub use instructions::{SummaryInstructions, MAX_INSTRUCTION_CHARS};
 pub use language::{
     label_for, resolve, SummaryLanguage, DEFAULT_SUMMARY_LANGUAGE, SUMMARY_LANGUAGES,
+};
+pub use remote::{
+    is_private_ip, list_remote_models, Endpoint, RemoteOptions, RemoteSummarizer,
+    DEFAULT_OLLAMA_PORT,
 };
 pub use template::{list_templates, RenderContext, Template, PLACEHOLDERS};

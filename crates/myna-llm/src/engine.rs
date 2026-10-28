@@ -138,7 +138,7 @@ const CONTEXT_MARGIN_TOKENS: u32 = 64;
 /// them, so real transcripts converge in one or two rounds; this is a
 /// backstop against a pathological template or model output that doesn't
 /// shrink.
-const MAX_REDUCE_DEPTH: u32 = 4;
+pub(crate) const MAX_REDUCE_DEPTH: u32 = 4;
 
 /// How often a blocked [`Summarizer::summarize`] caller re-checks its
 /// `cancel` flag while waiting for the inference worker to stream a
@@ -929,14 +929,14 @@ fn ensure_decode_budget(
 
 /// Tokens reserved beyond a prompt's exact length; see
 /// [`CONTEXT_MARGIN_TOKENS`].
-fn context_budget(max_tokens: u32, n_ctx: u32) -> usize {
+pub(crate) fn context_budget(max_tokens: u32, n_ctx: u32) -> usize {
     let reserved = max_tokens.saturating_add(CONTEXT_MARGIN_TOKENS);
     n_ctx.saturating_sub(reserved) as usize
 }
 
 /// True if a `prompt_tokens`-token prompt leaves room for `max_tokens` of
 /// generation inside `n_ctx`, per [`context_budget`].
-fn fits_in_context(prompt_tokens: usize, max_tokens: u32, n_ctx: u32) -> bool {
+pub(crate) fn fits_in_context(prompt_tokens: usize, max_tokens: u32, n_ctx: u32) -> bool {
     prompt_tokens <= context_budget(max_tokens, n_ctx)
 }
 
@@ -959,7 +959,7 @@ fn flush_chunk(chunks: &mut Vec<String>, current: &mut String) {
 /// own (necessarily over-budget) chunk rather than corrupted or dropped —
 /// there is nothing smaller to split it into without touching its
 /// content.
-fn split_transcript(
+pub(crate) fn split_transcript(
     transcript: &str,
     max_tokens_per_chunk: usize,
     count_tokens: impl Fn(&str) -> usize,
