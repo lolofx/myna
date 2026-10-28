@@ -349,3 +349,20 @@ no second ORT thread pool) was accidentally constructed. Full Rust gate
 -- -D warnings`, `cargo test --workspace --locked`) exits 0 (337 passed, 21
 ignored, 50 suites — up from the 333/21/50 baseline by the four new
 Phase 3b tests).
+
+## Windows: record, then transcribe (fork)
+
+Measured on a recent desktop Windows PC with a dev build (`npx tauri dev`): one mixed recording (microphone and system audio) of 26.4 minutes with default settings, followed by the automatic transcription. No hardware model is recorded on purpose, so read these as relative figures. CPU is a share of the whole machine, not of one core. Memory is the working set of the Rust process (the webview is not included).
+
+| Phase | Memory, avg / max | CPU, avg / max |
+| ----- | ----------------- | -------------- |
+| Idle, window open | 127 / 128 MB | 0% |
+| Recording (capture only) | 127 / 131 MB | 1.5% / 3.7% |
+| Transcription after stop | 875 / 900 MB | 10.9% / 12.8% |
+| After transcription (engine cached) | 896 MB | 0% |
+
+- No speech model is loaded while recording, and memory is flat across the recording (128, 127 and 127 MB over its three thirds), so there is no growth over time.
+- The 26.4 minutes of audio were transcribed in 2 min 33 s, about 10 times faster than real time, and the PC stayed responsive for other applications throughout.
+- A recording whose system audio goes silent for 17 minutes stays healthy, and the two tracks keep the same length and stay aligned.
+- System-audio loopback delivers no packets at all while nothing plays (a probe received 0 packets in 5 s of silence, against about 500 with audio). The mixed tracks still lined up after a 35 s pause.
+- Not measured yet: a packaged (release) build, and the window minimized during capture. Dev-build memory overstates a packaged build.

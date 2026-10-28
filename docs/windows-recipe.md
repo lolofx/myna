@@ -6,7 +6,7 @@ Background: [ADR 0017](adr/0017-record-then-transcribe-on-windows.md), [ADR 0018
 
 ## 0. Setup
 
-1. Install, once: Visual Studio Build Tools with the "Desktop development with C++" workload, Git, Node.js 20, and Rust through `rustup` (the toolchain version is pinned by `rust-toolchain.toml` and installs itself).
+1. Install, once: Visual Studio Build Tools with the "Desktop development with C++" workload **and a Windows 10/11 SDK** (without the SDK, rustc reports `link.exe` as missing even though it is installed), CMake, LLVM (for `libclang`, needed by the bindings build), Git, Node.js 20, and Rust through `rustup` (the toolchain version is pinned by `rust-toolchain.toml` and installs itself). With `winget`: `Microsoft.WindowsSDK.10.0.26100`, `Kitware.CMake`, `LLVM.LLVM`, `Rustlang.Rustup`.
 2. Clone and switch to the branch under test:
 
    ```powershell
@@ -23,6 +23,7 @@ Background: [ADR 0017](adr/0017-record-then-transcribe-on-windows.md), [ADR 0018
    $env:RUSTFLAGS = "-C target-feature=+crt-static"
    $env:LLAMA_STATIC_CRT = "1"
    $env:CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreaded"
+   $env:LIBCLANG_PATH = "C:\Program Files\LLVM\bin"
    ```
 
 4. Models (about 0.7 GB; the summary model is optional and picked in the app):
@@ -109,6 +110,16 @@ Note: all figures, and which build (dev or packaged). Add them to `docs/perf-bas
 
 With diarization models installed, run **Detect speakers** on T2 or T7. Note the number of speakers found against the real number.
 
+### T9. Markdown export folder
+
+1. Settings, **Markdown export**: choose **Choose…** and pick an empty folder.
+2. Rename a speaker on an existing meeting, or finish a transcription. Expect one `.md` file named `YYYY-MM-DD_hh-mm_<title>.md` in that folder within a second.
+3. Open it. Expect a front matter (`title`, `date` in local time, `duration`, `speakers`, `status`), a blank line, then `[hh:mm:ss] Speaker: text` lines in chronological order.
+4. Rename another speaker. Expect the same file updated, not a second file.
+5. **Turn off**, rename a speaker again. Expect no new file.
+
+Note: whether the `date` matches the wall clock, the file name, and anything the reading tool trips on.
+
 ## 3. Summary models
 
 1. Settings, **Summary model**: pick Qwen2.5 3B, click **Download**, wait for the end. Expect "Installed and ready".
@@ -148,6 +159,7 @@ Build: dev / packaged
 | T6b deferred transcription | | |
 | T7 French / English | | |
 | T8 speaker labels | | |
+| T9 markdown export folder | | |
 | Summary 1.5B / 3B / 7B | | |
 | Hardware tests (section 4) | | |
 
