@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Mynota",
-  "version": "0.6.2",
+  "version": "0.7.0-beta.1",
   "identifier": "app.mynota.desktop",
   "build": {
     "frontendDist": "../../ui/dist",
@@ -66,8 +66,8 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIzQ0M4Q0I3OTA3MEI0NTIKUldSU3RIQ1F0NHpNczAzK3JiV0tyMkhQZi9TMjh1SmgydjBBQURvRzFFQnIrc1F4UWtmU05kSXAK",
-      "endpoints": ["https://github.com/fmflurry/myna/releases/latest/download/latest.json"]
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk5NEFDQ0E3REYwMEU1MTkKUldRWjVRRGZwOHhLbVFlUzJRazNkeEwxN2xIeDZWeS9pOWJBcEpTSGd1OENBYStrOXpKdUtwR3AK",
+      "endpoints": ["https://github.com/lolofx/mynota/releases/download/beta-manifest/latest.json"]
     }
   }
 }

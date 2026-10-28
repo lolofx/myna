@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0-beta.1] - 2026-10-29
+
+First Mynota beta, a fork of Myna. Windows only for now; the installer is not code-signed.
+
+### Added
+
+- **Windows capture** - microphone and system audio (WASAPI loopback) as two tracks, with nothing decoded while recording.
+- **Transcription after the recording** - at low priority, with the language detected per segment.
+- **Markdown export** - one file per meeting with a front matter and timestamped speaker lines, written automatically to a folder chosen in Settings.
+- **Optional, selectable summary model** - the summary model is no longer required to get started.
+
+### Changed
+
+- **Renamed to Mynota.** The default data folder is now `~/mynota` (`%USERPROFILE%\mynota` on Windows). To reuse models already downloaded for Myna, copy its `models` folder into the new one or set `MYNA_MODELS_DIR`.
+- **Update checks** read this repository's releases instead of the upstream project's. They stay off until you turn them on.
+- The macOS-only notes in the update dialogs now show on macOS only.
 ## [0.3.0] — 2026-09-07
 
 ### Added
