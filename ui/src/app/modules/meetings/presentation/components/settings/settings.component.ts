@@ -48,6 +48,12 @@ export class SettingsComponent {
   readonly storageError = input<string | null>(null);
   /** True right after a move that needs an app restart (`restartRequired`). */
   readonly storageRestartRequired = input(false);
+  /** Markdown export folder (`ExportFolderFacade.folder()` via the shell): `undefined` while loading, `null` while exporting is off. */
+  readonly exportFolder = input<string | null | undefined>(undefined);
+  /** True while the export folder is loading or being saved; disables Choose/Turn off. */
+  readonly exportBusy = input(false);
+  /** Inline export folder error; `null` hides it. */
+  readonly exportError = input<string | null>(null);
 
   readonly closed = output<void>();
   readonly updateConsentChanged = output<UpdateConsent>();
@@ -71,6 +77,18 @@ export class SettingsComponent {
   readonly resetStorageRequested = output<boolean>();
   /** Move checkbox toggled — carries the new choice; the shell owns the pending signal, never this component. */
   readonly moveExistingChanged = output<boolean>();
+  /** Choose… clicked for the export folder; the shell opens `FileDialogPort.selectDirectory` and saves it, never this component. */
+  readonly exportFolderBrowseRequested = output<void>();
+  /** Turn off clicked for the export folder; the shell clears it, never this component. */
+  readonly exportFolderClearRequested = output<void>();
+
+  protected readonly exportFolderLabel = computed(() => {
+    const folder = this.exportFolder();
+    if (folder === undefined) {
+      return 'Loading…';
+    }
+    return folder ?? 'Off — choose a folder to export meetings automatically';
+  });
 
   protected readonly autoCheckEnabled = computed(() => this.updateConsent() === 'granted');
   protected readonly checkNowDisabled = computed(() => this.checking() || this.recording());

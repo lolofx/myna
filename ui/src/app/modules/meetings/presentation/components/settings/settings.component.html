@@ -131,4 +131,29 @@
       <p class="storage-restart">Location changed — restart the app to use the new location.</p>
     }
   </section>
+
+  <section class="meetings-storage export-folder" aria-label="Markdown export">
+    <h3>Markdown export</h3>
+    <p class="storage-path">
+      <span class="storage-path-label">Export folder</span>
+      <span class="storage-path-value export-folder-value">{{ exportFolderLabel() }}</span>
+    </p>
+    <p class="storage-note">
+      Each meeting is written there as one Markdown file (title, date, speakers, then timestamped lines) as soon as its
+      transcript is ready, and refreshed when speakers or summaries change.
+    </p>
+    <div class="storage-actions">
+      <button type="button" class="change-export-folder" [disabled]="exportBusy()" (click)="exportFolderBrowseRequested.emit()">
+        Choose…
+      </button>
+      @if (exportFolder() !== null && exportFolder() !== undefined) {
+        <button type="button" class="clear-export-folder" [disabled]="exportBusy()" (click)="exportFolderClearRequested.emit()">
+          Turn off
+        </button>
+      }
+    </div>
+    @if (exportError() !== null) {
+      <p class="storage-error export-folder-error" role="alert">{{ exportError() }}</p>
+    }
+  </section>
 </section>

@@ -81,6 +81,9 @@ export const COMMAND_NAMES = [
   'get_storage_location',
   'set_storage_location',
   'reset_storage_location',
+  'get_export_prefs',
+  'set_export_folder',
+  'export_meeting_to_folder',
 ] as const;
 
 export type CommandName = (typeof COMMAND_NAMES)[number];
@@ -362,6 +365,12 @@ export interface CommandSignatures {
     args: { readonly moveExisting?: boolean };
     result: StorageLocationResultDto;
   };
+  /** Export settings; `folder` is `null` while exporting is off. */
+  readonly get_export_prefs: { args: NoArgs; result: { readonly folder: string | null } };
+  /** Sets the export folder, or turns exporting off with `null`. */
+  readonly set_export_folder: { args: { readonly folder: string | null }; result: void };
+  /** Exports one meeting into the configured folder now; resolves with the file path. */
+  readonly export_meeting_to_folder: { args: { readonly meetingId: string }; result: string };
 }
 
 /**

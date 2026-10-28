@@ -11,6 +11,7 @@ import { MenuPort } from './core/ports/menu.port';
 import { ModelsStatusPort } from './core/ports/models-status.port';
 import { PreferencesPort } from './core/ports/preferences.port';
 import { RecorderPort } from './core/ports/recorder.port';
+import { ExportFolderPort } from './core/ports/export-folder.port';
 import { StorageLocationPort } from './core/ports/storage-location.port';
 import { SummarizerPort } from './core/ports/summarizer.port';
 import { TemplateRepositoryPort } from './core/ports/template-repository.port';
@@ -81,6 +82,7 @@ import { StartRecordingUseCase } from './application/use-cases/start-recording.u
 import { StopRecordingUseCase } from './application/use-cases/stop-recording.usecase';
 import { SummarizeMeetingUseCase } from './application/use-cases/summarize-meeting.usecase';
 import { DevicesFacade } from './application/facades/devices.facade';
+import { ExportFolderFacade } from './application/facades/export-folder.facade';
 import { MeetingsFacade } from './application/facades/meetings.facade';
 import { ModelsFacade } from './application/facades/models.facade';
 import { SpeakerFacade } from './application/facades/speaker.facade';
@@ -90,6 +92,7 @@ import { MeetingsStore } from './application/stores/meetings.store';
 import { UpdatesStore } from './application/stores/updates.store';
 import { ModelInitializerPort } from './core/ports/model-initializer.port';
 import { TauriModelInitializerAdapter } from './infrastructure/tauri/tauri-model-initializer.adapter';
+import { TauriExportFolderAdapter } from './infrastructure/tauri/tauri-export-folder.adapter';
 import { TauriStorageLocationAdapter } from './infrastructure/tauri/tauri-storage-location.adapter';
 
 /**
@@ -115,6 +118,7 @@ export function provideMeetings(): EnvironmentProviders {
     { provide: AudioRepositoryPort, useClass: TauriAudioRepositoryAdapter },
     { provide: ModelInitializerPort, useClass: TauriModelInitializerAdapter },
     { provide: StorageLocationPort, useClass: TauriStorageLocationAdapter },
+    { provide: ExportFolderPort, useClass: TauriExportFolderAdapter },
     { provide: UpdatesPort, useClass: TauriUpdatesAdapter },
     StartRecordingUseCase,
     StopRecordingUseCase,
@@ -174,5 +178,6 @@ export function provideMeetings(): EnvironmentProviders {
     DevicesFacade,
     UpdatesFacade,
     MeetingsFacade,
+    ExportFolderFacade,
   ]);
 }

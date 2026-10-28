@@ -2,6 +2,7 @@ import type { DestroyRef, Signal, WritableSignal } from '@angular/core';
 import { computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { ExportFolderFacade } from '../../../application/facades/export-folder.facade';
 import { MeetingsFacade } from '../../../application/facades/meetings.facade';
 import { FileDialogPort } from '../../../core/ports/file-dialog.port';
 
@@ -37,6 +38,16 @@ export interface SettingsControls {
   readonly onBrowseStorage: (moveExisting?: boolean) => void;
   /** Reset to default — calls `facade.resetStorageLocation(choice)` with the pending choice. */
   readonly onResetStorage: (moveExisting?: boolean) => void;
+  /** Markdown export folder: `undefined` until loaded, `null` while exporting is off. */
+  readonly exportFolder: Signal<string | null | undefined>;
+  /** True while the export folder is loading or being saved — disables Choose/Turn off. */
+  readonly exportBusy: Signal<boolean>;
+  /** Inline export folder failure (relative path, unusable folder); `null` hides it. */
+  readonly exportError: Signal<string | null>;
+  /** Choose… — opens `FileDialogPort.selectDirectory`, then saves the folder; a cancel changes nothing. */
+  readonly onBrowseExportFolder: () => void;
+  /** Turn off — clears the export folder. */
+  readonly onClearExportFolder: () => void;
 }
 
 /**
@@ -61,6 +72,11 @@ export function createSettingsControls(
   // degrades Change… to a no-op, never throws (mirrors the `stopPhase`
   // `Partial` view in `meetings-shell.page.ts`).
   const fileDialog = inject(FileDialogPort, { optional: true });
+  // Optional for the same reason: specs that predate the export folder.
+  const exportFolderFacade = inject(ExportFolderFacade, { optional: true });
+  const exportFolder = computed(() => exportFolderFacade?.folder());
+  const exportBusy = computed(() => exportFolderFacade?.working() ?? false);
+  const exportError = computed(() => exportFolderFacade?.error() ?? null);
   const storageSignals = facade as Partial<
     Pick<MeetingsFacade, 'storageLocation' | 'loadStorageLocation' | 'setStorageLocation' | 'resetStorageLocation'>
   >;
@@ -83,6 +99,7 @@ export function createSettingsControls(
     showAbout.set(false);
     showSettings.set(true);
     void storageSignals.loadStorageLocation?.();
+    void exportFolderFacade?.load();
   };
   const closeSettings = (): void => showSettings.set(false);
   const toggleSettings = (): void => (showSettings() ? closeSettings() : openSettings());
@@ -157,6 +174,25 @@ export function createSettingsControls(
           storageWorking.set(false);
         }
       })();
+    },
+    exportFolder,
+    exportBusy,
+    exportError,
+    onBrowseExportFolder: () => {
+      if (fileDialog === null || exportFolderFacade === null || exportFolderFacade.working()) {
+        return;
+      }
+      void (async () => {
+        const directory = await fileDialog.selectDirectory();
+        if (directory !== null) {
+          await exportFolderFacade.choose(directory);
+        }
+      })();
+    },
+    onClearExportFolder: () => {
+      if (exportFolderFacade !== null && !exportFolderFacade.working()) {
+        void exportFolderFacade.choose(null);
+      }
     },
   };
 }

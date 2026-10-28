@@ -205,6 +205,9 @@
         [storageError]="settings.storageError()"
         [storageRestartRequired]="settings.storageRestartRequired()"
         [moveExisting]="settings.moveExisting()"
+        [exportFolder]="settings.exportFolder()"
+        [exportBusy]="settings.exportBusy()"
+        [exportError]="settings.exportError()"
         (closed)="settings.toggleSettings()"
         (updateConsentChanged)="updateHandlers.onConsentChanged($event)"
         (checkNowRequested)="updateHandlers.onCheckNow()"
@@ -215,6 +218,8 @@
         (moveExistingChanged)="settings.onMoveExistingChanged($event)"
         (browseStorageRequested)="settings.onBrowseStorage($event)"
         (resetStorageRequested)="settings.onResetStorage($event)"
+        (exportFolderBrowseRequested)="settings.onBrowseExportFolder()"
+        (exportFolderClearRequested)="settings.onClearExportFolder()"
       />
     </div>
   </div>
