@@ -13,6 +13,8 @@ on:
   push:
     tags:
       - "v*"
+      # Beta tags belong to beta-windows.yml (Windows only, pre-release).
+      - "!v*-beta*"
 
 permissions:
   contents: write

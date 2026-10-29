@@ -1,0 +1,99 @@
+name: Beta (Windows)
+
+# Builds the Windows NSIS installer for a beta tag such as v0.7.0-beta.1,
+# publishes it as a GitHub pre-release, and refreshes the rolling
+# `beta-manifest` release that holds latest.json for the in-app update check.
+#
+# Why a rolling manifest release: GitHub's `releases/latest/download/...` URL
+# skips pre-releases, so a beta channel needs a fixed tag to point at.
+# Why NSIS only: a pre-release version like 0.7.0-beta.1 cannot be packaged as
+# an MSI (WiX needs numeric pre-release identifiers).
+#
+# Setup (one time) and the release steps: docs/releasing-windows-beta.md.
+# The upstream workflow release.yml skips these tags.
+
+on:
+  push:
+    tags:
+      - "v*-beta*"
+
+permissions:
+  contents: write
+
+jobs:
+  beta:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            ui/package-lock.json
+
+      - name: Install root dependencies (Tauri CLI)
+        run: npm ci
+
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm ci
+
+      # TAURI_SIGNING_* sign the updater artifact and are required. The
+      # Authenticode secrets are optional: without them the installer ships
+      # unsigned and Windows SmartScreen warns. The static CRT settings are
+      # the same ones release.yml explains at length.
+      - name: Build, sign and verify the NSIS installer
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PATH: ${{ secrets.WINDOWS_CERT_PATH }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+          WINDOWS_CERT_THUMBPRINT: ${{ secrets.WINDOWS_CERT_THUMBPRINT }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          LLAMA_STATIC_CRT: "1"
+          CMAKE_MSVC_RUNTIME_LIBRARY: "MultiThreaded"
+          RUSTFLAGS: "-C target-feature=+crt-static"
+        run: ./scripts/release-windows.ps1 -Bundles nsis
+
+      - name: Publish the installer as a pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            target/release/bundle/nsis/*-setup.exe
+            target/release/bundle/nsis/*-setup.exe.sig
+
+      - name: Generate latest.json
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem target/release/bundle/nsis -Filter '*-setup.exe' | Select-Object -First 1
+          if (-not $setup) { throw 'no NSIS installer was produced' }
+          ./scripts/make-latest-json-windows.ps1 `
+            -Installer $setup.FullName `
+            -Tag $env:GITHUB_REF_NAME `
+            -Repo $env:GITHUB_REPOSITORY `
+            -Out latest.json
+
+      - name: Refresh the rolling update manifest
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: beta-manifest
+          name: Beta update manifest
+          body: Rolling release that only holds latest.json for the beta update channel. Download installers from the versioned pre-releases, not from here.
+          prerelease: true
+          make_latest: "false"
+          files: latest.json

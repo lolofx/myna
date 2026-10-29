@@ -17,6 +17,11 @@
 # TAURI_SIGNING_PRIVATE_KEY (and TAURI_SIGNING_PRIVATE_KEY_PASSWORD when the
 # key has one) is required: bundle.createUpdaterArtifacts is true in
 # tauri.conf.json, so without it the updater artifact ships unsigned.
+# -Bundles: which installers to build. Defaults to both; a pre-release version
+# such as 0.7.0-beta.1 cannot be packaged as an MSI (WiX needs numeric
+# pre-release identifiers), so beta builds pass -Bundles nsis.
+param([string]$Bundles = 'nsis,msi')
+
 $ErrorActionPreference = 'Stop'
 
 # --- Environment -------------------------------------------------------
@@ -58,7 +63,7 @@ Log 'Removing stale build artifacts'
 Remove-Item (Join-Path $RepoRoot 'target\release\myna.exe') -Force -ErrorAction SilentlyContinue
 Remove-Item $BundleDir -Recurse -Force -ErrorAction SilentlyContinue
 
-$modelsDir = Join-Path $env:USERPROFILE 'myna\models'
+$modelsDir = Join-Path $env:USERPROFILE 'mynota\models'
 if (-not (Test-Path $modelsDir)) {
   Warn "$modelsDir does not exist — the packaged app will report every model missing at runtime."
 }
@@ -95,10 +100,10 @@ if ([string]::IsNullOrEmpty($env:RUSTFLAGS)) {
 # reconfigure with /MT. Windows-only; the macOS leg never touches this.
 Get-ChildItem (Join-Path $RepoRoot 'target\release\build') -Directory -Filter 'llama-cpp-sys-2-*' -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
-Log 'Building (tauri build --bundles nsis,msi)'
+Log "Building (tauri build --bundles $Bundles)"
 Push-Location $RepoRoot
 try {
-  npx tauri build --bundles nsis,msi --ci
+  npx tauri build --bundles $Bundles --ci
   if ($LASTEXITCODE -ne 0) { Fail "tauri build exited with code $LASTEXITCODE" }
 } finally {
   Pop-Location
