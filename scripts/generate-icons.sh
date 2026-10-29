@@ -10,14 +10,14 @@
 # looks oversized/heavier than neighbouring macOS apps in the Dock.
 #
 # Pipeline:
-#   1. Render myna-brand-kit/myna-app-icon.svg at 824x824 (transparent bg).
+#   1. Render brand/mynota-app-icon.svg at 824x824 (transparent bg).
 #   2. Composite that render centred onto a fully transparent 1024x1024 canvas
 #      (100px margin per side).
 #   3. Feed the composited 1024x1024 PNG to `npx tauri icon` to regenerate the
 #      full icon set in app/src-tauri/icons/.
 #
 # The source SVG (myna-app-icon.svg) already draws its own dark rounded-square
-# background (#0F1115, rx=112 on a 512 viewBox) with the bird mark inside it.
+# background (#0F1115, rx=112 on a 512 viewBox) with the logo inside it.
 # That means insetting the *whole* rendered square is correct: the result is a
 # smaller squircle centred on transparency, exactly like other macOS app
 # icons — not a glyph floating on empty canvas.
@@ -25,7 +25,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-SVG_SRC="${REPO_ROOT}/myna-brand-kit/myna-app-icon.svg"
+SVG_SRC="${REPO_ROOT}/brand/mynota-app-icon.svg"
 ICONS_DIR="${REPO_ROOT}/app/src-tauri/icons"
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/myna-icon-gen.XXXXXX")"
 
