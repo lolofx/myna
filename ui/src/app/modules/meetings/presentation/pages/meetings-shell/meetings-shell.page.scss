@@ -24,8 +24,8 @@
 }
 
 /*
- * Real Myna logo, swapped by theme via `prefers-color-scheme` (single
- * element, no duplicated markup). `myna-logo-horizontal.svg` clear space is
+ * Placeholder Mynota logo, swapped by theme via `prefers-color-scheme` (single
+ * element, no duplicated markup). `mynota-logo-horizontal.svg` clear space is
  * roughly the height of the lowercase `m` stem — the title-bar padding plus
  * this margin approximates that on every side.
  */
@@ -37,7 +37,7 @@
   padding: 0;
   border: 0;
   background-color: transparent;
-  background-image: url('/brand/myna-logo-horizontal.svg');
+  background-image: url('/brand/mynota-logo-horizontal.svg');
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
@@ -51,21 +51,21 @@
 
 @media (prefers-color-scheme: dark) {
   .brand {
-    background-image: url('/brand/myna-logo-horizontal-dark.svg');
+    background-image: url('/brand/mynota-logo-horizontal-dark.svg');
   }
 }
 
 /* Below ~28px the horizontal wordmark logo doesn't read — fall back to the
- * compact bird mark. The monochrome variant is masked with `--color-text`
- * so it stays theme-correct without recoloring the yellow beak/eye. */
+ * compact square mark. The monochrome variant is masked with `--color-text`
+ * so it stays theme-correct. */
 @media (max-width: 640px) {
   .brand {
     width: 22px;
     height: 22px;
     background-image: none;
     background-color: var(--color-text);
-    -webkit-mask: url('/brand/myna-monochrome.svg') no-repeat center / contain;
-    mask: url('/brand/myna-monochrome.svg') no-repeat center / contain;
+    -webkit-mask: url('/brand/mynota-mark.svg') no-repeat center / contain;
+    mask: url('/brand/mynota-mark.svg') no-repeat center / contain;
   }
 
   @media (prefers-color-scheme: dark) {

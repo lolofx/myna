@@ -1,372 +1,120 @@
-# Myna Usage Guide
+# Mynota usage guide
 
-Welcome to Myna, your local-first AI meeting recorder and summarizer. This
-guide walks you through the first run, recording a meeting, and using summary
-templates.
+Mynota records a meeting on your PC, transcribes it locally and writes a Markdown file. This guide covers the first run, recording, the export and where the data lives. Windows is the platform this fork works on; macOS behaviour is Myna's (see the notes at the end).
 
-## First Run
+## First run
 
-### Recommended: Download the .dmg
+1. Install the app (see the [README](../README.md#install-beta)) or build it from source.
+2. On first launch the onboarding screen lists the models. Click **Download models** and wait: it fetches the speech model (Parakeet-TDT, about 640 MB), the voice detector (Silero VAD) and the optional speaker detection models, once, from Hugging Face and GitHub. You can cancel and retry.
+3. If the download fails, the error is shown under the button, and the script output is kept in `download-<name>.log` in the models folder (`%USERPROFILE%\mynota\models`).
+4. A summary model is optional. Pick one later in **Settings > Summary model**.
 
-Grab the latest macOS `.dmg` from
-[GitHub Releases](https://github.com/fmflurry/myna/releases), open it and drag
-Myna to Applications, then launch. The Myna window opens. On first run, the
-onboarding screen shows which models are ready. Click **Download** and watch
-live progress; cancel anytime. This fetches Parakeet-TDT (640 MB) and
-Silero VAD (629 KB) from Hugging Face (about 0.7 GB, one time). The summary
-model is optional and chosen later in **Settings > Summary model** (see
-[Summary model](#summary-model)).
+From the command line: `.\scripts\download-models.ps1` (Windows) or `./scripts/download-models.sh` (macOS and Linux). Both are safe to re-run.
 
-The manual/CLI alternative `./scripts/download-models.sh` still works
-(idempotent, safe to re-run).
+## Recording
 
-You are now ready to record.
+Choose a capture source, click **Record**, then **Stop**.
 
-### Build from Source
+- **Microphone**: your voice only.
+- **System audio**: what the PC plays (the other people on a call, a video, a webinar). On Windows this uses WASAPI loopback and needs no permission.
+- **Both**: two separate tracks, `Me` (microphone) and `Others` (system audio).
 
-```bash
-npm install                    # Tauri dependencies
-npm --prefix ui install        # Angular UI
-```
+Use a headset when you record both. On speakers, the microphone also picks up the other people and they are transcribed twice.
 
-Launch Myna:
+On Windows nothing is transcribed while you record, so the meeting software keeps its CPU and memory. Transcription starts when you stop, at low priority, and the transcript appears a few minutes later. A meeting can be transcribed again from the library with **Re-transcribe**.
 
-```bash
-npx tauri dev
-```
-
-On first run, the onboarding screen shows which models are ready. Click
-**Download** and watch live progress; cancel anytime. This fetches
-Parakeet-TDT (640 MB) and Silero VAD (629 KB) from Hugging Face (about 0.7 GB,
-one time). The summary model is optional and chosen later in **Settings >
-Summary model** (see [Summary model](#summary-model)).
-
-The manual/CLI alternative `./scripts/download-models.sh` still works
-(idempotent, safe to re-run).
-
-## Choosing a Capture Source
-
-Before recording, decide whether to capture audio from your microphone, system
-speakers, or both:
-
-### Microphone Only (Recommended for Clarity)
-
-- **Best for**: One-on-one calls where you are speaking.
-- **What you capture**: Only your voice.
-- **Quality**: No cross-talk, clean audio, optimal transcription.
-- **No permission needed**: Works on all macOS versions.
-
-### System Audio Only (Advanced)
-
-- **Best for**: Recording a presentation, webinar, or screen-share playback.
-- **What you capture**: Only audio from speaker output (Zoom, YouTube, etc.).
-- **Quality**: Good for presentations; poor if you also need to speak (your
-  voice is missing).
-- **Requires permission**: macOS 14.4+. Grant system audio recording
-  permission when prompted.
-
-### Microphone + System Audio (Mixed Mode)
-
-- **Best for**: Capturing both you and remote participants in high fidelity.
-- **What you capture**: Your voice + speaker output (remote participants,
-  slides audio, etc.).
-- **Quality**: High; two independent audio streams mixed at −3 dB per source
-  to avoid clipping.
-- **Requires permission**: macOS 14.4+. Grant system audio recording
-  permission when prompted.
-- **⚠️ Important**: Wear headphones or use an external speaker (not your
-  Mac's speaker). Without headphones, remote participants are transcribed
-  twice — once from system audio, once from mic echo — degrading transcript
-  quality. Headphones prevent the echo.
-- **Why twice on speakers?** When Zoom plays a remote participant's audio
-  through your speaker, Myna captures that audio both from system audio and
-  from your microphone (which picks up the speaker sound). We can't yet
-  suppress this duplication without acoustic echo cancellation.
-
-## Recording a Meeting
-
-### Start Recording
-
-1. Choose your capture source (mic only, system audio only, or mixed).
-2. Click the **Record** button in the main window.
-3. On first run with system audio or mixed mode:
-   - **macOS 14.4+**: Myna will prompt you to grant system audio recording
-     permission. To manage it later, go to System Settings → Privacy &
-     Security → **Screen & System Audio Recording**, where Myna appears under
-     **"System Audio Recording Only"** (note: Myna captures audio only, not
-     video — that's why the pane mentions "Screen"). After granting,
-     **restart Myna** for the change to take effect (macOS caches permissions
-     per process).
-   - **macOS 13–14.3**: System audio capture is not available; Myna silently
-     records microphone-only. You will see a notification in the UI.
-4. Myna begins recording, displaying a live transcript as you speak.
-5. If you requested system audio but permission was denied, Myna silently
-   falls back to microphone-only. You will see a notification in the UI.
-
-### Live Captions
-
-As you record, you see partial captions in real-time. Captions are finalized
-on voice-activity boundaries (when you pause for ~0.5 s). This is
-VAD-segmented simulated streaming: your speech is buffered in short windows,
-transcribed offline, and partial results are shown immediately.
-
-### Stop Recording
-
-Click the **Stop** button. Myna saves:
-
-- `~/myna/meetings/<id>/audio.wav` — your recording in the device-native
-  stereo format (typically 48 kHz), listenable and exportable to other tools.
-- `~/myna/meetings/<id>/track-mic.wav` and `track-system.wav` — 16 kHz mono
-  tracks used for transcription and speaker detection (each present only if
-  that source was captured).
-- `~/myna/meetings/<id>/meeting.json` — metadata (title, start time,
-  transcript).
-
-## Summary Templates
-
-### Built-in Templates
-
-After recording, choose a summary template:
-
-- **Key Points** — extract the main topics discussed.
-- **Action Items** — pull out concrete next steps and who owns them.
-- **Meeting Notes** — generate structured notes (agenda, discussion,
-  outcomes).
-- **Decisions** — highlight decisions made and any dissent.
-
-### When transcription runs
-
-On Windows, Myna records first and transcribes once you stop: during the
-meeting only audio is captured, so memory and CPU stay low, and the
-transcript appears a few minutes after the recording ends, with the same
-progress as **Re-transcribe**. Elsewhere, transcription is live while you
-record.
-
-To switch, set `MYNA_TRANSCRIPTION=live` (or `after`) in the environment, or
-add this to `preferences.json` in the data folder:
+To change this, set `MYNA_TRANSCRIPTION=live` (or `after`) in the environment, or add this to `preferences.json` in the data folder:
 
 ```json
 { "transcription": { "mode": "after", "threads": 2 } }
 ```
 
-`threads` (1 to 4, default 2 in `after` mode) sets how many CPU threads the
-speech model uses; fewer is lighter on the machine and slower to finish.
+`threads` (1 to 4, default 2 in `after` mode) is the number of CPU threads the speech model uses. Fewer is lighter on the PC and slower to finish. Live mode exists but is not the default and has not been validated on Windows.
 
-### Summary model
+## The Markdown export
 
-The summary model is optional. In **Settings > Summary model** pick one of
-three Qwen2.5-Instruct sizes and click **Download** once:
+In **Settings > Markdown export**, choose a folder. Each meeting then becomes one file there, written as soon as the transcript is ready and refreshed when speakers are renamed or a summary is added:
 
-| Model | Download | Notes |
-| ----- | -------- | ----- |
-| Qwen2.5 1.5B | about 1.1 GB | Lightest; quality is untested on long French meetings |
-| Qwen2.5 3B | about 2.1 GB | Balanced |
-| Qwen2.5 7B | about 4.7 GB | Best quality, most memory |
+```markdown
+---
+title: Point projet
+date: 2026-10-27T14:30:00
+duration: 00:42:10
+speakers: [Me, Others 1, Others 2]
+status: to-summarize
+---
 
-Several can be installed side by side. With no explicit choice, the best
-installed one is used. Skip it entirely if you summarize the exported
-transcript with another tool; recording and transcription never need it.
-
-CLI: `./scripts/download-models.sh --only qwen-3b` (or `qwen-1.5b`, `qwen`).
-
-### Generate a Summary
-
-1. Select a meeting from the list.
-2. Click **Summarize**.
-3. Choose a template.
-4. Myna runs your chosen summary model on your transcript and generates a
-   summary. With no summary model installed it points you to **Settings >
-   Summary model** instead.
-5. The summary is saved to `~/myna/meetings/<id>/summaries/<template>.md`.
-
-### Custom Templates
-
-You can add your own summary templates without recompiling Myna. Templates are
-JSON files in `templates/`:
-
-```json
-{
-  "name": "executive-summary",
-  "description": "One-paragraph summary for executives",
-  "prompt": "Summarize this meeting transcript in a single paragraph for a C-level audience:\n\n{transcript}",
-  "sections": [
-    {
-      "name": "summary",
-      "instructions": "Write the one-paragraph summary here"
-    }
-  ]
-}
+[00:00:04] Me: Bonjour à tous.
+[00:00:07] Others 1: Bonjour, on commence par le planning.
 ```
 
-Placeholders available:
+The file name is stable (`YYYY-MM-DD_hh-mm_title.md`), so a tool that watches the folder sees updates, not copies. The reasons for each choice are in [ADR 0019](adr/0019-markdown-export-contract-and-export-folder.md).
 
-- `{transcript}` — the full meeting transcript
-- `{duration}` — meeting duration in seconds
-- `{title}` — meeting title
-- `{language}` — detected language code (e.g., `en`, `de`, `fr`)
+You can also export one meeting by hand from the library, as Markdown or JSON.
 
-After adding a template, restart Myna and it appears in the summary dropdown.
+## Speakers
 
-## Exporting Data
+Speaker detection splits `Others` into numbered speakers (`Others 1`, `Others 2`…). Rename them in the transcript and the export follows. It is not perfect, especially with similar voices or overlapping speech; see [diarization-accuracy.md](diarization-accuracy.md).
 
-### Manual Export
+## Summaries
 
-Myna stores everything in `~/myna/` (your home directory). You can manually
-copy or backup:
+Summaries are optional. You have three ways to get one:
 
-```bash
-cp -r ~/myna ~/backups/myna-$(date +%Y%m%d)
-```
+- Give the Markdown file to another model or tool.
+- Use a local model: in **Settings > Summary model**, pick a Qwen2.5-Instruct size and click **Download** once.
 
-### Export a Meeting
+  | Model | Download | Notes |
+  | ----- | -------- | ----- |
+  | Qwen2.5 1.5B | about 1.1 GB | Lightest; quality on long French meetings is untested |
+  | Qwen2.5 3B | about 2.1 GB | Balanced |
+  | Qwen2.5 7B | about 4.7 GB | Best quality, most memory |
 
-Select a meeting and use **Export** to save it as **Markdown** or **JSON**.
-Other formats (PDF, DOCX, ZIP) remain future work.
+  Several can be installed side by side; with no explicit choice, the best installed one is used. In the library, select a meeting, click **Summarize** and choose a template. Without a model installed, the app points you to the settings.
+- Use an LLM server on your own network. This is planned, not available yet.
 
-## Where Data Lives
+Built-in templates: Key Points, Action Items, Meeting Notes, Decisions. To add your own, put a JSON file in `templates/` ([format](custom-template-prompts.md), [extra instructions](custom-summary-instructions.md)).
 
-All meeting data is stored locally under one **data root** (default
-`~/myna/`):
+## Where the data lives
+
+Everything is stored under one data root, `%USERPROFILE%\mynota\` by default:
 
 ```text
 <data-root>/meetings/<id>/
-├── meeting.json              # Metadata and transcript
-├── audio.wav                 # Recording, device-native stereo (typically 48 kHz)
-├── track-mic.wav             # 16 kHz mono mic track (absent if system-only)
-├── track-system.wav          # 16 kHz mono system track (absent if mic-only)
-└── summaries/
-    ├── key-points.md
-    ├── action-items.md
-    ├── meeting-notes.md
-    └── decisions.md
+├── meeting.json        # metadata and transcript
+├── audio.wav           # recording, device-native stereo
+├── track-mic.wav       # 16 kHz mono microphone track
+├── track-system.wav    # 16 kHz mono system track
+└── summaries/          # one Markdown file per template
 ```
 
-The data root also holds `preferences.json` and `folders.json` — the whole
-root moves together.
+The data root also holds `preferences.json` and `folders.json`. Model weights stay in `%USERPROFILE%\mynota\models` and never move with the meetings.
 
-**Nothing is uploaded to the cloud.** Your recordings and summaries stay on
-your machine.
+To move the meetings, open **Settings > Storage > Change**, choose a folder, choose **Move** (migrates existing meetings) or **Stay**, and restart when asked. **Reset** goes back to the default. Changing is disabled while recording or transcribing. If the chosen folder disappears, the app shows an error and a **Reset** option rather than silently using another place.
 
-### Change Storage Location (Settings)
+For development, `MYNA_DATA_DIR` overrides the data root and `MYNA_MODELS_DIR` overrides the models folder.
 
-Open **Settings** (cogwheel) → **Storage** → **Change**, pick a folder, choose
-**Move** (checked by default: migrate existing meetings) or uncheck to
-**Stay** (start empty at the new location, old folder left untouched), confirm
-the source→destination text, and restart Myna when prompted. iCloud Drive
-locations (under `~/Library/Mobile Documents/`) are accepted. **Reset**
-returns to `~/myna/` (restart required) and asks the same move-vs-stay choice.
+Disk use: one hour of recording is about 920 MB for `audio.wav` plus about 115 MB for each 16 kHz track. Delete meetings from the library to free space.
 
-- Changing location is disabled while recording, stopping, importing, or
-  summarizing — stop first.
-- If the custom folder goes missing (unplugged drive, deleted folder), Myna
-  shows an error with a **Reset** option instead of silently using `~/myna/`
-  — so your library never splits across two places.
-- Model weights (about 0.7 GB, plus the optional summary model) stay fixed at `~/myna/models` (`MYNA_MODELS_DIR`
-  only override); they never migrate with meetings, migration skips top-level
-  `models/`, and `MYNA_DATA_DIR` never affects models.
+## Languages
 
-### Override Data Location (Development)
-
-`MYNA_DATA_DIR` wins over the Settings pointer for meetings only (precedence:
-`MYNA_DATA_DIR` env > stored Settings location > `~/myna` fallback; models
-stay fixed at `~/myna/models` — `MYNA_DATA_DIR` never affects models):
-
-```bash
-export MYNA_DATA_DIR=/tmp/myna-test
-npx tauri dev
-```
-
-## Storage Considerations
-
-A 1-hour meeting produces a ~920 MB `audio.wav` (device-native stereo,
-typically 48 kHz) plus the 16 kHz 16-bit mono track files used for
-transcription (~115 MB per hour each). Myna keeps recordings by default (you
-can delete them from the UI). If disk space becomes an issue, you can
-manually delete old meetings:
-
-```bash
-rm -rf ~/myna/meetings/<id>
-```
-
-## Supported Languages
-
-Parakeet-TDT v3 supports:
-
-- **Germanic**: English, German, Dutch, Swedish, Norwegian, Danish, Faroese,
-  Icelandic
-- **Romance**: French, Spanish, Italian, Portuguese, Romanian
-- **Slavic**: Polish, Czech, Slovak, Slovene, Croatian, Bulgarian
-- **Other European**: Hungarian, Finnish, Greek, Lithuanian, Latvian, Estonian
-
-If your meeting is in any of these languages, Myna transcribes with high
-accuracy. Unsupported languages fall back to English recognition (suboptimal;
-consider using Myna with English meetings or contributing language-specific
-models upstream to sherpa-onnx).
+Parakeet-TDT v3 covers 25 European languages, detected per segment: English, German, Dutch, Swedish, Norwegian, Danish, French, Spanish, Italian, Portuguese, Romanian, Polish, Czech, Slovak, Slovene, Croatian, Bulgarian, Hungarian, Finnish, Greek, Lithuanian, Latvian, Estonian, and others. Meetings in French and English are the ones this fork is tested with.
 
 ## Troubleshooting
 
-### Microphone Permission Denied (macOS)
+- **Model download fails**: read the message under the button and the log file in the models folder. Check your connection and any proxy or antivirus, then retry.
+- **No sound captured from the call**: check that the capture source includes system audio and that the call plays through the default output device. Changing the output device during a recording is supported but worth checking in [windows-recipe.md](windows-recipe.md).
+- **Slow transcription**: the first run loads the model into memory. Lower the thread count to keep the PC responsive, or raise it to finish sooner.
+- **Slow summary**: the first summary loads the model; later ones are faster.
 
-Myna requires microphone access. If you denied permission on first run:
+## macOS
 
-1. Open **System Settings > Privacy & Security > Microphone**.
-2. Find **Myna** and toggle it on.
-3. Restart Myna.
-
-### Slow Transcription
-
-- **First run**: Parakeet v3 (640 MB) is loaded into memory on first use;
-  expect 5–10s latency on first recording.
-- **Subsequent recordings**: Model stays in memory; transcription is
-  real-time.
-
-### Slow Summary Generation
-
-- **First run**: the summary model (Qwen2.5, 1.1 to 4.7 GB depending on the size you picked) loads into memory. A short
-  transcript takes roughly 4–11s to summarize (cold first call ~11s, warm
-  ~4s); for a 30-minute meeting expect up to ~1 minute, since most of the
-  time is spent prefilling the transcript.
-- **Subsequent summaries**: Model and context stay in memory; generation is
-  faster than the cold first call.
-
-To speed up both, consider running on a machine with:
-
-- **Metal acceleration** (macOS) — automatically detected by llama.cpp.
-- **CUDA acceleration** (Windows/Linux with NVIDIA GPU — not applicable to
-  current macOS-only builds; advanced; not in current Tauri build).
-
-### Recording Not Starting
-
-1. Verify microphone is connected and working (test in **System Preferences >
-   Sound**).
-2. Ensure `~/myna/` directory is writable: `ls -ld ~/myna/` should show
-   `drwx------` or similar with your username.
-3. Check Myna logs (macOS: `~/Library/Caches/com.myna/logs/`; when Windows
-   builds ship: `%APPDATA%\Myna\logs/`).
+The macOS code is Myna's and this fork does not change it, but it does not test it either. The data folder is `~/mynota`, system audio capture needs macOS 14.4 or later and a permission (System Settings > Privacy & Security), and the app is not signed with an Apple Developer ID. For macOS, the original [Myna](https://github.com/fmflurry/myna) is the better reference.
 
 ## License
 
-Myna is released under the **MIT** License.
+MIT, see [LICENSE](../LICENSE). Third-party components:
 
-Third-party model licenses:
-
-- **Parakeet-TDT weights** — CC-BY-4.0 (attribution required)
-- **sherpa-onnx runtime** — Apache-2.0
-- **llama.cpp runtime** — MIT
-- **Qwen2.5-Instruct model** — Qwen research model agreement (see
-  `https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF`)
-
-When using Myna, you implicitly accept these licenses. Attribution to
-Parakeet-TDT is required if you distribute Myna or derived works; Myna's
-README and source code include the required notices.
-
-## Next Steps
-
-- Read the [Architecture & Decisions](../docs/adr/) for how Myna was
-  designed.
-- Check [CLAUDE.md](../CLAUDE.md) for developer commands (offline decode, LLM
-  inference, etc.).
-- Explore [GitHub Issues](https://github.com/fmflurry/myna) to report bugs or
-  request features.
-
-Enjoy using Myna!
+- Parakeet-TDT weights: CC-BY-4.0 (attribution required)
+- sherpa-onnx: Apache-2.0
+- llama.cpp: MIT
+- Qwen2.5-Instruct: [Qwen research agreement](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF)

@@ -1,6 +1,6 @@
-# Myna — Stack Proposal
+# Mynota — Stack Proposal
 
-> **Status**: Proposed · **Product**: Local-first AI meeting recorder/summarizer · **License**: MIT · **Targets**: macOS-first; Windows beta; Linux planned and untested
+> **Status**: Inherited from Myna, with the Windows notes of this fork ·  **Product**: Local-first AI meeting recorder/summarizer · **License**: MIT · **Targets**: macOS-first; Windows beta; Linux planned and untested
 >
 > Eight decision areas, the Phase 2 repository layout, and the Phase 3 commands. No code, configs, or manifests are created by this document.
 
@@ -15,7 +15,7 @@
 ## 2. LLM Runtime for Qwen
 
 - **Recommended**: **llama.cpp embedded in-process** (Rust `llama-cpp` bindings; `llama-server`/`llama-cli` for dev only) — no background service.
-- **Rationale**: llama.cpp is the reference runtime for Qwen2.5 GGUF (the Qwen org publishes official GGUF repos and documents llama.cpp usage), with mature Q4_K_M quantization (~4.7 GB for 7B, shipped as two shards), Metal/CUDA backends, and the `qwen2.5` chat template built in. Embedding it keeps Myna a single local-first app with no daemon to install, start, or supervise — important for a recorder that must just work on launch. MIT-licensed.
+- **Rationale**: llama.cpp is the reference runtime for Qwen2.5 GGUF (the Qwen org publishes official GGUF repos and documents llama.cpp usage), with mature Q4_K_M quantization (~4.7 GB for 7B, shipped as two shards), Metal/CUDA backends, and the `qwen2.5` chat template built in. Embedding it keeps the app a single local-first process with no daemon to install, start, or supervise — important for a recorder that must just work on launch. MIT-licensed.
 - **Rejected alternatives**:
   - **Ollama** — easier CLI and model management, but adds a persistent background service and complicates in-process embedding; kept as fallback.
   - **Cloud LLM APIs** — violate the fully-local constraint.
@@ -33,7 +33,7 @@
   (loopback needs no grant; only the microphone needs Settings → Privacy →
   Microphone). Status is `Available` whenever a default render endpoint
   exists, `Unavailable` otherwise. Models and meetings resolve under
-  `%USERPROFILE%\myna` (`%USERPROFILE%\myna\models` for weights). The
+  `%USERPROFILE%\mynota` (`%USERPROFILE%\mynota\models` for weights). The
   Bluetooth-headset warning (AirPods-style name matching) is advisory and
   measurement-only: it never blocks capture or recording. Linux stays
   planned and untested.
@@ -83,7 +83,7 @@
 Phase 2 scaffolds these top-level directories verbatim:
 
 ```
-myna/
+mynota/
 ├── app/          # Tauri 2 shell: src-tauri/ (Rust core) + window/webview wiring
 ├── crates/       # Rust workspace: myna-audio, myna-stt, myna-llm (independent crates)
 ├── ui/           # Webview frontend sources (HTML/CSS/TS; framework decided in Phase 2)

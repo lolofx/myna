@@ -4,7 +4,7 @@ Dev helpers per `docs/stack-proposal.md`.
 
 ## download-models.sh
 
-Fetches the local models Myna needs — Parakeet STT v3 (sherpa-onnx, int8),
+Fetches the local models Mynota needs — Parakeet STT v3 (sherpa-onnx, int8),
 Qwen2.5-7B-Instruct GGUF (Q4_K_M, two shards), and the silero VAD ONNX model — into
 `~/mynota/models` by default, the same location the packaged app reads from
 (`paths::models_root()` in release builds). Idempotent — re-running skips
@@ -76,7 +76,7 @@ See [docs/releasing-macos.md](../docs/releasing-macos.md).
 ## generate-icons.sh
 
 Regenerates the desktop/mobile app icon set in `app/src-tauri/icons/` from
-`myna-brand-kit/myna-app-icon.svg`, respecting Apple's Big Sur+ icon safe
+`brand/mynota-app-icon.svg`, respecting Apple's Big Sur+ icon safe
 area (content inset to ~824x824 on the 1024x1024 canvas, i.e. a ~100px
 transparent margin per side). Feeding a full-bleed 1024 render straight to
 `tauri icon` makes the tile look oversized next to other Dock icons — this

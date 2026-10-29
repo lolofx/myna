@@ -14,14 +14,14 @@
   height: 100%;
 }
 
-/* Big, stylized, greyed-out Myna mark behind the welcome copy — decorative
+/* Big, greyed-out Mynota mark behind the welcome copy — decorative
  * only, never a substitute for the real logo in the title bar. */
 .mark {
   position: absolute;
   width: min(22rem, 45vh);
   height: min(22rem, 45vh);
-  -webkit-mask: url('/brand/myna-mark.svg') no-repeat center / contain;
-  mask: url('/brand/myna-mark.svg') no-repeat center / contain;
+  -webkit-mask: url('/brand/mynota-mark.svg') no-repeat center / contain;
+  mask: url('/brand/mynota-mark.svg') no-repeat center / contain;
   background-color: var(--color-text-muted);
   opacity: 0.08;
   pointer-events: none;

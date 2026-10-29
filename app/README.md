@@ -1,6 +1,6 @@
 # app
 
-Tauri 2 shell for Myna: `src-tauri/` holds the Rust core plus window/webview
+Tauri 2 shell for Mynota: `src-tauri/` holds the Rust core plus window/webview
 wiring, per docs/stack-proposal.md.
 
 ## Layout
@@ -15,11 +15,11 @@ wiring, per docs/stack-proposal.md.
     export, storage, updates).
   - `src/main.rs` — binary entry point.
   - `src/paths.rs` — resolves on-disk locations: the meetings data root
-    (`~/myna` by default; `MYNA_DATA_DIR` > Settings pointer > `~/myna`,
+    (`~/mynota` by default; `MYNA_DATA_DIR` > Settings pointer > `~/mynota`,
     meetings/preferences/folders only — `MYNA_DATA_DIR` never affects
     models), the meetings directory, and the fixed models/templates
     resource directories (repo-relative in dev, bundled resources in
-    release; models fixed at `~/myna/models`, `MYNA_MODELS_DIR` only
+    release; models fixed at `~/mynota/models`, `MYNA_MODELS_DIR` only
     override; templates overridable via `MYNA_TEMPLATES_DIR`).
   - `tauri.conf.json` — window, CSP, and bundle configuration.
   - `capabilities/default.json` — the main window's permission set
@@ -31,8 +31,8 @@ wiring, per docs/stack-proposal.md.
     cpal at runtime (without it, capture fails silently) and
     `NSAudioCaptureUsageDescription` for system-audio capture via Core
     Audio process taps (ADR 0007).
-  - `icons/` — regenerated from `myna-brand-kit/myna-app-icon.svg` via
-    `scripts/generate-icons.sh` (respects the Big Sur safe area).
+  - `icons/` — regenerated from `brand/mynota-app-icon.svg` via
+    `scripts/generate-icons.sh` (placeholder logo, with the Big Sur safe area).
 
 ## Dev commands
 

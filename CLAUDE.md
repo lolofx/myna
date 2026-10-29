@@ -2,13 +2,13 @@
 
 ## Project context
 
-Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first AI meeting recorder/summarizer**: capture meeting audio, get live transcripts, review key points, and remember takeaways.
+Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first meeting recorder and transcriber** that exports Markdown: capture the microphone and system audio, transcribe locally, write one Markdown file per meeting. Summaries are optional (local model, or another tool fed with the export). The scope is deliberately small; do not grow it toward upstream's roadmap.
 
 - **STT**: Parakeet-TDT (ONNX) via sherpa-onnx, with VAD-segmented simulated streaming.
 - **Summarization**: Qwen2.5-Instruct (GGUF) via llama.cpp, templated.
 - **Fully local**: STT and summaries run on-device; **no data is sent to the cloud**.
 - **License**: MIT.
-- **Targets**: macOS-first upstream; Windows and Linux are being added by the fork and untested until their recipe passes — do not claim support.
+- **Targets**: Windows first (beta), macOS from upstream (code not modified by the fork, not re-tested), Linux not started. Do not claim support for a platform until its recipe has passed on a real machine.
 
 **Fork note (Windows lightweight):** this fork is to ship on Windows, macOS and Linux. macOS comes from upstream and must keep building; Windows is the current work (record-then-transcribe, markdown export); Linux follows. Every fork change must compile and stay correct on the other platforms, or be gated with `cfg`. Read [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md), [aidd_docs/memory/backlog.md](aidd_docs/memory/backlog.md) and [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) first. Work on `win/*` branches, keep `main` equal to upstream.
 
@@ -20,6 +20,7 @@ Mynota (a fork of Myna, renamed so the two stay distinct) is a **local-first AI 
 - The Windows CI jobs (15 to 25 minutes cold) run on demand: `gh workflow run windows-ci.yml --ref <branch> --repo <owner>/mynota` (in a fork, `gh` targets the upstream repository by default, so always pass `--repo`). Verify what you can locally, group fixes, then trigger one run. The Linux `ui` job runs on every push.
 - Do not claim Windows support in docs until [docs/windows-recipe.md](docs/windows-recipe.md) has passed on a real PC.
 - Nothing is sent to the upstream repository (no pull request, issue or push) unless its maintainer asks for it.
+- Name and visuals: the Myna name and logo are upstream's and must not be reused. `brand/` and `ui/public/brand/` hold a plain black placeholder until there is a real logo.
 - Decisions: [ADR 0017](docs/adr/0017-record-then-transcribe-on-windows.md) (record then transcribe), [ADR 0018](docs/adr/0018-optional-selectable-summary-model.md) (optional summary model).
 
 ## Stack & architecture
@@ -36,13 +37,14 @@ Authoritative source: [docs/stack-proposal.md](docs/stack-proposal.md) — do no
 ## Repository layout
 
 ```
-myna/
+mynota/
 ├── app/          # Tauri 2 shell: Rust core + window/webview wiring
 ├── crates/       # Rust workspace: myna-audio, myna-stt, myna-llm
 ├── ui/           # Webview frontend sources
 ├── templates/    # JSON summary templates (built-ins + user extensions)
 ├── models/       # Downloaded Parakeet + Qwen GGUF (gitignored)
-├── scripts/      # download-models.sh + dev helpers
+├── brand/        # Placeholder logo source (app icons are generated from it)
+├── scripts/      # download-models.sh/.ps1 + dev helpers
 ├── docs/         # Stack proposal, ADRs, usage docs
 ├── tests/        # Cross-crate integration / E2E tests
 └── data/         # Machine-local runtime data (gitignored)
@@ -93,10 +95,10 @@ llama-server -m models/qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00001-of-0
 
 ## Capture Sources
 
-Myna supports three recording modes (set via `start_recording { "source": "..." }`):
+Mynota supports three recording modes (set via `start_recording { "source": "..." }`):
 - `"mic"` — microphone only.
-- `"system"` — system audio only (macOS 14.4+; silently degrades to mic on unsupported versions).
-- `"mixed"` — microphone + system audio as separate 16 kHz mono tracks with speaker attribution (macOS 14.4+; degrades to mic if permission denied).
+- `"system"` — system audio only (Windows: WASAPI loopback, no permission; macOS 14.4+: Core Audio taps, silently degrades to mic on unsupported versions).
+- `"mixed"` — microphone + system audio as separate 16 kHz mono tracks with speaker attribution (degrades to mic if permission is denied on macOS).
 
 The `source` parameter is optional; default is `"mic"`.
 
@@ -107,7 +109,7 @@ Each meeting produces up to three audio files (stored in `~/mynota/meetings/{id}
 
 Transcription format: the synthesized transcript uses speaker labels (`"Me"` for the user, `"Others"` for remote participants, no label for unknown). These are preserved in summaries and notes (see [ADR 0008](docs/adr/0008-dual-track-audio-with-speaker-attribution.md)). Re-transcription of old meetings (pre-Phase-6) falls back to `audio.wav` if track files are missing, stamped as unknown source.
 
-System audio capture uses **Core Audio process taps** (see [ADR 0007](docs/adr/0007-core-audio-taps.md)) and requires `kTCCServiceAudioCapture` permission. Live audio tests are gated by `MYNA_LIVE_AUDIO_TESTS` and must run serially (`--test-threads=1`).
+On macOS, system audio capture uses **Core Audio process taps** (see [ADR 0007](docs/adr/0007-core-audio-taps.md)) and requires `kTCCServiceAudioCapture` permission. Live audio tests are gated by `MYNA_LIVE_AUDIO_TESTS` and must run serially (`--test-threads=1`).
 
 ## Conventions
 
