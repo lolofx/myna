@@ -74,7 +74,7 @@ Decided in [ADR 0020](../../../docs/adr/0020-interface-language-with-transloco.m
 - `.github/workflows/release.yml` (upstream's macOS plus Windows flow) now skips beta tags.
 - [docs/releasing-windows-beta.md](../../../docs/releasing-windows-beta.md): the one-time key setup and the release steps.
 
-Remaining, in order: generate the fork's updater key pair (private key outside the repository, never committed), store it as the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets, put the public key and the new endpoint in `tauri.conf.json` in the same commit, bump the version to `0.7.0-beta.1`, validate the packaged installer locally, then tag. Decide the product name and identifier too: the fork still installs as "Myna" with the upstream identifier, which collides with an upstream install.
+Done: updater key pair and repository secrets, public key and endpoint in `tauri.conf.json`, product renamed to Mynota (`app.mynota.desktop`), version `0.7.0-beta.1`, packaged installer checked locally (CSS, templates, data folder, models, uninstall), tag `v0.7.0-beta.1` pushed, which triggers the beta workflow. Next: check that run, download the installer from the pre-release, and test it on a second Windows PC (SmartScreen warning expected; models go in `%USERPROFILE%\mynota\models`).
 
 ### 4b. Keep the three platforms honest (phase 8)
 
