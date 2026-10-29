@@ -9,11 +9,11 @@ import { ErrorStateComponent } from '../error-state/error-state.component';
  * indeterminate — no fake %, MB, or ETA figures, funny tone only.
  */
 export const DOWNLOAD_WHIMSY: readonly string[] = [
-  'Teaching your Mac to listen…',
+  'Teaching your computer to listen…',
   'Unpacking words-in-a-box. No cloud harmed.',
   'Still downloading — big brains take a minute.',
   'Good time to grab a coffee.',
-  'Meetings stay on your Mac. Promise.',
+  'Meetings stay on your computer. Promise.',
   'Almost there — summaries are worth the wait.',
 ];
 

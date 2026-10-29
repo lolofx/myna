@@ -17,7 +17,7 @@
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command};
+use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -216,7 +216,15 @@ fn spawn_artifact_download(
     models_root: &Path,
     artifact: DownloadArtifact,
 ) -> Result<Child, AppError> {
+    use std::os::windows::process::CommandExt;
+    // CREATE_NO_WINDOW: no console flash from the GUI app.
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let (stdout, stderr) = open_download_log(models_root, artifact)?;
     Command::new("powershell")
+        .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::null())
+        .stdout(stdout)
+        .stderr(stderr)
         .arg("-NoProfile")
         .arg("-ExecutionPolicy")
         .arg("Bypass")
@@ -241,7 +249,11 @@ fn spawn_artifact_download(
     models_root: &Path,
     artifact: DownloadArtifact,
 ) -> Result<Child, AppError> {
+    let (stdout, stderr) = open_download_log(models_root, artifact)?;
     Command::new("/bin/bash")
+        .stdin(Stdio::null())
+        .stdout(stdout)
+        .stderr(stderr)
         .arg(script)
         .arg("--dest")
         .arg(models_root)
@@ -250,6 +262,35 @@ fn spawn_artifact_download(
         .env("PATH", child_path())
         .spawn()
         .map_err(AppError::Io)
+}
+
+/// Path of the log that receives one artifact's script output.
+fn download_log_path(models_root: &Path, artifact: DownloadArtifact) -> PathBuf {
+    models_root.join(format!("download-{}.log", artifact.as_str()))
+}
+
+/// Truncates the artifact's log and returns two handles on it, for the
+/// child's stdout and stderr, so a failed download can say why.
+fn open_download_log(
+    models_root: &Path,
+    artifact: DownloadArtifact,
+) -> Result<(Stdio, Stdio), AppError> {
+    std::fs::create_dir_all(models_root).map_err(AppError::Io)?;
+    let log =
+        std::fs::File::create(download_log_path(models_root, artifact)).map_err(AppError::Io)?;
+    let twin = log.try_clone().map_err(AppError::Io)?;
+    Ok((Stdio::from(log), Stdio::from(twin)))
+}
+
+/// Last few hundred characters of the artifact's log, for the error message.
+fn download_log_tail(models_root: &Path, artifact: DownloadArtifact) -> String {
+    const TAIL_CHARS: usize = 600;
+    // Lossy: PowerShell writes the console code page, not always UTF-8.
+    let bytes = std::fs::read(download_log_path(models_root, artifact)).unwrap_or_default();
+    let text = String::from_utf8_lossy(&bytes);
+    let text = text.trim();
+    let skip = text.chars().count().saturating_sub(TAIL_CHARS);
+    text.chars().skip(skip).collect()
 }
 
 /// Progress and completion notifications produced by a download run. The
@@ -494,8 +535,14 @@ impl ModelDownloadManager {
         };
 
         if !status.success() {
+            let tail = download_log_tail(models_root, artifact);
+            let detail = if tail.is_empty() {
+                String::new()
+            } else {
+                format!(": {tail}")
+            };
             return StepOutcome::Failed(format!(
-                "download of '{}' failed with exit status {status}",
+                "download of '{}' failed with exit status {status}{detail}",
                 artifact.as_str()
             ));
         }

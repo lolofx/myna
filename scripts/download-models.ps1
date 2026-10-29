@@ -8,6 +8,10 @@ param(
   [switch]$Check
 )
 $ErrorActionPreference = "Stop"
+# The progress bar makes Invoke-WebRequest several times slower on Windows PowerShell 5.1.
+$ProgressPreference = "SilentlyContinue"
+# Older Windows PowerShell defaults to TLS 1.0/1.1, which Hugging Face and GitHub refuse.
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 if (-not $Dest) {
   if ($env:MYNA_MODELS_DIR) { $Dest = $env:MYNA_MODELS_DIR }
