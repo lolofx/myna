@@ -1,32 +1,23 @@
 # Mynota
 
-**A local engine that turns a meeting, a video or a webinar into a transcript, a summary and a Markdown file, on your own PC.**
+Record a meeting, a web conference or a video call on your PC, get a transcript on your machine, and export it as a Markdown file.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-FFC300?style=flat-square&logo=open-source-initiative)](LICENSE)
-[![Platform: Windows beta](https://img.shields.io/badge/platform-Windows%20(beta)-0F1115?style=flat-square)](docs/windows-recipe.md)
-[![Runs locally](https://img.shields.io/badge/runs-locally-6366F1?style=flat-square)](#privacy)
+[![License: MIT](https://img.shields.io/badge/license-MIT-FFC300?style=flat-square)](LICENSE)
 
-Mynota is a fork of [Myna by fmflurry](https://github.com/fmflurry/myna), the local-first meeting recorder for macOS, renamed so that the two stay distinct. It keeps the upstream engine and interface and reworks the parts that matter for a PC that is also running the meeting software. The goal is one app for **Windows, macOS and Linux**: macOS comes from upstream, Windows is what this fork is building now, and Linux follows. It is **not** the official Myna project and is not endorsed by its author. Bugs in Mynota belong in this repository's issues.
+> **This is a fork.** Mynota is a small fork of [Myna](https://github.com/fmflurry/myna) by fmflurry (MIT). Myna is the real project, and it does much more. Mynota only keeps the part I need, and it has its own name and visuals so the two are not confused. It is not endorsed by Myna's author. Bugs in Mynota go in this repository's issues, not upstream's.
 
-## Status: beta, partly verified
+## What it is for
 
-Windows support is **not claimed yet**, and neither is Linux (not started). macOS is upstream's, unchanged in intent, and is not re-tested by this fork yet. What has been checked on a real Windows PC so far, with a development build:
+Mynota records what you hear and say, transcribes it locally, and writes a Markdown file. The summary is then up to you: give the file to another model, use a small local one, or (planned) use an LLM server on your own network.
 
-- Recording the microphone and the system output as two separate tracks, including a silent stretch of many minutes and a change of output device in the middle of a recording.
-- Transcribing afterwards, in French and English, with the right language per segment.
-- Memory and CPU while recording and while transcribing ([figures](docs/perf-baseline.md#windows-record-then-transcribe-fork)).
-- Writing the Markdown file described below.
+It is deliberately limited. Beyond the Windows work and a few near-term changes, it will not grow into a full product.
 
-Not verified yet: the installer on other PCs, Bluetooth headsets, a real Teams or Slack call, speaker detection, a signed installer. The step-by-step checks are in [docs/windows-recipe.md](docs/windows-recipe.md); running them on your PC and reporting back is the most useful contribution.
+## How it works
 
-## What it does
-
-1. **Record** the microphone and the system audio (WASAPI loopback) as separate tracks, labelled `Me` and `Others`. Nothing is decoded while recording, so the meeting software keeps its CPU and memory.
-2. **Transcribe** after you stop, at low priority, with a local speech model (Parakeet-TDT, 25 European languages, language detected per segment). Optional speaker detection splits `Others` into numbered speakers you can rename.
-3. **Export** one Markdown file per meeting into a folder you choose, written automatically as soon as the transcript is ready and refreshed when speakers or summaries change.
-4. **Summarize** with whatever you prefer: hand the Markdown file to your own tooling, use the optional local summary models, or (planned) point Myna at an LLM server on your own network.
-
-### The Markdown file
+1. **Record** the microphone and the system audio as two tracks, `Me` and `Others`. Nothing is transcribed during the recording, so the meeting software keeps its CPU and memory.
+2. **Transcribe** after you stop, at low priority, with a local speech model (Parakeet-TDT, French and English among 25 European languages). Optional speaker detection splits `Others` into numbered speakers you can rename.
+3. **Export** one Markdown file per meeting into a folder you choose.
+4. **Summarize** if you want to, with an optional local model chosen in Settings.
 
 ```markdown
 ---
@@ -41,39 +32,33 @@ status: to-summarize
 [00:00:07] Others 1: Bonjour, on commence par le planning.
 ```
 
-The front matter only holds what the app really knows (no guessed language or source). Lines are in chronological order, and the file name is stable (`YYYY-MM-DD_hh-mm_title.md`), so a tool watching the folder sees updates, not copies. Details and reasons: [ADR 0019](docs/adr/0019-markdown-export-contract-and-export-folder.md).
+Details of the format: [ADR 0019](docs/adr/0019-markdown-export-contract-and-export-folder.md).
 
-## How this fork differs from upstream
+## Platforms
 
-| | Upstream Myna | This fork |
-| --- | --- | --- |
-| Platform | macOS | Windows (beta), macOS kept from upstream, Linux planned |
-| Transcription | Live, while recording | After the recording stops on Windows (live mode still exists, not the default, not validated on Windows) |
-| Summary model | One 7B model, required | Optional and selectable; the Markdown export is the main output |
-| Export | Save dialog, bullet list | Export folder, automatic, front matter and timestamped speaker lines |
-| System audio | Core Audio taps | WASAPI loopback |
-| Interface language | English | English now, French planned ([ADR 0020](docs/adr/0020-interface-language-with-transloco.md)) |
+- **Windows**: the first target, in beta. This is what the first release will be.
+- **macOS**: comes from upstream Myna. The macOS code is not modified on purpose, so it should keep working, but this fork does not test it.
+- **Linux**: not started.
 
-Everything else (storage layout, templates, speaker detection, the meeting library) is upstream's and is kept in step with it where possible. See [the roadmap](aidd_docs/memory/backlog.md) and [the hand-over notes](aidd_docs/tasks/2026_10/resume-here.md).
-
-## Privacy
-
-- Recording, transcription and the optional local summary run on your machine. No audio and no transcript is sent anywhere by default.
-- Your meetings live in `%USERPROFILE%\mynota\` (changeable in Settings). The export folder is wherever you point it.
-- No telemetry, no analytics, no bot joining your call.
-- The network is used for: the one-time model download from Hugging Face (about 0.7 GB, plus an optional summary model); an **optional, opt-in** update check, which never installs anything without your click; and, only if you turn it on, a summary server you name yourself. A summary server must be on a private network (loopback, LAN or VPN address) and is reached over plain `http`; only the transcript text is sent, never audio.
+What has been checked on a Windows PC so far, with a development build: recording both tracks (including long silences and a change of output device), transcription in French and English, and the Markdown file. Not checked yet: the installer on other PCs, Bluetooth headsets, a real Teams call, speaker detection. The checklist is in [docs/windows-recipe.md](docs/windows-recipe.md).
 
 ## Install (beta)
 
-1. Download the installer (`*-setup.exe`) from this repository's [Releases](../../releases).
-2. The installer is **not code-signed yet**, so Windows SmartScreen will warn. Choose **More info**, then **Run anyway**. It installs for the current user and needs no administrator rights. The WebView2 runtime is downloaded if it is missing.
-3. On first launch, click **Download** for the models (about 0.7 GB, once). A summary model is optional and chosen in Settings.
-4. In **Settings > Markdown export**, choose the folder that should receive your meetings.
-5. Choose the capture source, **Record**, then **Stop**. The transcript and the Markdown file appear when the transcription ends.
+1. Download `*-setup.exe` from [Releases](../../releases) once a beta is published.
+2. The installer is not code-signed, so Windows SmartScreen warns: choose **More info**, then **Run anyway**. It installs for the current user, no administrator rights needed.
+3. On first launch, click **Download models** (about 0.7 GB, once). A summary model is optional.
+4. In **Settings > Markdown export**, pick the folder that receives your meetings.
+5. Choose the capture source, **Record**, then **Stop**.
+
+## Privacy
+
+- Recording, transcription and the optional summary run on your machine. Nothing is sent anywhere by default.
+- Meetings are stored in `%USERPROFILE%\mynota\`. No telemetry, no analytics.
+- The network is used only for the one-time model download (Hugging Face and GitHub) and an opt-in update check that never installs anything without your click.
 
 ## Build from source
 
-Prerequisites, build settings and the verification checks are in [docs/windows-recipe.md](docs/windows-recipe.md). In short: Rust (installed through `rustup`), Node 20, the Visual Studio C++ build tools with a Windows SDK, CMake and LLVM.
+Needs Rust, Node 20, and on Windows the Visual Studio C++ build tools, CMake and LLVM. Details: [docs/windows-recipe.md](docs/windows-recipe.md).
 
 ```powershell
 npm ci; npm --prefix ui ci
@@ -81,36 +66,18 @@ npm ci; npm --prefix ui ci
 npx tauri dev
 ```
 
-## Roadmap
+## License and credits
 
-*Direction, not commitment. The fork deliberately adds little to upstream.*
+Mynota is MIT licensed, like Myna: see [LICENSE](LICENSE), which keeps the upstream copyright notice. Mynota is built on [fmflurry/myna](https://github.com/fmflurry/myna).
 
-**This fork**
-- Windows beta first, then Linux, with macOS kept working from upstream.
-- Interface language, English and French (Transloco).
-- Summary on an LLM server of your own network, opt-in.
-- Settings for the transcription threads and mode.
-- Tray icon, global hotkey, close-to-tray while recording.
-- Its own signed update channel and installer.
-
-**Taken from upstream's near-term list** (adopted when upstream ships them, or built here when needed sooner)
-- Global search across meetings.
-- More export formats (TXT, SRT, VTT, PDF, Obsidian, Notion).
-- Model picker (7B, 14B and larger).
-- Custom vocabulary.
-
-Everything else upstream plans (calendar, RAG chat, sync, team features…) is outside this fork's scope.
-
-## Credits and licenses
-
-Mynota is based on Myna, © its upstream author and contributors, **MIT** licensed; this fork keeps the [LICENSE](LICENSE) and follows the upstream project at [fmflurry/myna](https://github.com/fmflurry/myna).
+The Myna name and logo are upstream's and are not reused here.
 
 Third-party components:
 
-- Parakeet-TDT weights: **CC-BY-4.0**
-- sherpa-onnx runtime: **Apache-2.0**
-- llama.cpp runtime: **MIT**
-- Qwen2.5-Instruct: **Qwen research agreement** ([Hugging Face](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF))
-- Speaker detection models (pyannote segmentation 3.0, NeMo TitaNet-small): optional download; see each model card for its license terms
+- Parakeet-TDT weights: CC-BY-4.0
+- sherpa-onnx: Apache-2.0
+- llama.cpp: MIT
+- Qwen2.5-Instruct (optional summary model): [Qwen research agreement](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF)
+- Speaker detection models (pyannote segmentation 3.0, NeMo TitaNet-small): see each model card
 
-More: [usage guide](docs/usage.md) · [architecture](docs/stack-proposal.md) · [decisions](docs/adr/) · [custom summary instructions](docs/custom-summary-instructions.md) · [custom template prompts](docs/custom-template-prompts.md) · [speaker detection accuracy](docs/diarization-accuracy.md)
+More: [usage](docs/usage.md) · [architecture](docs/stack-proposal.md) · [decisions](docs/adr/) · [what comes next](aidd_docs/memory/backlog.md)
