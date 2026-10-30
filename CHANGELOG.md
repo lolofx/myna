@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0-beta.2] - 2026-10-30
+
+### Fixed
+
+- **Model download** - a failed download now shows the end of the script's output under the button, and the output is kept in `download-<name>.log` in the models folder. The PowerShell window no longer flashes, and the progress bar that slowed downloads is off.
+- The onboarding screen no longer says "Mac".
+
+### Changed
+
+- **Placeholder logo and icons**: a plain black square replaces Myna's logo, which a fork cannot reuse.
+- Shorter README and a usage guide rewritten for Mynota.
+
 ## [0.7.0-beta.1] - 2026-10-29
 
 First Mynota beta, a fork of Myna. Windows only for now; the installer is not code-signed.
