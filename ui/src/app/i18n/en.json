@@ -1,0 +1,74 @@
+{
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading…",
+    "sizeGb": "{{value}} GB",
+    "sizeMb": "{{value}} MB"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français"
+  },
+  "updates": {
+    "title": "Updates",
+    "autoCheck": "Check for updates automatically at every launch",
+    "privacyNote": "At every launch, sends only your IP address to GitHub. Never any meeting data.",
+    "checkNow": "Check now",
+    "lastChecked": "Last checked: {{when}}",
+    "notThisSession": "Not this session",
+    "justNow": "Just now"
+  },
+  "settings": {
+    "ariaLabel": "Mynota settings",
+    "title": "Settings",
+    "interfaceLanguage": {
+      "title": "Interface language",
+      "label": "Language of the app’s menus and labels",
+      "ariaLabel": "Interface language"
+    },
+    "summaryLanguage": {
+      "title": "Summary language",
+      "label": "Output language for generated summaries",
+      "ariaLabel": "Summary output language"
+    },
+    "summaryModel": {
+      "title": "Summary model",
+      "helper": "Optional. Summaries are written on this PC by the model you pick; a smaller one uses less memory. You can also skip it and use the exported transcript with another tool.",
+      "label": "Model used to write summaries",
+      "noneSelected": "None selected",
+      "installed": "Installed and ready.",
+      "installedMark": "(installed)",
+      "downloading": "Downloading…",
+      "download": "Download {{size}}",
+      "downloadFailed": "Download failed."
+    },
+    "guidelines": {
+      "title": "General guidelines",
+      "ariaLabel": "General summary guidelines",
+      "helper": "Free-text instructions added to every generated summary, unless a per-request draft turns them off.",
+      "save": "Save guidelines"
+    },
+    "storage": {
+      "title": "Meetings storage",
+      "currentLocation": "Current location",
+      "currentLocationFallback": "the current location",
+      "moveExisting": "Move existing meetings to the new location",
+      "moveNote": "Existing meetings move from {{path}} to the chosen location.",
+      "stayNote": "New location starts empty — existing meetings stay in {{path}} (nothing deleted or merged).",
+      "change": "Change…",
+      "reset": "Reset to default",
+      "restartRequired": "Location changed — restart the app to use the new location."
+    },
+    "export": {
+      "title": "Markdown export",
+      "folder": "Export folder",
+      "off": "Off — choose a folder to export meetings automatically",
+      "note": "Each meeting is written there as one Markdown file (title, date, speakers, then timestamped lines) as soon as its transcript is ready, and refreshed when speakers or summaries change.",
+      "choose": "Choose…",
+      "turnOff": "Turn off"
+    }
+  }
+}

@@ -1,5 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
+import { I18n } from '../../../../../i18n/i18n.service';
+import { SUPPORTED_LANGUAGES, isUiLanguage } from '../../../../../i18n/supported-languages';
+import { UiLanguageService } from '../../../../../i18n/ui-language.service';
 import type { ModelDownloadState } from '../../../application/stores/meetings.store';
 import type { SummaryModelSlot } from '../../../core/models/models-status.model';
 import type { SummaryLanguage } from '../../../core/models/summary-language.model';
@@ -12,15 +16,22 @@ import type { UpdateCheck, UpdateConsent } from '../../../core/models/update.mod
  * optional summary model (choose and download), and the
  * general summary guidelines (save-on-blur plus an explicit Save button that
  * stays disabled while unchanged).
- * Injects nothing; the shell owns every `MeetingsFacade` call.
+ * Injects only the interface-language service; the shell owns every `MeetingsFacade` call.
  */
 @Component({
   selector: 'app-settings',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent {
+  private readonly i18n = inject(I18n);
+  private readonly language = inject(UiLanguageService);
+
+  protected readonly interfaceLanguages = SUPPORTED_LANGUAGES;
+  protected readonly uiLanguage = this.language.language;
+
   /** Sourced from `meetingsFacade.updates.consent()` — required: the shell always has a resolved consent value by the time Settings can render. */
   readonly updateConsent = input.required<UpdateConsent>();
   readonly lastCheck = input<UpdateCheck | undefined>(undefined);
@@ -85,15 +96,15 @@ export class SettingsComponent {
   protected readonly exportFolderLabel = computed(() => {
     const folder = this.exportFolder();
     if (folder === undefined) {
-      return 'Loading…';
+      return this.i18n.t('common.loading');
     }
-    return folder ?? 'Off — choose a folder to export meetings automatically';
+    return folder ?? this.i18n.t('settings.export.off');
   });
 
   protected readonly autoCheckEnabled = computed(() => this.updateConsent() === 'granted');
   protected readonly checkNowDisabled = computed(() => this.checking() || this.recording());
   /** Session-only: no timestamp exists in `UpdateCheck`, so this never claims a precise elapsed time — just whether a check has run since launch. */
-  protected readonly lastCheckedLabel = computed(() => (this.lastCheck() === undefined ? 'Not this session' : 'Just now'));
+  protected readonly lastCheckedLabel = computed(() => (this.lastCheck() === undefined ? this.i18n.t('updates.notThisSession') : this.i18n.t('updates.justNow')));
 
   /** Pick made in this session; wins over the persisted selection until the status refresh catches up, so a chosen-but-not-yet-installed model stays shown. */
   private readonly pickedModelId = signal<string | null>(null);
@@ -106,7 +117,7 @@ export class SettingsComponent {
   /** A failure worth showing: cancellation is the user's own doing, so it stays silent. */
   protected readonly modelDownloadError = computed((): string | null => {
     const download = this.modelDownload();
-    return download?.phase === 'failed' && !download.cancelled ? (download.message ?? 'Download failed.') : null;
+    return download?.phase === 'failed' && !download.cancelled ? (download.message ?? this.i18n.t('settings.summaryModel.downloadFailed')) : null;
   });
 
   /** Uncommitted textarea value, bound to the guidelines text it started from — a later input change can never clobber typing, and vice versa. */
@@ -130,6 +141,13 @@ export class SettingsComponent {
     this.checkNowRequested.emit();
   }
 
+  onInterfaceLanguageChanged(event: Event): void {
+    const code = (event.target as HTMLSelectElement).value;
+    if (isUiLanguage(code)) {
+      this.language.set(code);
+    }
+  }
+
   onSummaryLanguageChanged(event: Event): void {
     this.summaryLanguageSelected.emit((event.target as HTMLSelectElement).value);
   }
@@ -151,11 +169,14 @@ export class SettingsComponent {
 
   /** "Qwen2.5 3B (balanced) — 2.1 GB", with a mark once installed. */
   modelOptionLabel(model: SummaryModelSlot): string {
-    return `${model.label} — ${formatModelSize(model.approxSizeMb)}${model.present ? ' (installed)' : ''}`;
+    const installed = model.present ? ` ${this.i18n.t('settings.summaryModel.installedMark')}` : '';
+    return `${model.label} — ${this.modelSizeLabel(model)}${installed}`;
   }
 
   protected modelSizeLabel(model: SummaryModelSlot): string {
-    return formatModelSize(model.approxSizeMb);
+    return model.approxSizeMb >= 1000
+      ? this.i18n.t('common.sizeGb', { value: (model.approxSizeMb / 1000).toFixed(1) })
+      : this.i18n.t('common.sizeMb', { value: model.approxSizeMb });
   }
 
   onGuidelinesInput(event: Event): void {
@@ -173,9 +194,4 @@ export class SettingsComponent {
       this.guidelinesChanged.emit(text);
     }
   }
-}
-
-/** Megabytes as a short human size: `1.1 GB`, `850 MB`. */
-export function formatModelSize(megabytes: number): string {
-  return megabytes >= 1000 ? `${(megabytes / 1000).toFixed(1)} GB` : `${megabytes} MB`;
 }

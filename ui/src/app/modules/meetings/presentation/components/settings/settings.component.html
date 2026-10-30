@@ -1,32 +1,48 @@
-<section class="settings" aria-label="Mynota settings">
+<section class="settings" [attr.aria-label]="'settings.ariaLabel' | transloco">
   <header>
-    <h2>Settings</h2>
-    <button type="button" class="close" (click)="closed.emit()">Close</button>
+    <h2>{{ 'settings.title' | transloco }}</h2>
+    <button type="button" class="close" (click)="closed.emit()">{{ 'common.close' | transloco }}</button>
   </header>
 
-  <section class="update-settings" aria-label="Updates">
-    <h3>Updates</h3>
+  <section class="interface-language" [attr.aria-label]="'settings.interfaceLanguage.title' | transloco">
+    <h3>{{ 'settings.interfaceLanguage.title' | transloco }}</h3>
+    <label class="language-picker">
+      <span class="language-label">{{ 'settings.interfaceLanguage.label' | transloco }}</span>
+      <select
+        class="interface-language-select"
+        [attr.aria-label]="'settings.interfaceLanguage.ariaLabel' | transloco"
+        (change)="onInterfaceLanguageChanged($event)"
+      >
+        @for (code of interfaceLanguages; track code) {
+          <option [value]="code" [selected]="code === uiLanguage()">{{ 'languages.' + code | transloco }}</option>
+        }
+      </select>
+    </label>
+  </section>
+
+  <section class="update-settings" [attr.aria-label]="'updates.title' | transloco">
+    <h3>{{ 'updates.title' | transloco }}</h3>
     <label class="auto-check">
       <input
         type="checkbox"
         [checked]="autoCheckEnabled()"
         (change)="onAutoCheckToggled($event)"
       />
-      Check for updates automatically at every launch
+      {{ 'updates.autoCheck' | transloco }}
     </label>
-    <p class="privacy-note">At every launch, sends only your IP address to GitHub. Never any meeting data.</p>
+    <p class="privacy-note">{{ 'updates.privacyNote' | transloco }}</p>
     <div class="check-now-row">
-      <button type="button" class="check-now" [disabled]="checkNowDisabled()" (click)="checkNow()">Check now</button>
-      <span class="last-checked">Last checked: {{ lastCheckedLabel() }}</span>
+      <button type="button" class="check-now" [disabled]="checkNowDisabled()" (click)="checkNow()">{{ 'updates.checkNow' | transloco }}</button>
+      <span class="last-checked">{{ 'updates.lastChecked' | transloco: { when: lastCheckedLabel() } }}</span>
     </div>
   </section>
 
-  <section class="summary-language" aria-label="Summary language">
-    <h3>Summary language</h3>
+  <section class="summary-language" [attr.aria-label]="'settings.summaryLanguage.title' | transloco">
+    <h3>{{ 'settings.summaryLanguage.title' | transloco }}</h3>
     <label class="language-picker">
-      <span class="language-label">Output language for generated summaries</span>
+      <span class="language-label">{{ 'settings.summaryLanguage.label' | transloco }}</span>
       <select
-        aria-label="Summary output language"
+        [attr.aria-label]="'settings.summaryLanguage.ariaLabel' | transloco"
         [disabled]="summaryLanguages().length === 0"
         (change)="onSummaryLanguageChanged($event)"
       >
@@ -39,20 +55,17 @@
     </label>
   </section>
 
-  <section class="summary-model" aria-label="Summary model">
-    <h3>Summary model</h3>
-    <p class="model-helper">
-      Optional. Summaries are written on this PC by the model you pick; a smaller one uses less memory. You can also skip
-      it and use the exported transcript with another tool.
-    </p>
+  <section class="summary-model" [attr.aria-label]="'settings.summaryModel.title' | transloco">
+    <h3>{{ 'settings.summaryModel.title' | transloco }}</h3>
+    <p class="model-helper">{{ 'settings.summaryModel.helper' | transloco }}</p>
     <label class="model-picker">
-      <span class="model-label">Model used to write summaries</span>
+      <span class="model-label">{{ 'settings.summaryModel.label' | transloco }}</span>
       <select
-        aria-label="Summary model"
+        [attr.aria-label]="'settings.summaryModel.title' | transloco"
         [disabled]="summaryModels().length === 0 || modelDownloadRunning()"
         (change)="onSummaryModelChanged($event)"
       >
-        <option value="" disabled [selected]="chosenModelId() === null">None selected</option>
+        <option value="" disabled [selected]="chosenModelId() === null">{{ 'settings.summaryModel.noneSelected' | transloco }}</option>
         @for (model of summaryModels(); track model.id) {
           <option [value]="model.id" [selected]="model.id === chosenModelId()">{{ modelOptionLabel(model) }}</option>
         }
@@ -60,11 +73,11 @@
     </label>
     @if (chosenModel(); as model) {
       @if (model.present) {
-        <p class="model-installed">Installed and ready.</p>
+        <p class="model-installed">{{ 'settings.summaryModel.installed' | transloco }}</p>
       } @else {
         <div class="model-actions">
           <button type="button" class="download-model" [disabled]="modelDownloadRunning()" (click)="requestSummaryModelDownload()">
-            {{ modelDownloadRunning() ? 'Downloading…' : 'Download ' + modelSizeLabel(model) }}
+            {{ modelDownloadRunning() ? ('settings.summaryModel.downloading' | transloco) : ('settings.summaryModel.download' | transloco: { size: modelSizeLabel(model) }) }}
           </button>
         </div>
       }
@@ -74,15 +87,15 @@
     }
   </section>
 
-  <section class="summary-guidelines" aria-label="General summary guidelines">
-    <h3>General guidelines</h3>
+  <section class="summary-guidelines" [attr.aria-label]="'settings.guidelines.ariaLabel' | transloco">
+    <h3>{{ 'settings.guidelines.title' | transloco }}</h3>
     <label class="guidelines-helper" for="general-guidelines-input"
-      >Free-text instructions added to every generated summary, unless a per-request draft turns them off.</label
+      >{{ 'settings.guidelines.helper' | transloco }}</label
     >
     <textarea
       id="general-guidelines-input"
       class="guidelines-input"
-      aria-label="General summary guidelines"
+      [attr.aria-label]="'settings.guidelines.ariaLabel' | transloco"
       rows="4"
       [value]="guidelinesValue()"
       (input)="onGuidelinesInput($event)"
@@ -90,16 +103,16 @@
     ></textarea>
     <div class="guidelines-actions">
       <button type="button" class="save-guidelines" [disabled]="!guidelinesDirty()" (click)="saveGuidelines()">
-        Save guidelines
+        {{ 'settings.guidelines.save' | transloco }}
       </button>
     </div>
   </section>
 
-  <section class="meetings-storage" aria-label="Meetings storage">
-    <h3>Meetings storage</h3>
+  <section class="meetings-storage" [attr.aria-label]="'settings.storage.title' | transloco">
+    <h3>{{ 'settings.storage.title' | transloco }}</h3>
     <p class="storage-path">
-      <span class="storage-path-label">Current location</span>
-      <span class="storage-path-value">{{ storagePath() ?? 'Loading…' }}</span>
+      <span class="storage-path-label">{{ 'settings.storage.currentLocation' | transloco }}</span>
+      <span class="storage-path-value">{{ storagePath() ?? ('common.loading' | transloco) }}</span>
     </p>
     <label class="storage-move">
       <input
@@ -109,46 +122,43 @@
         [disabled]="storageBusy()"
         (change)="onMoveExistingToggled($event)"
       />
-      <span>Move existing meetings to the new location</span>
+      <span>{{ 'settings.storage.moveExisting' | transloco }}</span>
     </label>
     @if (moveExisting()) {
-      <p class="storage-note">Existing meetings move from {{ storagePath() ?? 'the current location' }} to the chosen location.</p>
+      <p class="storage-note">{{ 'settings.storage.moveNote' | transloco: { path: storagePath() ?? ('settings.storage.currentLocationFallback' | transloco) } }}</p>
     } @else {
-      <p class="storage-note">New location starts empty — existing meetings stay in {{ storagePath() ?? 'the current location' }} (nothing deleted or merged).</p>
+      <p class="storage-note">{{ 'settings.storage.stayNote' | transloco: { path: storagePath() ?? ('settings.storage.currentLocationFallback' | transloco) } }}</p>
     }
     <div class="storage-actions">
       <button type="button" class="change-storage" [disabled]="storageBusy()" (click)="browseStorageRequested.emit(moveExisting())">
-        Change…
+        {{ 'settings.storage.change' | transloco }}
       </button>
       <button type="button" class="reset-storage" [disabled]="storageBusy()" (click)="resetStorageRequested.emit(moveExisting())">
-        Reset to default
+        {{ 'settings.storage.reset' | transloco }}
       </button>
     </div>
     @if (storageError() !== null) {
       <p class="storage-error" role="alert">{{ storageError() }}</p>
     }
     @if (storageRestartRequired()) {
-      <p class="storage-restart">Location changed — restart the app to use the new location.</p>
+      <p class="storage-restart">{{ 'settings.storage.restartRequired' | transloco }}</p>
     }
   </section>
 
-  <section class="meetings-storage export-folder" aria-label="Markdown export">
-    <h3>Markdown export</h3>
+  <section class="meetings-storage export-folder" [attr.aria-label]="'settings.export.title' | transloco">
+    <h3>{{ 'settings.export.title' | transloco }}</h3>
     <p class="storage-path">
-      <span class="storage-path-label">Export folder</span>
+      <span class="storage-path-label">{{ 'settings.export.folder' | transloco }}</span>
       <span class="storage-path-value export-folder-value">{{ exportFolderLabel() }}</span>
     </p>
-    <p class="storage-note">
-      Each meeting is written there as one Markdown file (title, date, speakers, then timestamped lines) as soon as its
-      transcript is ready, and refreshed when speakers or summaries change.
-    </p>
+    <p class="storage-note">{{ 'settings.export.note' | transloco }}</p>
     <div class="storage-actions">
       <button type="button" class="change-export-folder" [disabled]="exportBusy()" (click)="exportFolderBrowseRequested.emit()">
-        Choose…
+        {{ 'settings.export.choose' | transloco }}
       </button>
       @if (exportFolder() !== null && exportFolder() !== undefined) {
         <button type="button" class="clear-export-folder" [disabled]="exportBusy()" (click)="exportFolderClearRequested.emit()">
-          Turn off
+          {{ 'settings.export.turnOff' | transloco }}
         </button>
       }
     </div>

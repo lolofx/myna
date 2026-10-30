@@ -1,0 +1,74 @@
+{
+  "common": {
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "yes": "Oui",
+    "no": "Non",
+    "loading": "Chargement…",
+    "sizeGb": "{{value}} Go",
+    "sizeMb": "{{value}} Mo"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français"
+  },
+  "updates": {
+    "title": "Mises à jour",
+    "autoCheck": "Rechercher les mises à jour automatiquement à chaque lancement",
+    "privacyNote": "À chaque lancement, envoie uniquement votre adresse IP à GitHub. Jamais aucune donnée de réunion.",
+    "checkNow": "Vérifier maintenant",
+    "lastChecked": "Dernière vérification : {{when}}",
+    "notThisSession": "Pas pendant cette session",
+    "justNow": "À l’instant"
+  },
+  "settings": {
+    "ariaLabel": "Paramètres de Mynota",
+    "title": "Paramètres",
+    "interfaceLanguage": {
+      "title": "Langue de l’interface",
+      "label": "Langue des menus et des libellés de l’application",
+      "ariaLabel": "Langue de l’interface"
+    },
+    "summaryLanguage": {
+      "title": "Langue des résumés",
+      "label": "Langue de rédaction des résumés générés",
+      "ariaLabel": "Langue de rédaction des résumés"
+    },
+    "summaryModel": {
+      "title": "Modèle de résumé",
+      "helper": "Facultatif. Les résumés sont rédigés sur ce PC par le modèle que vous choisissez ; un modèle plus petit consomme moins de mémoire. Vous pouvez aussi vous en passer et utiliser la transcription exportée avec un autre outil.",
+      "label": "Modèle utilisé pour rédiger les résumés",
+      "noneSelected": "Aucun sélectionné",
+      "installed": "Installé et prêt.",
+      "installedMark": "(installé)",
+      "downloading": "Téléchargement…",
+      "download": "Télécharger {{size}}",
+      "downloadFailed": "Le téléchargement a échoué."
+    },
+    "guidelines": {
+      "title": "Consignes générales",
+      "ariaLabel": "Consignes générales pour les résumés",
+      "helper": "Instructions libres ajoutées à chaque résumé généré, sauf si un brouillon propre à la demande les désactive.",
+      "save": "Enregistrer les consignes"
+    },
+    "storage": {
+      "title": "Stockage des réunions",
+      "currentLocation": "Emplacement actuel",
+      "currentLocationFallback": "l’emplacement actuel",
+      "moveExisting": "Déplacer les réunions existantes vers le nouvel emplacement",
+      "moveNote": "Les réunions existantes sont déplacées de {{path}} vers l’emplacement choisi.",
+      "stayNote": "Le nouvel emplacement démarre vide — les réunions existantes restent dans {{path}} (rien n’est supprimé ni fusionné).",
+      "change": "Modifier…",
+      "reset": "Rétablir par défaut",
+      "restartRequired": "Emplacement modifié — redémarrez l’application pour utiliser le nouvel emplacement."
+    },
+    "export": {
+      "title": "Export Markdown",
+      "folder": "Dossier d’export",
+      "off": "Désactivé — choisissez un dossier pour exporter les réunions automatiquement",
+      "note": "Chaque réunion y est écrite dans un fichier Markdown (titre, date, intervenants, puis lignes horodatées) dès que sa transcription est prête, et mise à jour quand les intervenants ou les résumés changent.",
+      "choose": "Choisir…",
+      "turnOff": "Désactiver"
+    }
+  }
+}

@@ -120,7 +120,7 @@ describe('SettingsComponent', () => {
   it('renders one option per summary language and marks the selected one', () => {
     const fixture = createFixture('unset', languages, 'fr');
 
-    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select');
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('.summary-language select');
     expect(Array.from(select.options).map((option) => option.value)).toEqual(['en', 'fr']);
     expect(select.value).toBe('fr');
   });
@@ -130,7 +130,7 @@ describe('SettingsComponent', () => {
     const emitted: string[] = [];
     fixture.componentInstance.summaryLanguageSelected.subscribe((code) => emitted.push(code));
 
-    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select');
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('.summary-language select');
     select.value = 'fr';
     select.dispatchEvent(new Event('change'));
 
@@ -140,7 +140,7 @@ describe('SettingsComponent', () => {
   it('disables the language select until the Rust-owned list has loaded', () => {
     const fixture = createFixture('unset', []);
 
-    expect(fixture.nativeElement.querySelector('select').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.summary-language select').disabled).toBe(true);
   });
 
   it('emits closed when the close button is clicked', () => {
@@ -323,5 +323,41 @@ describe('SettingsComponent', () => {
 
     expect(browsed).toEqual([false]);
     expect(reset).toEqual([false]);
+  });
+});
+
+describe('SettingsComponent interface language', () => {
+  const create = () => {
+    const fixture = TestBed.createComponent(SettingsComponent);
+    fixture.componentRef.setInput('updateConsent', 'unset');
+    fixture.componentRef.setInput('selectedSummaryLanguage', 'en');
+    fixture.detectChanges();
+    return fixture;
+  };
+
+  it('offers every supported interface language and marks the active one', () => {
+    const select: HTMLSelectElement = create().nativeElement.querySelector('.interface-language-select');
+
+    expect([...select.options].map((option) => option.value)).toEqual(['en', 'fr']);
+    expect(select.value).toBe('en');
+  });
+
+  it('switches the whole interface to French and back, and remembers the choice', () => {
+    const fixture = create();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('.interface-language-select');
+
+    select.value = 'fr';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('h2').textContent).toBe('Paramètres');
+    expect(localStorage.getItem('ui.language')).toBe('fr');
+    expect(document.documentElement.lang).toBe('fr');
+
+    select.value = 'en';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('h2').textContent).toBe('Settings');
   });
 });
