@@ -206,7 +206,7 @@ describe('MeetingsShellPage settings modal', () => {
     menu.requestSettings();
     fixture.detectChanges();
 
-    const select: HTMLSelectElement = fixture.nativeElement.querySelector('app-settings select');
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('app-settings .summary-language select');
     select.value = 'fr';
     select.dispatchEvent(new Event('change'));
 

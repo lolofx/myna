@@ -2,7 +2,7 @@
   class="regenerate-instructions-backdrop"
   role="button"
   tabindex="0"
-  aria-label="Cancel and close dialog"
+  [attr.aria-label]="'common.cancelClose' | transloco"
   (click)="onBackdropClick($event)"
   (keydown)="onBackdropKeydown($event)"
 >
@@ -13,10 +13,10 @@
     aria-labelledby="regenerate-instructions-title"
     aria-describedby="regenerate-instructions-description"
   >
-    <h2 id="regenerate-instructions-title">{{ dialogTitlePrefix() }}@if (templateLabel() !== '') { — {{ templateLabel() }}}</h2>
+    <h2 id="regenerate-instructions-title">{{ titlePrefix() }}@if (templateLabel() !== '') { — {{ templateLabel() }}}</h2>
 
     <p id="regenerate-instructions-description">
-      {{ description() }}
+      {{ descriptionText() }}
     </p>
 
     <app-summary-instructions-editor
@@ -32,9 +32,9 @@
 
     <div class="actions">
       <button type="button" class="confirm" (click)="confirm()" [disabled]="confirmDisabled()">
-        {{ confirmLabel() }}
+        {{ confirmText() }}
       </button>
-      <button type="button" class="cancel" (click)="cancel()">Cancel</button>
+      <button type="button" class="cancel" (click)="cancel()">{{ 'common.cancel' | transloco }}</button>
     </div>
   </div>
 </div>

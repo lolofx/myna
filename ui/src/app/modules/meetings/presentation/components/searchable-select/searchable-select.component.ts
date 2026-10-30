@@ -9,6 +9,7 @@ import {
   signal,
   viewChildren,
 } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** A single selectable entry in the searchable combobox list. */
 export interface SearchableSelectOption {
@@ -30,6 +31,7 @@ let nextInstanceId = 0;
  */
 @Component({
   selector: 'app-searchable-select',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './searchable-select.component.html',
   styleUrl: './searchable-select.component.scss',
@@ -43,7 +45,7 @@ let nextInstanceId = 0;
 export class SearchableSelectComponent {
   readonly options = input<readonly SearchableSelectOption[]>([]);
   readonly selectedId = input<string>('');
-  readonly placeholder = input('Search…');
+  readonly placeholder = input('');
   readonly ariaLabel = input<string>('');
   readonly disabled = input(false);
 

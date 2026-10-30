@@ -34,8 +34,8 @@
                   <input
                     type="text"
                     appAutofocus
-                    placeholder="New speaker name"
-                    aria-label="New speaker name"
+                    [placeholder]="'speakers.newSpeakerName' | transloco"
+                    [attr.aria-label]="'speakers.newSpeakerName' | transloco"
                     (keydown)="newSpeaker.onKeydown($event)"
                     (blur)="newSpeaker.onBlur($event)"
                   />
@@ -58,8 +58,8 @@
                 type="button"
                 class="line-delete"
                 [attr.data-line-delete-index]="entry.index"
-                aria-label="Delete this line"
-                title="Delete this line"
+                [attr.aria-label]="'transcript.deleteLineLabel' | transloco"
+                [attr.title]="'transcript.deleteLineLabel' | transloco"
                 (click)="deleteLine(entry.index, entry.segment.text)"
               >
                 <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
@@ -74,13 +74,13 @@
     }
   </ol>
 } @else {
-  <p class="empty">No transcript available for this meeting.</p>
+  <p class="empty">{{ 'transcript.empty' | transloco }}</p>
 }
 @if (selectionMenuOpen()) {
   <div
     class="selection-menu"
     role="group"
-    aria-label="Speech attribution toolbar"
+    [attr.aria-label]="'transcript.toolbar' | transloco"
     [style.left.px]="selectionMenuPosition()?.left"
     [style.top.px]="selectionMenuPosition()?.top"
     [style.bottom.px]="selectionMenuPosition()?.bottom"
@@ -90,8 +90,8 @@
       <button
         type="button"
         class="selection-trigger"
-        title="Attribute this speech to another speaker"
-        aria-label="Attribute this speech to another speaker"
+        [attr.title]="'transcript.attribute' | transloco"
+        [attr.aria-label]="'transcript.attribute' | transloco"
         aria-haspopup="menu"
         [attr.aria-expanded]="selectionPickerOpen()"
         (click)="onSelectionTriggerClick()"
@@ -102,7 +102,7 @@
           <path d="M11.5 5h3M13 3.5v3" stroke-linecap="round" />
         </svg>
       </button>
-      <span class="selection-scope">{{ selectionIndices().length }} segment{{ selectionIndices().length === 1 ? '' : 's' }}</span>
+      <span class="selection-scope">{{ (selectionIndices().length === 1 ? 'transcript.segmentOne' : 'transcript.segmentMany') | transloco: { count: selectionIndices().length } }}</span>
     </div>
     @if (selectionPickerOpen()) {
       <div class="speaker-menu" role="menu">
@@ -114,8 +114,8 @@
             <input
               type="text"
               appAutofocus
-              placeholder="New speaker name"
-              aria-label="New speaker name"
+              [placeholder]="'speakers.newSpeakerName' | transloco"
+              [attr.aria-label]="'speakers.newSpeakerName' | transloco"
               (keydown)="newSpeaker.onKeydown($event)"
               (blur)="newSpeaker.onBlur($event)"
             />

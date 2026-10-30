@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { DEFAULT_SUMMARY_INSTRUCTIONS_DRAFT } from '../../../application/stores/summary-instructions-preferences.util';
 import type { SummaryInstructionsDraft } from '../../../core/models/summary-instructions.model';
@@ -19,6 +20,7 @@ const isDefaultDraft = (draft: SummaryInstructionsDraft): boolean => draft.text 
  */
 @Component({
   selector: 'app-summary-instructions-editor',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-instructions-editor.component.html',
   styleUrl: './summary-instructions-editor.component.scss',

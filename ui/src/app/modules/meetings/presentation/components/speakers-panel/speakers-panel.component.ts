@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, inject } from '@angular/core';
+import { I18n } from '../../../../../i18n/i18n.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { describeSpeakerOp, type SpeakerOp } from '../../../application/stores/speaker-history.model';
 import type { SpeakerRename } from '../transcript-view/transcript-view.component';
@@ -19,11 +21,14 @@ interface SpeakerRow {
  */
 @Component({
   selector: 'app-speakers-panel',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './speakers-panel.component.html',
   styleUrl: './speakers-panel.component.scss',
 })
 export class SpeakersPanelComponent {
+  private readonly i18n = inject(I18n);
+
   /** The selected meeting's display-name registry, keyed by flat speaker label. */
   readonly speakerNames = input<Readonly<Record<string, string>>>({});
   /** Session-scoped inverse-command stack for speaker ops; see `speaker-history.model.ts`. */
@@ -46,7 +51,7 @@ export class SpeakersPanelComponent {
   /** Undo control label describing the last op (e.g. "Undo remove Jean"), or the bare fallback while the stack is empty. */
   protected readonly undoLabel = computed(() => {
     const last = this.history().at(-1);
-    return last ? describeSpeakerOp(last) : 'Undo';
+    return last ? describeSpeakerOp(last) : this.i18n.t('common.undo');
   });
 
   /** Commits a trimmed rename; a no-op when the value is unchanged. */
@@ -60,7 +65,7 @@ export class SpeakersPanelComponent {
   /** Confirms, then emits `speakerRemoved` — the parent owns the actual removal. */
   protected remove(row: SpeakerRow): void {
     const subject = row.name === '' ? row.label : row.name;
-    if (!window.confirm(`Remove speaker "${subject}"? Its segments return to Others (unassigned).`)) {
+    if (!window.confirm(this.i18n.t('speakers.confirmRemove', { name: subject }))) {
       return;
     }
     this.speakerRemoved.emit(row.label);

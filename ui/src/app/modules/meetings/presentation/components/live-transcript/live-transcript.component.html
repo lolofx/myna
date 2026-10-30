@@ -1,7 +1,7 @@
 <div class="live-transcript" #scrollContainer (scroll)="onScroll($event)">
   @if (canShowEarlier()) {
-    <button class="page-control" type="button" aria-label="Show earlier transcript" (click)="showEarlier()">
-      Show earlier transcript
+    <button class="page-control" type="button" [attr.aria-label]="'live.earlier' | transloco" (click)="showEarlier()">
+      {{ 'live.earlier' | transloco }}
     </button>
   }
   @for (segment of visibleFinalizedSegments(); track trackBySegment(segment)) {
@@ -14,7 +14,7 @@
         <span
           class="suspect-badge"
           role="img"
-          aria-label="Possibly mis-transcribed"
+          [attr.aria-label]="'live.suspect' | transloco"
           [title]="suspectTooltip(segment)"
         >⚠</span>
       }
@@ -22,7 +22,7 @@
         <span
           class="edited-badge"
           [title]="editedTooltip(segment)"
-        >Edited</span>
+        >{{ 'live.edited' | transloco }}</span>
       }
       @if (editableLive()) {
         <app-editable-segment
@@ -51,11 +51,11 @@
     </p>
   }
   @if (isEmpty()) {
-    <p class="empty">Listening&hellip;</p>
+    <p class="empty">{{ 'live.listening' | transloco }}</p>
   }
   @if (canShowNewer()) {
-    <button class="page-control" type="button" aria-label="Show newer transcript" (click)="showNewer()">
-      Show newer transcript
+    <button class="page-control" type="button" [attr.aria-label]="'live.newer' | transloco" (click)="showNewer()">
+      {{ 'live.newer' | transloco }}
     </button>
   }
 </div>

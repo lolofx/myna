@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 
+import { registerTranslator } from './tr';
 import { UiLanguageService } from './ui-language.service';
 
 type Params = Record<string, unknown>;
@@ -14,6 +15,10 @@ type Params = Record<string, unknown>;
 export class I18n {
   private readonly transloco = inject(TranslocoService);
   private readonly language = inject(UiLanguageService);
+
+  constructor() {
+    registerTranslator((key, params) => this.t(key, params));
+  }
 
   t(key: string, params?: Params): string {
     this.language.language();

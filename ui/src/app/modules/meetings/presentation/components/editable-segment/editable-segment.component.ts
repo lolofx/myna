@@ -9,6 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * A transcript segment that reads as plain text until activated (click, or
@@ -21,6 +22,7 @@ import {
  */
 @Component({
   selector: 'app-editable-segment',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './editable-segment.component.html',
   styleUrl: './editable-segment.component.scss',

@@ -1,14 +1,6 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, inject, input, output, computed } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { SummaryInstructionsDraft } from '../../../core/models/summary-instructions.model';
 import { SummaryInstructionsEditorComponent } from '../summary-instructions-editor/summary-instructions-editor.component';
@@ -28,12 +20,14 @@ import { SummaryInstructionsEditorComponent } from '../summary-instructions-edit
 @Component({
   selector: 'app-regenerate-instructions-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SummaryInstructionsEditorComponent],
+  imports: [SummaryInstructionsEditorComponent, TranslocoPipe],
   templateUrl: './regenerate-instructions-dialog.component.html',
   styleUrl: './regenerate-instructions-dialog.component.scss',
   host: { class: 'modal' },
 })
 export class RegenerateInstructionsDialogComponent implements AfterViewInit, OnDestroy {
+  private readonly i18n = inject(I18n);
+
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The stored (meeting, template) draft; a new object identity means another draft was loaded. */
   readonly draft = input.required<SummaryInstructionsDraft>();
@@ -45,12 +39,15 @@ export class RegenerateInstructionsDialogComponent implements AfterViewInit, OnD
   readonly confirmDisabled = input(false);
   /** Human-readable template name shown in the title/description; hidden when empty. */
   readonly templateLabel = input('');
-  /** Title prefix shown before the optional template suffix; defaults to the Regenerate copy. */
-  readonly dialogTitlePrefix = input('Regenerate summary');
-  /** Description shown below the title; defaults to the Regenerate copy. */
-  readonly description = input('Adjust the instructions below, then confirm to regenerate this summary.');
-  /** Confirm button label; defaults to the Regenerate copy. */
-  readonly confirmLabel = input('Regenerate');
+  /** Title prefix shown before the optional template suffix; falls back to the translated Regenerate copy when empty. */
+  readonly dialogTitlePrefix = input('');
+  protected readonly titlePrefix = computed(() => this.dialogTitlePrefix() || this.i18n.t('summary.regenerateTitle'));
+  /** Description shown below the title; falls back to the translated Regenerate copy when empty. */
+  readonly description = input('');
+  protected readonly descriptionText = computed(() => this.description() || this.i18n.t('summary.regenerateDescription'));
+  /** Confirm button label; falls back to the translated Regenerate copy when empty. */
+  readonly confirmLabel = input('');
+  protected readonly confirmText = computed(() => this.confirmLabel() || this.i18n.t('summary.regenerate'));
   /** Selector of the trigger to return focus to on close; defaults to the Regenerate button. */
   readonly focusReturnSelector = input('.regenerate-button');
 

@@ -10,6 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import {
   isSuspect,
@@ -47,7 +48,7 @@ export interface LiveTranscriptSegmentEdit {
  */
 @Component({
   selector: 'app-live-transcript',
-  imports: [EditableSegmentComponent],
+  imports: [EditableSegmentComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './live-transcript.component.html',
   styleUrl: './live-transcript.component.scss',

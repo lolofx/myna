@@ -2,18 +2,18 @@
   @if (generating()) {
     <div class="status" role="status" aria-live="polite" aria-busy="true">
       <span class="spinner" aria-hidden="true"></span>
-      <span>Generating summary&hellip;</span>
-      <button type="button" class="cancel" (click)="cancelClicked.emit()">Cancel</button>
+      <span>{{ 'summaryPanel.generating' | transloco }}</span>
+      <button type="button" class="cancel" (click)="cancelClicked.emit()">{{ 'common.cancel' | transloco }}</button>
     </div>
   } @else if (loading() && !markdown()) {
     <div class="status loading" role="status">
       <span class="spinner" aria-hidden="true"></span>
-      <span>Loading summary&hellip;</span>
+      <span>{{ 'summaryPanel.loading' | transloco }}</span>
     </div>
   }
   @if (stale() && markdown() && !editing()) {
     <p class="stale-banner" role="status">
-      Generated from a previous transcript — regenerate for up-to-date results.
+      {{ 'summaryPanel.stale' | transloco }}
     </p>
   }
   @if (searchOpen() && canSearch() && markdown()) {
@@ -22,7 +22,7 @@
         #searchInput
         type="search"
         class="search-input"
-        aria-label="Search summary"
+        [attr.aria-label]="'summaryPanel.search' | transloco"
         [value]="searchQuery()"
         [attr.aria-invalid]="noSearchMatch()"
         (input)="onSearchInput($event)"
@@ -30,13 +30,13 @@
       />
       <span class="search-count" aria-live="polite">{{ matchLabel() }}</span>
       @if (noSearchMatch()) {
-        <span class="search-hint">No matches found</span>
+        <span class="search-hint">{{ 'summaryPanel.noMatches' | transloco }}</span>
       }
       <button
         type="button"
         class="search-prev"
-        aria-label="Previous"
-        title="Previous match (Shift+Enter)"
+        [attr.aria-label]="'summaryPanel.previous' | transloco"
+        [attr.title]="'summaryPanel.previousTitle' | transloco"
         [disabled]="matchCount() === 0"
         (click)="prevMatch()"
       >
@@ -45,8 +45,8 @@
       <button
         type="button"
         class="search-next"
-        aria-label="Next"
-        title="Next match (Enter)"
+        [attr.aria-label]="'summaryPanel.next' | transloco"
+        [attr.title]="'summaryPanel.nextTitle' | transloco"
         [disabled]="matchCount() === 0"
         (click)="nextMatch()"
       >
@@ -55,8 +55,8 @@
       <button
         type="button"
         class="search-close"
-        aria-label="Close"
-        title="Close search (Esc)"
+        [attr.aria-label]="'common.close' | transloco"
+        [attr.title]="'summaryPanel.closeTitle' | transloco"
         (click)="closeSearch()"
       >
         <span aria-hidden="true">&times;</span>
@@ -69,19 +69,19 @@
         #summaryInput
         class="summary-input"
         rows="1"
-        aria-label="Summary markdown"
+        [attr.aria-label]="'summaryPanel.markdown' | transloco"
         [value]="draft()"
         (input)="onInput($event)"
         (keydown)="onKeydown($event)"
       ></textarea>
       <div class="editor-toolbar">
-        <button type="button" class="done" (click)="commit()">Done</button>
-        <button type="button" class="discard" (click)="cancel()">Cancel</button>
+        <button type="button" class="done" (click)="commit()">{{ 'common.done' | transloco }}</button>
+        <button type="button" class="discard" (click)="cancel()">{{ 'common.cancel' | transloco }}</button>
       </div>
     </div>
   } @else if (markdown()) {
     <div class="markdown" #markdownContainer [innerHTML]="renderedMarkdown()"></div>
   } @else if (!generating() && !loading()) {
-    <p class="empty">No summary yet. Pick a template to generate one.</p>
+    <p class="empty">{{ 'summaryPanel.empty' | transloco }}</p>
   }
 </div>

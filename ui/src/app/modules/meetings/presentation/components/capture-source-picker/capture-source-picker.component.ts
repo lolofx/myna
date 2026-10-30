@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { AudioDevice } from '../../../core/models/audio-device.model';
 import type { CaptureSource, SystemAudioStatus } from '../../../core/models/capture-source.model';
 
 interface CaptureSourceOption {
   readonly value: CaptureSource;
-  readonly label: string;
+  readonly labelKey: string;
 }
 
 const CAPTURE_SOURCE_OPTIONS: readonly CaptureSourceOption[] = [
-  { value: 'microphone', label: 'Microphone only' },
-  { value: 'system', label: 'System audio only' },
-  { value: 'mixed', label: 'Both' },
+  { value: 'microphone', labelKey: 'capture.microphoneOnly' },
+  { value: 'system', labelKey: 'capture.systemOnly' },
+  { value: 'mixed', labelKey: 'capture.both' },
 ];
 
 /** Substrings (lowercased) identifying a Bluetooth/HFP input — mirrors `myna_audio::is_bluetooth_input`. */
@@ -72,11 +74,14 @@ function isBuiltinMic(name: string): boolean {
  */
 @Component({
   selector: 'app-capture-source-picker',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './capture-source-picker.component.html',
   styleUrl: './capture-source-picker.component.scss',
 })
 export class CaptureSourcePickerComponent {
+  private readonly i18n = inject(I18n);
+
   readonly captureSource = input.required<CaptureSource>();
   readonly systemAudioStatus = input.required<SystemAudioStatus>();
   readonly selectedDeviceName = input<string | null>(null);
@@ -123,8 +128,8 @@ export class CaptureSourcePickerComponent {
    */
   protected readonly permissionDeniedReason = computed(() =>
     this.platform() === 'windows'
-      ? 'System audio permission was denied. Turn microphone access back on in Settings → Privacy → Microphone.'
-      : 'System audio permission was denied.',
+      ? this.i18n.t('capture.deniedWindows')
+      : this.i18n.t('capture.denied'),
   );
 
   protected readonly showGrantPermission = computed(

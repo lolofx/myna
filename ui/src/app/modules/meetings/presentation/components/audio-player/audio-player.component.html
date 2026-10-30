@@ -1,7 +1,7 @@
 @if (loading()) {
   <div class="audio-player loading" role="status" aria-live="polite">
     <span class="spinner" aria-hidden="true"></span>
-    <span>Loading audio...</span>
+    <span>{{ 'audio.loading' | transloco }}</span>
   </div>
 } @else if (error()) {
   <div class="audio-player error" role="alert">
@@ -10,11 +10,11 @@
   </div>
 } @else if (!hasAudio()) {
   <div class="audio-player no-audio" role="status">
-    <span>No recording available</span>
+    <span>{{ 'audio.none' | transloco }}</span>
   </div>
 } @else if (!url()) {
   <div class="audio-player no-audio" role="status">
-    <span>No recording available</span>
+    <span>{{ 'audio.none' | transloco }}</span>
   </div>
 } @else {
   <div class="audio-player">
@@ -38,8 +38,8 @@
         type="button"
         class="control-button play-pause"
         [class.playing]="playing()"
-        [attr.aria-label]="playing() ? 'Pause' : 'Play'"
-        [attr.title]="playing() ? 'Pause' : 'Play'"
+        [attr.aria-label]="(playing() ? 'audio.pause' : 'audio.play') | transloco"
+        [attr.title]="(playing() ? 'audio.pause' : 'audio.play') | transloco"
         [attr.aria-pressed]="playing()"
         (click)="togglePlayPause()"
       >
@@ -64,7 +64,7 @@
         min="0"
         max="100"
         step="0.1"
-        aria-label="Seek"
+        [attr.aria-label]="'audio.seek' | transloco"
         [value]="seekPercent()"
         [attr.aria-valuemin]="0"
         [attr.aria-valuemax]="100"
@@ -90,7 +90,7 @@
           type="button"
           class="control-button mute"
           [class.muted]="muted() || volume() === 0"
-          [attr.aria-label]="muted() || volume() === 0 ? 'Unmute' : 'Mute'"
+          [attr.aria-label]="(muted() || volume() === 0 ? 'audio.unmute' : 'audio.mute') | transloco"
           [attr.aria-pressed]="muted() || volume() === 0"
           (click)="toggleMute()"
         >
@@ -111,7 +111,7 @@
           max="1"
           step="0.05"
           [value]="volume()"
-          [attr.aria-label]="'Volume: ' + (volume() * 100).toFixed(0) + '%'"
+          [attr.aria-label]="'audio.volume' | transloco: { percent: (volume() * 100).toFixed(0) }"
           [attr.aria-valuemin]="0"
           [attr.aria-valuemax]="100"
           [attr.aria-valuenow]="volume() * 100"
@@ -120,7 +120,7 @@
       </div>
 
       <div class="rate-controls">
-        <label for="rate-select" class="visually-hidden">Playback speed</label>
+        <label for="rate-select" class="visually-hidden">{{ 'audio.speed' | transloco }}</label>
         <!-- No [value] on <select>: Angular applies parent bindings before the
              @for options exist, so the value never matches and the browser
              falls back to the first option. Per-option [selected] is evaluated
@@ -129,7 +129,7 @@
           id="rate-select"
           class="rate-select"
           (change)="setPlaybackRate($event)"
-          [attr.aria-label]="'Playback speed: ' + playbackRate() + 'x'"
+          [attr.aria-label]="'audio.speedValue' | transloco: { rate: playbackRate() }"
         >
           @for (rate of playbackRates; track rate) {
             <option [value]="rate" [selected]="rate === playbackRate()">{{ rate }}x</option>

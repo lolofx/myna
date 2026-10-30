@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { SummaryLanguage } from '../../../core/models/summary-language.model';
 
@@ -10,6 +11,7 @@ import type { SummaryLanguage } from '../../../core/models/summary-language.mode
  */
 @Component({
   selector: 'app-summary-language-picker',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-language-picker.component.html',
   styleUrl: './summary-language-picker.component.scss',

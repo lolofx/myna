@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * A title that reads as plain text until activated (click, or keyboard
@@ -20,6 +21,7 @@ import {
  */
 @Component({
   selector: 'app-editable-title',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './editable-title.component.html',
   styleUrl: './editable-title.component.scss',

@@ -6,13 +6,13 @@
       [attr.aria-expanded]="expanded()"
       (click)="toggleExpanded()"
     >
-      {{ expanded() ? 'Instructions for this summary' : 'Add instructions for this summary' }}
+      {{ (expanded() ? 'summary.instructions' : 'summary.addInstructions') | transloco }}
     </button>
   }
 
   @if (expanded()) {
     <label class="instructions-field">
-      <span class="instructions-label">Instructions for this summary</span>
+      <span class="instructions-label">{{ 'summary.instructions' | transloco }}</span>
       <textarea
         class="instructions-input"
         rows="3"
@@ -28,15 +28,15 @@
         [checked]="draft().includeGeneral"
         (change)="onIncludeGeneralToggled($event)"
       />
-      Apply general guidelines
+      {{ 'summary.applyGeneral' | transloco }}
     </label>
 
     @if (showGuidelinesHint()) {
-      <p class="guidelines-hint">General guidelines: {{ guidelinesPreview() }}</p>
+      <p class="guidelines-hint">{{ 'summary.generalGuidelines' | transloco: { preview: guidelinesPreview() } }}</p>
     }
 
     @if (showRemove()) {
-      <button type="button" class="remove-instructions" (click)="clearInstructions()">Remove</button>
+      <button type="button" class="remove-instructions" (click)="clearInstructions()">{{ 'summary.removeInstructions' | transloco }}</button>
     }
   }
 </div>

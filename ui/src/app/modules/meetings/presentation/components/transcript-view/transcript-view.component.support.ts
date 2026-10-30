@@ -7,6 +7,7 @@ import {
   type Transcript,
   type TranscriptSegment,
 } from '../../../core/models/transcript.model';
+import { tr } from '../../../../../i18n/tr';
 
 /** A known, named speaker identity offered in the reassign menu. */
 export interface SpeakerIdentity {
@@ -137,14 +138,14 @@ export function speakerReassignOptions(
   speakerNames: Readonly<Record<string, string>>,
 ): readonly SpeakerReassignOption[] {
   return [
-    { key: 'me', text: 'Me', speaker: 'me' },
-    { key: 'others', text: 'Others (unassigned)', speaker: 'others' },
+    { key: 'me', text: tr('speakers.me'), speaker: 'me' },
+    { key: 'others', text: tr('speakers.othersUnassigned'), speaker: 'others' },
     ...knownSpeakerIdentities(speakerNames).map((identity) => ({
       key: identity.label,
       text: identity.name,
       speaker: identity.label,
     })),
-    { key: 'new', text: 'New speaker…', speaker: mintNewSpeakerLabel(transcript, speakerNames) },
+    { key: 'new', text: tr('speakers.newSpeaker'), speaker: mintNewSpeakerLabel(transcript, speakerNames) },
   ];
 }
 
@@ -173,7 +174,7 @@ export function chipClasses(speaker: Speaker, paletteSize: number): string {
 
 /** Visible chip text: the resolved label, or a call-to-action for `unknown` (never fabricated attribution). */
 export function chipText(speaker: Speaker, speakerNames: Readonly<Record<string, string>>): string {
-  return hasAttributedLabel(speaker) ? resolveSpeakerLabel(speaker, speakerNames) : 'Assign speaker';
+  return hasAttributedLabel(speaker) ? resolveSpeakerLabel(speaker, speakerNames) : tr('speakers.assign');
 }
 
 /**
@@ -187,9 +188,8 @@ export function sectionDeleteMessage(
 ): string {
   const speaker = segments[indices[0]!]?.speaker;
   const label = speaker === undefined ? '' : speakerLabelOf(speaker);
-  const who = label === '' ? '' : ` by "${label}"`;
-  const noun = indices.length === 1 ? 'line' : 'lines';
-  return `Delete this section${who}? Its ${indices.length} ${noun} will be removed from the transcript.`;
+  const key = label === '' ? 'transcript.deleteSection' : 'transcript.deleteSectionBy';
+  return tr(indices.length === 1 ? `${key}One` : `${key}Many`, { speaker: label, count: indices.length });
 }
 
 /** Longest line text quoted verbatim in the per-line delete confirmation before it is cut to an excerpt. */
@@ -203,7 +203,7 @@ const LINE_DELETE_EXCERPT_MAX = 60;
  */
 export function lineDeleteMessage(text: string): string {
   const excerpt = text.length > LINE_DELETE_EXCERPT_MAX ? `${text.slice(0, LINE_DELETE_EXCERPT_MAX - 1)}…` : text;
-  return `Delete this line? "${excerpt}" will be removed from the transcript.`;
+  return tr('transcript.deleteLine', { excerpt });
 }
 
 /** Minimum on-screen margin a popup menu must keep from any viewport edge. */

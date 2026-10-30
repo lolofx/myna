@@ -1,4 +1,5 @@
 import type { SummaryTemplate } from '../../core/models/summary-template.model';
+import { tr } from '../../../../i18n/tr';
 
 const SECONDS_PER_MINUTE = 60;
 
@@ -13,19 +14,14 @@ export const formatMmSs = (totalSeconds: number): string => {
 /** Formats a non-negative duration in seconds as a short whole-minute label, e.g. `32m`. */
 export const formatMinutesShort = (durationSec: number): string => {
   const minutes = Math.max(0, Math.round(durationSec / SECONDS_PER_MINUTE));
-  return `${minutes}m`;
+  return tr('time.minutesShort', { value: minutes });
 };
 
 /** Formats a non-negative duration in seconds as a long whole-minute label, e.g. `32 min`. */
 export const formatMinutesLong = (durationSec: number): string => {
   const minutes = Math.max(0, Math.round(durationSec / SECONDS_PER_MINUTE));
-  return `${minutes} min`;
+  return tr('time.minutesLong', { value: minutes });
 };
-
-const MONTH_ABBREVIATIONS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-] as const;
 
 const isSameCalendarDay = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -33,8 +29,9 @@ const isSameCalendarDay = (a: Date, b: Date): boolean =>
 const formatHhMm = (date: Date): string =>
   `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
-/** Formats a date as `27 Aug` — deterministic, locale-independent (never `toLocaleDateString`). */
-export const formatShortDate = (date: Date): string => `${date.getDate()} ${MONTH_ABBREVIATIONS[date.getMonth()]}`;
+/** Formats a date as `27 Aug` (`27 août` in French) — month names come from the catalogue, never `toLocaleDateString`, so the output is deterministic. */
+export const formatShortDate = (date: Date): string =>
+  tr('dates.short', { day: date.getDate(), month: tr(`dates.months.${date.getMonth()}`) });
 
 /**
  * Relative day label for the sidebar's secondary line: `HH:MM` when `date` falls
@@ -47,7 +44,7 @@ export const formatRelativeDay = (date: Date, now: Date): string => {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (isSameCalendarDay(date, yesterday)) {
-    return 'Yest.';
+    return tr('dates.yesterdayShort');
   }
   return formatShortDate(date);
 };
@@ -60,10 +57,10 @@ export const formatMeetingListMeta = (createdAt: Date, durationSec: number, now:
 export const formatMeetingHeadingDate = (createdAt: Date): string => `${formatShortDate(createdAt)}, ${formatHhMm(createdAt)}`;
 
 /** Fallback label shown in place of a blank meeting title (e.g. a freshly started, not-yet-renamed recording). */
-export const UNTITLED_MEETING_LABEL = 'Untitled meeting';
+export const untitledMeetingLabel = (): string => tr('meetings.untitled');
 
-/** Renders `title` as-is, or {@link UNTITLED_MEETING_LABEL} when it is empty/whitespace-only. */
-export const formatMeetingTitle = (title: string): string => (title.trim().length > 0 ? title : UNTITLED_MEETING_LABEL);
+/** Renders `title` as-is, or {@link untitledMeetingLabel} when it is empty/whitespace-only. */
+export const formatMeetingTitle = (title: string): string => (title.trim().length > 0 ? title : untitledMeetingLabel());
 
 /** Title-cases a kebab-case slug, e.g. `meeting-notes` -> `Meeting Notes`. */
 const titleCaseFromSlug = (slug: string): string =>
@@ -77,7 +74,7 @@ const titleCaseFromSlug = (slug: string): string =>
 const GENERIC_TEMPLATE_EMOJI = '🗒️';
 
 /** Static label for the always-present transcript tab. */
-export const TRANSCRIPT_TAB_LABEL = '📄 Transcript';
+export const transcriptTabLabel = (): string => `📄 ${tr('meetings.transcript')}`;
 
 const composeTabLabel = (emoji: string, text: string): string => `${emoji} ${text}`;
 

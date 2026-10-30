@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { AudioDevice } from '../../../core/models/audio-device.model';
 import type { AudioSource } from '../../../core/models/audio-source.model';
@@ -19,7 +21,7 @@ const ALL_SYSTEM_AUDIO_LABEL = 'System';
  */
 @Component({
   selector: 'app-capture-settings',
-  imports: [CaptureSourcePickerComponent, SearchableSelectComponent],
+  imports: [CaptureSourcePickerComponent, SearchableSelectComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './capture-settings.component.html',
   styleUrl: './capture-settings.component.scss',
@@ -31,6 +33,8 @@ const ALL_SYSTEM_AUDIO_LABEL = 'System';
   },
 })
 export class CaptureSettingsComponent {
+  private readonly i18n = inject(I18n);
+
   readonly devices = input<readonly AudioDevice[]>([]);
   readonly selectedDevice = input<AudioDevice | null>(null);
   readonly captureSource = input.required<CaptureSource>();
@@ -60,12 +64,12 @@ export class CaptureSettingsComponent {
     const source = this.captureSource();
     const sourceName = this.selectedAudioSourceName() ?? ALL_SYSTEM_AUDIO_LABEL;
     if (source === 'microphone') {
-      return 'Audio: Mic only';
+      return this.i18n.t('capture.triggerMic');
     }
     if (source === 'system') {
-      return `Audio: ${sourceName}`;
+      return this.i18n.t('capture.triggerSource', { name: sourceName });
     }
-    return sourceName === ALL_SYSTEM_AUDIO_LABEL ? 'Audio: Mic + System' : `Audio: Mic + ${sourceName}`;
+    return sourceName === ALL_SYSTEM_AUDIO_LABEL ? this.i18n.t('capture.triggerMicSystem') : this.i18n.t('capture.triggerMicSource', { name: sourceName });
   });
 
   protected toggle(): void {

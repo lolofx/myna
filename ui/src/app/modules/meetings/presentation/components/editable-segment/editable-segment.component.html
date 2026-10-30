@@ -3,7 +3,7 @@
     #segmentInput
     class="segment-input"
     rows="1"
-    aria-label="Transcript segment text"
+    [attr.aria-label]="'transcript.segmentText' | transloco"
     [value]="draft()"
     (input)="onInput($event)"
     (keydown)="onKeydown($event)"

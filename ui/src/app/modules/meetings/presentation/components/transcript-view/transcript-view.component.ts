@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  type OnDestroy,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, type OnDestroy, computed, effect, inject, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import { speakerRole, speakerSubId, type Speaker, type Transcript } from '../../../core/models/transcript.model';
 import { formatMmSs } from '../../utils/format-display.util';
@@ -58,12 +49,14 @@ const SPEAKER_ACCENT_PALETTE_SIZE = 6;
  */
 @Component({
   selector: 'app-transcript-view',
-  imports: [AutofocusDirective, EditableSegmentComponent],
+  imports: [AutofocusDirective, EditableSegmentComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './transcript-view.component.html',
   styleUrl: './transcript-view.component.scss',
 })
 export class TranscriptViewComponent implements OnDestroy {
+  private readonly i18n = inject(I18n);
+
   readonly transcript = input<Transcript | undefined>(undefined);
   readonly editable = input(true);
   /** The selected meeting's display-name registry, keyed by flat speaker label. */
@@ -169,11 +162,11 @@ export class TranscriptViewComponent implements OnDestroy {
       action: option.key === 'new' ? () => this.newSpeaker.begin(option.speaker) : () => this.reassign(indices, option.speaker),
     }));
     if (this.canRemoveSpeaker()) {
-      items.push({ key: 'remove', text: 'Remove speaker…', action: () => this.removeSpeaker() });
+      items.push({ key: 'remove', text: this.i18n.t('speakers.removeSpeaker'), action: () => this.removeSpeaker() });
     }
     items.push({
       key: 'delete',
-      text: 'Delete section…',
+      text: this.i18n.t('transcript.deleteSectionItem'),
       destructive: true,
       action: () => this.deleteSection(indices),
     });
@@ -337,7 +330,7 @@ export class TranscriptViewComponent implements OnDestroy {
       return;
     }
     const resolvedName = this.speakerNames()[speaker] ?? speaker;
-    if (!window.confirm(`Remove speaker "${resolvedName}"? Its segments return to Others (unassigned).`)) {
+    if (!window.confirm(this.i18n.t('speakers.confirmRemove', { name: resolvedName }))) {
       return;
     }
     this.speakerRemoved.emit(speaker);

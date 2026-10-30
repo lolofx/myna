@@ -2,7 +2,7 @@
   class="template-prompt-backdrop"
   role="button"
   tabindex="0"
-  aria-label="Cancel and close dialog"
+  [attr.aria-label]="'common.cancelClose' | transloco"
   (click)="onBackdropClick($event)"
   (keydown)="onBackdropKeydown($event)"
 >
@@ -14,14 +14,14 @@
     aria-describedby="template-prompt-description"
   >
     <h2 id="template-prompt-title">
-      Customize {{ templateLabel() === '' ? templateName() : templateLabel() }} prompt
+      {{ 'prompt.customize' | transloco: { name: templateLabel() === '' ? templateName() : templateLabel() } }}
     </h2>
 
     @if (templateDescription() !== '') {
       <p id="template-prompt-description" class="meta">{{ templateDescription() }}</p>
     }
 
-    <label class="prompt-label" for="template-prompt-input">Prompt</label>
+    <label class="prompt-label" for="template-prompt-input">{{ 'prompt.label' | transloco }}</label>
     <textarea
       id="template-prompt-input"
       class="prompt-input"
@@ -31,7 +31,7 @@
     ></textarea>
 
     <p class="hint">{{ helpText() }}</p>
-    <p class="char-count">{{ charCount() }} / {{ maxChars }} characters</p>
+    <p class="char-count">{{ 'prompt.charCount' | transloco: { count: charCount(), max: maxChars } }}</p>
 
     @if (inlineError(); as invalid) {
       <p class="error" role="alert">{{ invalid }}</p>
@@ -40,16 +40,16 @@
       <p class="server-error" role="alert">{{ error() }}</p>
     }
 
-    <p class="note">Applies to future summaries; existing summaries are unchanged.</p>
+    <p class="note">{{ 'prompt.note' | transloco }}</p>
 
     <div class="actions">
       <button type="button" class="confirm" (click)="save()" [disabled]="saveDisabled()">
-        Save
+        {{ 'common.save' | transloco }}
       </button>
       <button type="button" class="reset" (click)="requestReset()" [disabled]="resetDisabled()">
-        Reset to built-in
+        {{ 'prompt.reset' | transloco }}
       </button>
-      <button type="button" class="cancel" (click)="cancel()">Cancel</button>
+      <button type="button" class="cancel" (click)="cancel()">{{ 'common.cancel' | transloco }}</button>
     </div>
   </div>
 </div>

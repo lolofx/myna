@@ -3,7 +3,7 @@
     #titleInput
     type="text"
     class="title-input"
-    aria-label="Meeting title"
+    [attr.aria-label]="'meetings.title' | transloco"
     [value]="draft()"
     (input)="onInput($event)"
     (keydown)="onKeydown($event)"

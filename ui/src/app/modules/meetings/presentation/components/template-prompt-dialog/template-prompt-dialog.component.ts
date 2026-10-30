@@ -1,23 +1,12 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  computed,
-  inject,
-  input,
-  linkedSignal,
-  output,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, computed, inject, input, linkedSignal, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import { validatePromptText } from '../meeting-detail-pane/meeting-detail-pane.component.support';
 
 /** Max prompt size in Unicode scalar values — mirrors Rust `MAX_TEMPLATE_PROMPT_CHARS`. */
 export const MAX_TEMPLATE_PROMPT_CHARS = 12000;
 
-const DEFAULT_PLACEHOLDER_HELP = 'Placeholders: {title} {duration} {transcript} (required) {language}.';
 
 /**
  * Dumb per-template prompt editor modal. Reuses the regenerate-dialog modal
@@ -33,12 +22,15 @@ const DEFAULT_PLACEHOLDER_HELP = 'Placeholders: {title} {duration} {transcript} 
  */
 @Component({
   selector: 'app-template-prompt-dialog',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './template-prompt-dialog.component.html',
   styleUrl: './template-prompt-dialog.component.scss',
   host: { class: 'modal' },
 })
 export class TemplatePromptDialogComponent implements AfterViewInit, OnDestroy {
+  private readonly i18n = inject(I18n);
+
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** Template slug (`key-points`); drives the focus-return selector. */
@@ -72,7 +64,7 @@ export class TemplatePromptDialogComponent implements AfterViewInit, OnDestroy {
   protected readonly validationError = computed(() => validatePromptText(this.draft()));
   protected readonly inlineError = computed(() =>
     this.tooLong()
-      ? `Prompt must be at most ${MAX_TEMPLATE_PROMPT_CHARS} characters.`
+      ? this.i18n.t('prompt.tooLong', { max: MAX_TEMPLATE_PROMPT_CHARS })
       : this.validationError(),
   );
   protected readonly unchanged = computed(() => this.draft() === this.effectivePrompt());
@@ -83,7 +75,7 @@ export class TemplatePromptDialogComponent implements AfterViewInit, OnDestroy {
   );
   protected readonly resetDisabled = computed(() => this.confirmDisabled() || !this.customized());
   protected readonly helpText = computed(() =>
-    this.placeholderHelp() === '' ? DEFAULT_PLACEHOLDER_HELP : this.placeholderHelp(),
+    this.placeholderHelp() === '' ? this.i18n.t('prompt.placeholderHelp') : this.placeholderHelp(),
   );
 
   /** Moves keyboard focus inside the dialog so it is operable without a pointer. */

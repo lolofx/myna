@@ -18,6 +18,7 @@
 
 import type { MeetingId } from '../../core/models/meeting.model';
 import type { TranscriptSegment } from '../../core/models/transcript.model';
+import { tr } from '../../../../i18n/tr';
 
 /**
  * Inverse of one or more `delete_transcript_segment` calls made as ONE
@@ -50,9 +51,9 @@ export function describeTranscriptOp(op: TranscriptOp): string {
   switch (op.kind) {
     case 'delete':
       return op.segments.length === 1
-        ? `Undo delete of segment ${op.index + 1}`
-        : `Undo delete of ${op.segments.length} segments`;
+        ? tr('history.undoDeleteSegment', { n: op.index + 1 })
+        : tr('history.undoDeleteSegments', { count: op.segments.length });
     case 'merge':
-      return `Undo merge of segment ${op.index + 1}`;
+      return tr('history.undoMergeSegment', { n: op.index + 1 });
   }
 }

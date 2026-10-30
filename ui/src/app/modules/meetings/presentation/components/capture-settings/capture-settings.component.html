@@ -11,12 +11,12 @@
   </button>
 
   @if (expanded()) {
-    <div class="popover" role="group" aria-label="Audio capture settings">
-      <label class="device-label" for="capture-device">Microphone</label>
+    <div class="popover" role="group" [attr.aria-label]="'capture.settings' | transloco">
+      <label class="device-label" for="capture-device">{{ 'capture.microphone' | transloco }}</label>
       <select
         id="capture-device"
         class="device-select"
-        aria-label="Microphone"
+        [attr.aria-label]="'capture.microphone' | transloco"
         (change)="onDeviceChange($event)"
         [disabled]="disabled() || captureSource() === 'system'"
       >
@@ -27,13 +27,13 @@
         }
       </select>
 
-      <span class="device-label">System audio</span>
+      <span class="device-label">{{ 'capture.systemAudio' | transloco }}</span>
       <app-searchable-select
         class="audio-source-select"
         [options]="audioSources()"
         [selectedId]="selectedAudioSource()"
-        placeholder="Search apps…"
-        ariaLabel="System audio"
+        [placeholder]="'capture.searchApps' | transloco"
+        [ariaLabel]="'capture.systemAudio' | transloco"
         [disabled]="disabled() || captureSource() === 'microphone'"
         (selectionChange)="onAudioSourceChange($event)"
       />

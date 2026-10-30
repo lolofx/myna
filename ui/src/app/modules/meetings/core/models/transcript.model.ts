@@ -1,3 +1,5 @@
+import { tr } from '../../../../i18n/tr';
+
 /**
  * Opaque, open-label speaker attribution — deliberately NOT a closed union.
  * Stored values are `'me'`, `'others'`, a sub-identity like `'others:2'`, or
@@ -40,7 +42,7 @@ export function speakerDisplayName(speaker: Speaker): string {
   if (role === 'unknown') {
     return '';
   }
-  const roleLabel = role === 'me' ? 'Me' : 'Others';
+  const roleLabel = tr(role === 'me' ? 'speakers.me' : 'speakers.others');
   const subId = speakerSubId(speaker);
   return subId ? `${roleLabel} ${subId}` : roleLabel;
 }
@@ -95,13 +97,7 @@ export interface TranscriptSegment {
  * e.g. a reason minted by a newer backend — fall back to the raw value so
  * the UI never drops an audit hint it doesn't recognize yet.
  */
-const SUSPECT_REASON_LABELS: Record<string, string> = {
-  RepetitionLoop: 'Repeated phrase',
-  LanguageDriftHint: 'Possible language drift',
-  LowSpeechEnergy: 'Low speech energy',
-  TimingAnomaly: 'Unusual word timing',
-  DegenerateLength: 'Unusual length',
-};
+const SUSPECT_REASONS: readonly string[] = ['RepetitionLoop', 'LanguageDriftHint', 'LowSpeechEnergy', 'TimingAnomaly', 'DegenerateLength'];
 
 /** Whether a segment carries any suspect flag worth review. */
 export function isSuspect(segment: TranscriptSegment): boolean {
@@ -110,7 +106,7 @@ export function isSuspect(segment: TranscriptSegment): boolean {
 
 /** Human-facing label for a single suspect-reason wire value. */
 export function suspectLabel(reason: string): string {
-  return SUSPECT_REASON_LABELS[reason] ?? reason;
+  return SUSPECT_REASONS.includes(reason) ? tr(`suspect.${reason}`) : reason;
 }
 
 export interface Transcript {

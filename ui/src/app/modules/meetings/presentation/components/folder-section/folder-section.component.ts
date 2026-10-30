@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { Folder, FolderId } from '../../../core/models/folder.model';
 import type { Meeting, MeetingId } from '../../../core/models/meeting.model';
@@ -17,7 +18,7 @@ type FolderSectionMode = 'idle' | 'renaming' | 'confirming-delete';
  */
 @Component({
   selector: 'app-folder-section',
-  imports: [MeetingListItemComponent],
+  imports: [MeetingListItemComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './folder-section.component.html',
   styleUrl: './folder-section.component.scss',

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { Folder, FolderId } from '../../../core/models/folder.model';
 import type { Meeting, MeetingId } from '../../../core/models/meeting.model';
@@ -42,7 +43,7 @@ export interface MeetingDragMoveRequest {
  */
 @Component({
   selector: 'app-meeting-sidebar',
-  imports: [MeetingListItemComponent, FolderSectionComponent],
+  imports: [MeetingListItemComponent, FolderSectionComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './meeting-sidebar.component.html',
   styleUrl: './meeting-sidebar.component.scss',

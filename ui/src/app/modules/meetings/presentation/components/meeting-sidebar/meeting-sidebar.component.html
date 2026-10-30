@@ -6,7 +6,7 @@
       [disabled]="importDisabled()"
       (click)="importRequested.emit()"
     >
-      Import audio&hellip;
+      {{ 'sidebar.import' | transloco }}
     </button>
   </div>
 
@@ -14,8 +14,8 @@
     <span class="icon" aria-hidden="true">&#9906;</span>
     <input
       type="search"
-      placeholder="Search"
-      aria-label="Search meetings"
+      [placeholder]="'sidebar.search' | transloco"
+      [attr.aria-label]="'sidebar.searchAria' | transloco"
       [value]="query()"
       (input)="onQueryInput($event)"
     />
@@ -23,16 +23,16 @@
 
   @if (meetings().length === 0 && folders().length === 0) {
     <div class="empty-state">
-      <p class="headline">No meetings yet</p>
-      <p class="hint">Press Record to capture your first meeting.</p>
+      <p class="headline">{{ 'sidebar.emptyTitle' | transloco }}</p>
+      <p class="hint">{{ 'sidebar.emptyHint' | transloco }}</p>
     </div>
   } @else if (!hasAnyMatches() && folderViews().length === 0) {
-    <p class="no-match">No meetings match &ldquo;{{ query() }}&rdquo;</p>
+    <p class="no-match">{{ 'sidebar.noMatch' | transloco: { query: query() } }}</p>
   } @else {
     <div
       class="list"
       role="listbox"
-      aria-label="Meetings"
+      [attr.aria-label]="'sidebar.meetings' | transloco"
       [class.drop-accepting]="dragActive() && canDropInUncategorized()"
       [class.drop-hover]="uncategorizedDragHover()"
       [style.min-height.px]="dragActive() ? 48 : null"
@@ -96,8 +96,8 @@
         <input
           class="new-folder-input"
           type="text"
-          placeholder="Folder name"
-          aria-label="New folder name"
+          [placeholder]="'sidebar.folderName' | transloco"
+          [attr.aria-label]="'sidebar.newFolderName' | transloco"
           [value]="newFolderDraft()"
           (input)="onNewFolderInput($event)"
           (keydown.enter)="commitNewFolder($event)"
@@ -106,7 +106,7 @@
       </div>
     } @else {
       <button type="button" class="new-folder-trigger" (click)="startNewFolder()">
-        <span aria-hidden="true">+</span> New folder
+        <span aria-hidden="true">+</span> {{ 'sidebar.newFolder' | transloco }}
       </button>
     }
   }
@@ -129,15 +129,15 @@
       >
         <span class="chevron" aria-hidden="true">&#9656;</span>
         @if (archiveDragHover()) {
-          <span class="drop-hint">Drop to archive</span>
+          <span class="drop-hint">{{ 'sidebar.dropToArchive' | transloco }}</span>
         } @else {
-          Archive ({{ archivedMeetings().length }})
+          {{ 'sidebar.archiveCount' | transloco: { count: archivedMeetings().length } }}
         }
       </button>
       @if (archivedMeetings().length === 0) {
-        <p class="empty-hint">Drop a meeting here to archive it</p>
+        <p class="empty-hint">{{ 'sidebar.dropHere' | transloco }}</p>
       } @else if (archiveExpanded()) {
-        <div id="archived-meetings" class="list" role="listbox" aria-label="Archived meetings">
+        <div id="archived-meetings" class="list" role="listbox" [attr.aria-label]="'sidebar.archived' | transloco">
           @for (meeting of archivedMeetings(); track meeting.id) {
             <app-meeting-list-item
               [meeting]="meeting"

@@ -1,20 +1,20 @@
-<section class="speakers-panel" aria-label="Speakers">
-  <h3 class="panel-title">Speakers</h3>
+<section class="speakers-panel" [attr.aria-label]="'speakers.title' | transloco">
+  <h3 class="panel-title">{{ 'speakers.title' | transloco }}</h3>
   <ul class="speaker-rows">
     @for (row of rows(); track row.label) {
       <li class="speaker-row">
-        <span class="speaker-role">{{ row.removable ? 'Speaker' : 'Me' }}</span>
+        <span class="speaker-role">{{ row.removable ? ('speakers.speaker' | transloco) : ('speakers.me' | transloco) }}</span>
         <input
           type="text"
           class="speaker-name"
           [value]="row.name"
-          [placeholder]="row.removable ? 'Unnamed' : 'You'"
-          [attr.aria-label]="'Display name for ' + (row.name !== '' ? row.name : row.label)"
+          [placeholder]="row.removable ? ('speakers.unnamed' | transloco) : ('speakers.you' | transloco)"
+          [attr.aria-label]="'speakers.displayNameFor' | transloco: { name: row.name !== '' ? row.name : row.label }"
           (change)="commitRename(row, $event)"
           (keyup.enter)="commitRename(row, $event)"
         />
         @if (row.removable) {
-          <button type="button" class="remove-speaker" (click)="remove(row)">Remove&hellip;</button>
+          <button type="button" class="remove-speaker" (click)="remove(row)">{{ 'speakers.remove' | transloco }}</button>
         }
       </li>
     }

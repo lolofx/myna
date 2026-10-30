@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  computed,
-  effect,
-  input,
-  output,
-  signal,
-  untracked,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, input, output, signal, untracked, viewChild, inject } from '@angular/core';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import {
   DEFAULT_SIDEBAR_WIDTH_PX,
@@ -45,6 +34,8 @@ const KEYBOARD_STEP_PX = 8;
   styleUrl: './sidebar-splitter.component.scss',
 })
 export class SidebarSplitterComponent {
+  private readonly i18n = inject(I18n);
+
   readonly widthPx = input<number>(DEFAULT_SIDEBAR_WIDTH_PX);
   readonly collapsed = input<boolean>(false);
   /** Accessible name fragment for the sidebar, e.g. `'meetings'` — read out as "Show meetings" / "Hide meetings". */
@@ -77,10 +68,10 @@ export class SidebarSplitterComponent {
   }
   protected readonly ariaValueNow = computed(() => this.internalWidth());
   protected readonly toggleLabel = computed(() =>
-    this.internalCollapsed() ? `Show ${this.sidebarLabel()}` : `Hide ${this.sidebarLabel()}`,
+    this.i18n.t(this.internalCollapsed() ? 'layout.show' : 'layout.hide', { name: this.sidebarLabel() }),
   );
   /** Toggle tooltip: the action label plus the Cmd/Ctrl+B shortcut that triggers it from anywhere. */
-  protected readonly toggleTitle = computed(() => `${this.toggleLabel()} (⌘B / Ctrl+B)`);
+  protected readonly toggleTitle = computed(() => this.i18n.t('layout.shortcut', { label: this.toggleLabel() }));
 
   constructor() {
     // Tracks ONLY `widthPx` (the input) — `dragging` is read `untracked`

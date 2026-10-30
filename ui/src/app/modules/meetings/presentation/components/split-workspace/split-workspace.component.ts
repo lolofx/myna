@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  computed,
-  effect,
-  input,
-  output,
-  signal,
-  untracked,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, input, output, signal, untracked, viewChild, inject } from '@angular/core';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import { DEFAULT_SPLIT_RATIO, clampSplitRatio } from '../../../core/models/split-layout.model';
 
@@ -40,6 +29,8 @@ const KEYBOARD_STEP = 0.02;
   styleUrl: './split-workspace.component.scss',
 })
 export class SplitWorkspaceComponent {
+  private readonly i18n = inject(I18n);
+
   readonly splitRatio = input<number>(DEFAULT_SPLIT_RATIO);
   readonly collapsed = input<boolean>(false);
   /** Accessible name fragment for the left column, e.g. `'transcript'` — read out as "Show transcript" / "Hide transcript". */
@@ -58,7 +49,7 @@ export class SplitWorkspaceComponent {
   protected readonly leftWidthPercent = computed(() => Math.round(this.internalRatio() * 10000) / 100);
   protected readonly ariaValueNow = computed(() => Math.round(this.internalRatio() * 100));
   protected readonly toggleLabel = computed(() =>
-    this.internalCollapsed() ? `Show ${this.leftLabel()}` : `Hide ${this.leftLabel()}`,
+    this.i18n.t(this.internalCollapsed() ? 'layout.show' : 'layout.hide', { name: this.leftLabel() }),
   );
 
   constructor() {

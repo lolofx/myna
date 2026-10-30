@@ -28,7 +28,7 @@
           <div class="import-progress-fill" [style.width.%]="importProgressPercent()"></div>
         </div>
         <span class="import-progress-label">{{ label }}</span>
-        <button type="button" class="cancel-import" (click)="cancelImportRequested.emit()">Cancel</button>
+        <button type="button" class="cancel-import" (click)="cancelImportRequested.emit()">{{ 'common.cancel' | transloco }}</button>
       </div>
     }
     @if (meeting()?.hasAudio && hasAudio() && !isLive()) {
@@ -38,7 +38,7 @@
     }
   </header>
 
-  <nav class="tab-row" role="tablist" [attr.aria-label]="isNarrow() ? 'Meeting content' : 'Summary type'">
+  <nav class="tab-row" role="tablist" [attr.aria-label]="(isNarrow() ? 'detail.meetingContent' : 'detail.summaryType') | transloco">
     @if (isNarrow()) {
       <button
         type="button"
@@ -46,7 +46,7 @@
         class="tab"
         [class.active]="activeTab() === transcriptTab"
         [attr.aria-selected]="activeTab() === transcriptTab"
-        title="Transcript"
+        [attr.title]="'meetings.transcript' | transloco"
         (click)="selectTab(transcriptTab)"
       >
         {{ transcriptTabLabel() }}
@@ -69,8 +69,8 @@
           type="button"
           class="template-settings"
           [attr.data-template]="template.name"
-          [title]="'Customize ' + templateLabel(template) + ' prompt'"
-          [attr.aria-label]="'Customize ' + templateLabel(template) + ' prompt'"
+          [title]="'prompt.customize' | transloco: { name: templateLabel(template) }"
+          [attr.aria-label]="'prompt.customize' | transloco: { name: templateLabel(template) }"
           (click)="$event.stopPropagation(); openTemplateSettings(template.name)"
         >
           <span aria-hidden="true">⚙️</span>
@@ -83,8 +83,8 @@
     <div class="export-controls">
       <select
         class="export-format"
-        aria-label="Export format"
-        title="Export format"
+        [attr.aria-label]="'detail.exportFormat' | transloco"
+        [attr.title]="'detail.exportFormat' | transloco"
         (change)="onExportFormatChange($event)"
       >
         @for (format of exportFormats; track format) {
@@ -94,15 +94,15 @@
       <button
         type="button"
         class="export"
-        title="Export meeting"
+        [attr.title]="'detail.exportMeeting' | transloco"
         [disabled]="exporting()"
         [attr.aria-busy]="exporting()"
         (click)="export()"
       >
         @if (exporting()) {
-          <span class="spinner" aria-hidden="true"></span> Exporting&hellip;
+          <span class="spinner" aria-hidden="true"></span> {{ 'detail.exporting' | transloco }}
         } @else {
-          <span aria-hidden="true">⬇️</span> Export
+          <span aria-hidden="true">⬇️</span> {{ 'detail.export' | transloco }}
         }
       </button>
     </div>
@@ -110,7 +110,7 @@
 
   @if (hasDroppedAudio()) {
     <div class="degraded-audio-warning" role="alert">
-      <p>Some audio wasn't transcribed. The recording is intact — re-transcribe from audio to recover the full transcript.</p>
+      <p>{{ 'detail.droppedAudio' | transloco }}</p>
       <button
         type="button"
         class="recover-transcript"
@@ -118,7 +118,7 @@
         [attr.aria-disabled]="retranscribeDisabled()"
         (click)="retranscribe()"
       >
-        Re-transcribe from audio
+        {{ 'detail.retranscribe' | transloco }}
       </button>
     </div>
   }
@@ -134,7 +134,7 @@
   } @else {
     <app-split-workspace
       class="workspace-split"
-      leftLabel="transcript"
+      [leftLabel]="'meetings.transcriptLower' | transloco"
       [splitRatio]="splitRatio()"
       [collapsed]="transcriptCollapsed()"
       (splitRatioChanged)="splitRatioChanged.emit($event)"
@@ -156,20 +156,20 @@
         class="retranscribe"
         [disabled]="retranscribeDisabled()"
         [attr.aria-disabled]="retranscribeDisabled()"
-        title="Re-transcribe from the existing audio"
+        [attr.title]="'detail.retranscribeTitle' | transloco"
         (click)="retranscribe()"
       >
-        Re-transcribe from audio
+        {{ 'detail.retranscribe' | transloco }}
       </button>
       <button
         type="button"
         class="replace-audio"
         [disabled]="replaceAudioDisabled()"
         [attr.aria-disabled]="replaceAudioDisabled()"
-        title="Replace the audio file and re-transcribe"
+        [attr.title]="'detail.replaceAudioTitle' | transloco"
         (click)="replaceAudio()"
       >
-        Replace audio &amp; re-transcribe&hellip;
+        {{ 'detail.replaceAudio' | transloco }}
       </button>
       <button
         type="button"
@@ -177,18 +177,18 @@
         [disabled]="diarizeDisabled()"
         [attr.aria-disabled]="diarizeDisabled()"
         [attr.aria-busy]="diarizing()"
-        [attr.title]="diarizeDisabledReason() ?? 'Detect speakers in the system-audio track'"
+        [attr.title]="diarizeDisabledReason() ?? ('detail.detectTitle' | transloco)"
         (click)="diarize()"
       >
         @if (diarizing()) {
-          <span class="spinner" aria-hidden="true"></span> Detecting speakers&hellip;
+          <span class="spinner" aria-hidden="true"></span> {{ 'detail.detecting' | transloco }}
         } @else {
-          Detect speakers
+          {{ 'detail.detect' | transloco }}
         }
       </button>
       @if (diarizing()) {
-        <button type="button" class="stop-diarize" (click)="cancelImportRequested.emit()">Stop</button>
-        <p class="hint diarize-hint">Will stop after the current pass.</p>
+        <button type="button" class="stop-diarize" (click)="cancelImportRequested.emit()">{{ 'detail.stop' | transloco }}</button>
+        <p class="hint diarize-hint">{{ 'detail.stopHint' | transloco }}</p>
       } @else if (diarizeDisabledReason(); as reason) {
         <p class="hint diarize-hint">{{ reason }}</p>
       }
@@ -203,7 +203,7 @@
           [attr.aria-label]="label"
           (click)="undoTranscriptRequested.emit()"
         >
-          Undo
+          {{ 'common.undo' | transloco }}
         </button>
       }
       @if (speakerUndoLabel(); as label) {
@@ -214,7 +214,7 @@
           [attr.aria-label]="label"
           (click)="undoSpeakerRequested.emit()"
         >
-          Undo
+          {{ 'common.undo' | transloco }}
         </button>
       }
     </div>
@@ -228,7 +228,7 @@
       />
     } @else if (diarizing()) {
       <div class="diarize-loading" role="status">
-        <span class="spinner" aria-hidden="true"></span> Detecting speakers&hellip;
+        <span class="spinner" aria-hidden="true"></span> {{ 'detail.detecting' | transloco }}
       </div>
     } @else {
       <app-transcript-view
@@ -267,26 +267,26 @@
             [attr.aria-disabled]="regenerateDisabled()"
             [attr.aria-busy]="summarizing()"
             [attr.aria-expanded]="regenerateDialogOpen()"
-            [title]="generatingElsewhereLabel() ? 'Generating ' + generatingElsewhereLabel() + '…' : 'Regenerate this summary from the current transcript'"
+            [title]="generatingElsewhereLabel() ? ('detail.generatingTitle' | transloco: { label: generatingElsewhereLabel() }) : ('detail.regenerateTitle' | transloco)"
             (click)="regenerateSummary()"
           >
-            Regenerate
+            {{ 'summary.regenerate' | transloco }}
           </button>
           @if (!isGeneratingActiveTab() && !summaryLoading()) {
             <button
               type="button"
               class="edit-summary"
-              title="Edit this summary"
-              aria-label="Edit this summary"
+              [attr.title]="'detail.editSummary' | transloco"
+              [attr.aria-label]="'detail.editSummary' | transloco"
               (click)="summaryPanel()?.beginEdit()"
             >
-              Edit
+              {{ 'detail.edit' | transloco }}
             </button>
             <button
               type="button"
               class="search-summary"
-              title="Search summary (Ctrl+F)"
-              aria-label="Search summary"
+              [attr.title]="'detail.searchSummaryTitle' | transloco"
+              [attr.aria-label]="'summaryPanel.search' | transloco"
               (click)="summaryPanel()?.toggleSearch()"
             >
               <span aria-hidden="true">🔍</span>
@@ -297,14 +297,14 @@
             class="delete-summary"
             [disabled]="regenerateDisabled()"
             [attr.aria-disabled]="regenerateDisabled()"
-            title="Delete this summary"
-            aria-label="Delete this summary"
+            [attr.title]="'detail.deleteSummary' | transloco"
+            [attr.aria-label]="'detail.deleteSummary' | transloco"
             (click)="deleteSummary()"
           >
-            Delete
+            {{ 'detail.delete' | transloco }}
           </button>
           @if (generatingElsewhereLabel(); as busyLabel) {
-            <p class="hint busy-hint">Generating {{ busyLabel }}&hellip;</p>
+            <p class="hint busy-hint">{{ 'detail.generatingHint' | transloco: { label: busyLabel } }}</p>
           }
         }
       </div>
@@ -339,19 +339,19 @@
       <app-summary-panel [markdown]="''" [generating]="false" [loading]="true" />
     } @else {
       <div class="generate">
-        <p class="headline">No {{ activeTemplateLabel() }} summary yet.</p>
-        <p class="hint">Generate one from the transcript in {{ activeLanguageLabel() }}.</p>
+        <p class="headline">{{ 'detail.noSummary' | transloco: { label: activeTemplateLabel() } }}</p>
+        <p class="hint">{{ 'detail.generateFrom' | transloco: { language: activeLanguageLabel() } }}</p>
         @if (generatingElsewhereLabel(); as busyLabel) {
           <button
             type="button"
             class="generate-button"
             disabled
             [attr.aria-disabled]="true"
-            [title]="'Generating ' + busyLabel + '…'"
+            [title]="'detail.generatingTitle' | transloco: { label: busyLabel }"
           >
-            Generate
+            {{ 'detail.generate' | transloco }}
           </button>
-          <p class="hint busy-hint">Generating {{ busyLabel }}&hellip;</p>
+          <p class="hint busy-hint">{{ 'detail.generatingHint' | transloco: { label: busyLabel } }}</p>
         } @else {
           <button
             type="button"
@@ -359,7 +359,7 @@
             [attr.aria-expanded]="generateDialogOpen()"
             (click)="generateSummary()"
           >
-            Generate
+            {{ 'detail.generate' | transloco }}
           </button>
         }
         @if (generateDialogOpen()) {
@@ -369,9 +369,9 @@
             [hint]="regenerateHint()"
             [confirmDisabled]="regenerateDisabled()"
             [templateLabel]="activeTemplateLabel()"
-            dialogTitlePrefix="Generate summary"
-            description="Adjust the instructions below, then confirm to generate this summary."
-            confirmLabel="Generate"
+            [dialogTitlePrefix]="'detail.generateTitle' | transloco"
+            [description]="'detail.generateDescription' | transloco"
+            [confirmLabel]="'detail.generate' | transloco"
             focusReturnSelector=".generate-button"
             (draftChanged)="onSummaryDraftChanged($event)"
             (confirmed)="confirmGenerate()"

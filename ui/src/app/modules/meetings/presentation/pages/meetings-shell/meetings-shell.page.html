@@ -3,8 +3,8 @@
     <button
       type="button"
       class="brand"
-      aria-label="Mynota — go to meetings"
-      title="Home"
+      [attr.aria-label]="'shell.goHomeAria' | transloco"
+      [attr.title]="'shell.home' | transloco"
       (click)="onGoHome()"
     ></button>
 
@@ -32,10 +32,10 @@
         (stopClicked)="onStop()"
         (cancelClicked)="onCancel()"
       />
-      <button type="button" class="about-trigger" aria-label="About Mynota" title="About" (click)="toggleAbout()">
+      <button type="button" class="about-trigger" [attr.aria-label]="'shell.aboutAria' | transloco" [attr.title]="'shell.about' | transloco" (click)="toggleAbout()">
         <span aria-hidden="true">ℹ️</span>
       </button>
-      <button type="button" class="settings-trigger" aria-label="Mynota settings" title="Settings" (click)="settings.toggleSettings()">
+      <button type="button" class="settings-trigger" [attr.aria-label]="'settings.ariaLabel' | transloco" [attr.title]="'settings.title' | transloco" (click)="settings.toggleSettings()">
         <span aria-hidden="true">⚙️</span>
       </button>
     </div>
@@ -57,7 +57,7 @@
     <app-sidebar-splitter
       [widthPx]="facade.sidebarWidth()"
       [collapsed]="facade.sidebarCollapsed()"
-      sidebarLabel="meetings"
+      [sidebarLabel]="'sidebar.meetingsLower' | transloco"
       panelId="meetings-sidebar"
       (widthPxChanged)="layoutControls.onSidebarWidthChanged($event)"
       (collapsedChanged)="layoutControls.onSidebarCollapsedChanged($event)"
@@ -161,7 +161,7 @@
     class="modal-backdrop"
     role="button"
     tabindex="0"
-    aria-label="Close dialog"
+    [attr.aria-label]="'shell.closeDialog' | transloco"
     (click)="onBackdropActivate($event)"
     (keydown)="onBackdropKeydown($event)"
   >
@@ -185,7 +185,7 @@
     class="modal-backdrop settings-backdrop"
     role="button"
     tabindex="0"
-    aria-label="Close settings"
+    [attr.aria-label]="'shell.closeSettings' | transloco"
     (click)="settings.onBackdropActivate($event)"
     (keydown)="settings.onBackdropKeydown($event)"
   >

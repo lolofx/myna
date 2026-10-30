@@ -17,6 +17,7 @@ import {
   formatMinutesLong,
   formatTemplateLabel,
 } from '../../utils/format-display.util';
+import { tr } from '../../../../../i18n/tr';
 
 /**
  * Below this viewport width, the two-column split workspace no longer fits
@@ -29,11 +30,13 @@ import {
  */
 export const NARROW_BREAKPOINT_PX = 1200;
 
-export const CAPTURE_SOURCE_LABELS: Readonly<Record<CaptureSource, string>> = {
-  microphone: 'Microphone',
-  system: 'System audio',
-  mixed: 'Mic + system',
+const CAPTURE_SOURCE_LABEL_KEYS: Readonly<Record<CaptureSource, string>> = {
+  microphone: 'detail.captureMicrophone',
+  system: 'detail.captureSystem',
+  mixed: 'detail.captureMixed',
 };
+
+export const captureSourceLabel = (source: CaptureSource): string => tr(CAPTURE_SOURCE_LABEL_KEYS[source]);
 
 /**
  * The EFFECTIVE capture source label for a live recording — never the
@@ -51,9 +54,9 @@ export const computeEffectiveCaptureLabel = (
   effectiveSystemSource: AudioSource | null,
 ): string => {
   if (requested === 'microphone') {
-    return CAPTURE_SOURCE_LABELS.microphone;
+    return captureSourceLabel('microphone');
   }
-  return effectiveSystemSource !== null ? CAPTURE_SOURCE_LABELS[requested] : 'Mic only (system audio unavailable)';
+  return effectiveSystemSource !== null ? captureSourceLabel(requested) : tr('detail.micOnlyUnavailable');
 };
 
 /** A request to fetch a persisted summary's content for one (meeting, template, language) triple. */
@@ -96,7 +99,7 @@ export const buildSummaryDelete = (meeting: Meeting, template: string, language:
   ({ meetingId: meeting.id, template, language });
 /** Confirm copy for the destructive summary-delete path; a declined confirmation emits nothing. */
 export const buildSummaryDeleteMessage = (template: string, language: string): string =>
-  `Delete ${template} in ${language}? This cannot be undone — regenerate from the transcript to recreate it.`;
+  tr('detail.confirmDeleteSummary', { template, language });
 
 /**
  * Header label for the determinate import/re-transcribe progress bar, or
@@ -113,9 +116,9 @@ export const computeImportProgressLabel = (
     return null;
   }
   if (progress.phase === 'converting') {
-    return 'Converting audio…';
+    return tr('detail.converting');
   }
-  return `Transcribing ${formatMmSs(progress.processedSec)} / ${formatMmSs(progress.totalSec)}`;
+  return tr('detail.transcribing', { done: formatMmSs(progress.processedSec), total: formatMmSs(progress.totalSec) });
 };
 
 /** Fraction (0-100) of the determinate import progress bar to fill. */
@@ -161,10 +164,10 @@ export const diarizeDisabledReason = (
   recording: boolean,
   summarizing = false,
 ): string | undefined => {
-  if (recording) return 'Speaker detection runs on the finished recording — available once you stop recording.';
-  if (summarizing) return "Speaker detection can't run while a summary is generating.";
-  if (!modelsPresent) return 'Speaker detection needs ~45 MB extra models.';
-  return hasSystemTrack ? undefined : 'No system audio was captured for this meeting.';
+  if (recording) return tr('detail.diarizeRecording');
+  if (summarizing) return tr('detail.diarizeSummarizing');
+  if (!modelsPresent) return tr('detail.diarizeModels');
+  return hasSystemTrack ? undefined : tr('detail.diarizeNoTrack');
 };
 
 /**
@@ -353,13 +356,13 @@ export const buildRegenerateHint = (draft: SummaryInstructionsDraft, guidelinesP
   const focus = draft.text.trim();
   if (focus !== '') {
     return draft.includeGeneral && guidelinesPreview !== ''
-      ? `Regenerate using your instructions (“${focus}”) plus general guidelines: ${guidelinesPreview}`
-      : `Regenerate using your instructions (“${focus}”)`;
+      ? tr('detail.hintCustomAndGeneral', { focus, preview: guidelinesPreview })
+      : tr('detail.hintCustom', { focus });
   }
   if (draft.includeGeneral && guidelinesPreview !== '') {
-    return `Regenerate using general guidelines: ${guidelinesPreview}`;
+    return tr('detail.hintGeneral', { preview: guidelinesPreview });
   }
-  return 'Regenerate from the current transcript with default settings.';
+  return tr('detail.hintDefault');
 };
 
 /** Heading date for the pane title; `''` with no meeting selected. */
@@ -380,7 +383,7 @@ export const computeMetaLine = (
   meeting: Meeting | undefined,
 ): string => {
   if (isLive) {
-    return `Recording · ${effectiveCaptureLabel}`;
+    return tr('detail.recordingMeta', { source: effectiveCaptureLabel });
   }
   return meeting ? formatMinutesLong(meeting.durationSec) : '';
 };
@@ -445,14 +448,14 @@ const firstUnknownPlaceholder = (prompt: string): string | undefined => {
  */
 export const validatePromptText = (prompt: string): string | undefined => {
   if (prompt.trim() === '') {
-    return 'Prompt must not be empty.';
+    return tr('prompt.errEmpty');
   }
   if (!prompt.includes('{transcript}')) {
-    return 'Prompt must contain the {transcript} placeholder.';
+    return tr('prompt.errNoTranscript');
   }
   const unknown = firstUnknownPlaceholder(prompt);
   if (unknown !== undefined) {
-    return `Prompt contains unknown placeholder '${unknown}'.`;
+    return tr('prompt.errUnknown', { token: unknown });
   }
   return undefined;
 };

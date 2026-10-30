@@ -20,6 +20,7 @@
  */
 
 import type { MeetingId } from '../../core/models/meeting.model';
+import { tr } from '../../../../i18n/tr';
 
 /** Inverse of a `rename_speaker` op: restore (or clear, via `null`) `label`'s display name. */
 export interface SpeakerRenameOp {
@@ -83,12 +84,12 @@ export const pushSpeakerOp = (history: readonly SpeakerOp[], op: SpeakerOp): rea
 export function describeSpeakerOp(op: SpeakerOp): string {
   switch (op.kind) {
     case 'rename':
-      return `Undo rename of ${op.previousName ?? op.label}`;
+      return tr('history.undoRename', { name: op.previousName ?? op.label });
     case 'remove':
-      return `Undo remove ${op.previousName ?? op.label}`;
+      return tr('history.undoRemove', { name: op.previousName ?? op.label });
     case 'reassign':
-      return `Undo speaker change (segment ${op.index + 1})`;
+      return tr('history.undoSpeakerChange', { n: op.index + 1 });
     case 'reassign-group':
-      return `Undo speaker change (${op.segments.length} segments)`;
+      return tr('history.undoSpeakerChangeGroup', { count: op.segments.length });
   }
 }

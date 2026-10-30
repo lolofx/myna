@@ -208,11 +208,10 @@ describe('RegenerateInstructionsDialogComponent', () => {
       'Adjust the instructions below, then confirm to regenerate this summary.',
     );
     expect(fixture.nativeElement.querySelector('.actions .confirm')?.textContent).toContain('Regenerate');
-    expect(fixture.componentInstance.dialogTitlePrefix()).toBe('Regenerate summary');
-    expect(fixture.componentInstance.description()).toBe(
-      'Adjust the instructions below, then confirm to regenerate this summary.',
-    );
-    expect(fixture.componentInstance.confirmLabel()).toBe('Regenerate');
+    // The inputs stay empty by default; the rendered copy falls back to the translated Regenerate text.
+    expect(fixture.componentInstance.dialogTitlePrefix()).toBe('');
+    expect(fixture.componentInstance.description()).toBe('');
+    expect(fixture.componentInstance.confirmLabel()).toBe('');
     expect(fixture.componentInstance.focusReturnSelector()).toBe('.regenerate-button');
   });
 

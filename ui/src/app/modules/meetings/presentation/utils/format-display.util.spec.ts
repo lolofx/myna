@@ -1,6 +1,6 @@
 import {
-  TRANSCRIPT_TAB_LABEL,
-  UNTITLED_MEETING_LABEL,
+  transcriptTabLabel,
+  untitledMeetingLabel,
   formatMeetingHeadingDate,
   formatMeetingListMeta,
   formatMeetingTitle,
@@ -83,11 +83,11 @@ describe('formatMeetingTitle', () => {
   });
 
   it('falls back to the untitled-meeting label when the title is empty', () => {
-    expect(formatMeetingTitle('')).toBe(UNTITLED_MEETING_LABEL);
+    expect(formatMeetingTitle('')).toBe(untitledMeetingLabel());
   });
 
   it('falls back to the untitled-meeting label when the title is whitespace-only', () => {
-    expect(formatMeetingTitle('   ')).toBe(UNTITLED_MEETING_LABEL);
+    expect(formatMeetingTitle('   ')).toBe(untitledMeetingLabel());
   });
 });
 
@@ -128,6 +128,6 @@ describe('formatTemplateLabel', () => {
   });
 
   it('exposes a static, prefixed label for the transcript tab', () => {
-    expect(TRANSCRIPT_TAB_LABEL).toBe('📄 Transcript');
+    expect(transcriptTabLabel()).toBe('📄 Transcript');
   });
 });

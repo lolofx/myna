@@ -12,7 +12,7 @@
   [attr.aria-expanded]="expanded()"
   [attr.aria-controls]="listboxId"
   [attr.aria-activedescendant]="activeOptionDomId()"
-  [placeholder]="placeholder()"
+  [placeholder]="placeholder() || ('common.search' | transloco)"
   [disabled]="disabled()"
   [value]="displayValue()"
   (input)="onInput($event)"
@@ -28,7 +28,7 @@
     style="max-height: var(--select-popup-max-height, 22.5rem); overflow-y: auto;"
   >
     @if (filteredOptions().length === 0) {
-      <li class="ss-empty" role="presentation">No matching applications</li>
+      <li class="ss-empty" role="presentation">{{ 'capture.noMatch' | transloco }}</li>
     } @else {
       @for (option of filteredOptions(); track option.id; let i = $index) {
         <li

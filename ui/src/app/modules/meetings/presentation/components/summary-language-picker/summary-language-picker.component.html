@@ -1,8 +1,8 @@
-<label class="picker" for="summary-language" title="Summary language">
-  <span class="label visually-hidden">Summary language</span>
+<label class="picker" for="summary-language" [attr.title]="'settings.summaryLanguage.title' | transloco">
+  <span class="label visually-hidden">{{ 'settings.summaryLanguage.title' | transloco }}</span>
   <select
     id="summary-language"
-    aria-label="Summary output language"
+    [attr.aria-label]="'settings.summaryLanguage.ariaLabel' | transloco"
     [disabled]="disabled() || languages().length === 0"
     (change)="onChange($event)"
   >

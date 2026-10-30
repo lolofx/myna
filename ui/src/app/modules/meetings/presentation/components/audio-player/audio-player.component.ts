@@ -1,17 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  DestroyRef,
-  ElementRef,
-  ViewChild,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, ElementRef, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { MeetingId } from '../../../core/models/meeting.model';
 import type { AudioChunk } from '../../../core/ports/audio-repository.port';
@@ -48,11 +37,14 @@ const fallbackChunks = (
 @Component({
   selector: 'app-audio-player',
   standalone: true,
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './audio-player.component.html',
   styleUrl: './audio-player.component.scss',
 })
 export class AudioPlayerComponent {
+  private readonly i18n = inject(I18n);
+
   readonly meetingId = input<MeetingId | undefined>(undefined);
   readonly hasAudio = input<boolean>(false);
 
@@ -198,7 +190,7 @@ export class AudioPlayerComponent {
     }
     if (chunks === null) {
       this._url.set(null);
-      this._error.set('Failed to load audio');
+      this._error.set(this.i18n.t('audio.loadFailed'));
     } else {
       this.applyTimeline(chunks);
     }
@@ -250,7 +242,7 @@ export class AudioPlayerComponent {
     element.currentTime = localSec;
     if (resumePlay) {
       element.play().catch(() => {
-        this._error.set('Playback failed');
+        this._error.set(this.i18n.t('audio.playbackFailed'));
       });
     }
   }
@@ -329,7 +321,7 @@ export class AudioPlayerComponent {
   }
 
   onMediaError(): void {
-    this._error.set('Playback error');
+    this._error.set(this.i18n.t('audio.playbackError'));
     this._playing.set(false);
   }
 
@@ -341,7 +333,7 @@ export class AudioPlayerComponent {
       element.pause();
     } else {
       element.play().catch(() => {
-        this._error.set('Playback failed');
+        this._error.set(this.i18n.t('audio.playbackFailed'));
       });
     }
   }

@@ -1,14 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  HostListener,
-  OnInit,
-  computed,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
@@ -41,7 +32,7 @@ import { buildExportFilename, CHECKING_SYSTEM_AUDIO, createLayoutControls, creat
  */
 @Component({
   selector: 'app-meetings-shell-page',
-  imports: [MeetingSidebarComponent, SidebarSplitterComponent, MeetingDetailPaneComponent, RecordControlComponent, AttributionComponent, SettingsComponent, UpdateConsentDialogComponent, UpdateBannerComponent],
+  imports: [MeetingSidebarComponent, SidebarSplitterComponent, MeetingDetailPaneComponent, RecordControlComponent, AttributionComponent, SettingsComponent, UpdateConsentDialogComponent, UpdateBannerComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './meetings-shell.page.html',
   styleUrl: './meetings-shell.page.scss',

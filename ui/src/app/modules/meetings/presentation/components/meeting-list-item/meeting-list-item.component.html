@@ -24,15 +24,15 @@
     <div class="confirm" [class.warning]="busy()" [attr.role]="busy() ? 'alert' : null">
       <span class="confirm-label">{{ confirmLabel() }}</span>
       <span class="confirm-actions">
-        <button type="button" class="confirm-yes" (click)="confirmDelete($event)">Yes</button>
-        <button type="button" class="confirm-no" (click)="cancelDelete($event)">No</button>
+        <button type="button" class="confirm-yes" (click)="confirmDelete($event)">{{ 'common.yes' | transloco }}</button>
+        <button type="button" class="confirm-no" (click)="cancelDelete($event)">{{ 'common.no' | transloco }}</button>
       </span>
     </div>
   } @else {
     <span class="title">{{ displayTitle() }}</span>
     <span class="meta">{{ meta() }}</span>
     @if (importing()) {
-      <span class="status-badge importing" aria-label="Importing">Importing&hellip;</span>
+      <span class="status-badge importing" [attr.aria-label]="'meetings.importingAria' | transloco">{{ 'meetings.importing' | transloco }}</span>
     }
     <button
       type="button"
@@ -46,7 +46,7 @@
     >
       &#8942;
     </button>
-    <button type="button" class="delete" aria-label="Delete meeting" (click)="requestDelete($event)">
+    <button type="button" class="delete" [attr.aria-label]="'meetings.delete' | transloco" (click)="requestDelete($event)">
       &times;
     </button>
     @if (menuOpen()) {

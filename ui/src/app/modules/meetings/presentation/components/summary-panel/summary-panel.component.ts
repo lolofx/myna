@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  afterRenderEffect,
-  computed,
-  input,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, afterRenderEffect, computed, input, output, signal, viewChild, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import { renderMarkdown } from './markdown-render.util';
 import { clearHighlights, highlightMatches } from './summary-search.util';
@@ -30,11 +21,14 @@ import { clearHighlights, highlightMatches } from './summary-search.util';
  */
 @Component({
   selector: 'app-summary-panel',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-panel.component.html',
   styleUrl: './summary-panel.component.scss',
 })
 export class SummaryPanelComponent {
+  private readonly i18n = inject(I18n);
+
   readonly markdown = input.required<string>();
   readonly generating = input(false);
   /** True while a persisted summary's content is being fetched via `get_summary` — distinct from `generating`. */
@@ -65,10 +59,10 @@ export class SummaryPanelComponent {
   protected readonly matchLabel = computed(() => {
     const total = this.matchCount();
     if (total === 0) {
-      return '0 of 0';
+      return this.i18n.t('summaryPanel.matchCount', { current: 0, total: 0 });
     }
     const active = Math.min(this.activeMatch(), total - 1);
-    return `${active + 1} of ${total}`;
+    return this.i18n.t('summaryPanel.matchCount', { current: active + 1, total });
   });
   protected readonly noSearchMatch = computed(() => this.searchQuery() !== '' && this.matchCount() === 0);
 

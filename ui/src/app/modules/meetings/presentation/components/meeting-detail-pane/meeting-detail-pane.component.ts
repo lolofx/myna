@@ -2,13 +2,9 @@
 /* eslint max-lines: ["error", 580] */
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
-import type {
-  MeetingsErrorInfo,
-  ModelDownloadState,
-  SummaryCacheEntry,
-  SummarizingKey,
-} from '../../../application/stores/meetings.store';
+import type { MeetingsErrorInfo, ModelDownloadState, SummaryCacheEntry, SummarizingKey } from '../../../application/stores/meetings.store';
 import type { AudioSource } from '../../../core/models/audio-source.model';
 import type { CaptureSource } from '../../../core/models/capture-source.model';
 import type { Meeting } from '../../../core/models/meeting.model';
@@ -23,7 +19,7 @@ import type { SummaryInstructionsDraft } from '../../../core/models/summary-inst
 import type { SummaryTemplate } from '../../../core/models/summary-template.model';
 import type { TranscriptSegment } from '../../../core/models/transcript.model';
 import {
-  TRANSCRIPT_TAB_LABEL,
+  transcriptTabLabel,
   formatMeetingTitle,
   formatTemplateLabel,
 } from '../../utils/format-display.util';
@@ -103,6 +99,7 @@ const EXPORT_FORMATS: readonly MeetingExportFormat[] = ['markdown', 'txt', 'json
     TranscriptViewComponent,
     TemplatePromptDialogComponent,
     WelcomePanelComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './meeting-detail-pane.component.html',
@@ -408,7 +405,7 @@ export class MeetingDetailPaneComponent {
     return formatTemplateLabel(template);
   }
   protected transcriptTabLabel(): string {
-    return TRANSCRIPT_TAB_LABEL;
+    return transcriptTabLabel();
   }
   selectTab(tab: string): void {
     this.regenerateDialogOpen.set(false);

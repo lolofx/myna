@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import type { Meeting } from '../../../core/models/meeting.model';
 import { toMeetingId } from '../../../core/models/meeting.model';
-import { MeetingListItemComponent, SELECTION_DISABLED_HINT } from './meeting-list-item.component';
+import { MeetingListItemComponent } from './meeting-list-item.component';
 
 describe('MeetingListItemComponent', () => {
   const meeting: Meeting = {
@@ -174,7 +174,7 @@ describe('MeetingListItemComponent', () => {
     const row: HTMLElement = fixture.nativeElement.querySelector('.row');
     expect(row.classList.contains('disabled')).toBe(true);
     expect(row.getAttribute('aria-disabled')).toBe('true');
-    expect(row.getAttribute('title')).toBe(SELECTION_DISABLED_HINT);
+    expect(row.getAttribute('title')).toBe('Selection is disabled while a recording is in progress');
   });
 
   it('does not emit opened when disabled and clicked', () => {

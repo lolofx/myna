@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { Folder, FolderId } from '../../../core/models/folder.model';
 import type { Meeting, MeetingId } from '../../../core/models/meeting.model';
@@ -7,7 +9,6 @@ import type { DropEdge } from '../../utils/reorder-geometry.util';
 import { resolveDropEdge } from '../../utils/reorder-geometry.util';
 
 /** Shown as a tooltip on a row while selection is disabled (e.g. mid-recording). */
-export const SELECTION_DISABLED_HINT = 'Selection is disabled while a recording is in progress';
 
 /** One selectable entry in the kebab menu's "move to folder" section — `id: null` is the "No folder" (top-level) option, always listed first. */
 interface FolderMenuOption {
@@ -24,6 +25,7 @@ interface FolderMenuOption {
  */
 @Component({
   selector: 'app-meeting-list-item',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './meeting-list-item.component.html',
   styleUrl: './meeting-list-item.component.scss',
@@ -37,6 +39,8 @@ interface FolderMenuOption {
   },
 })
 export class MeetingListItemComponent {
+  private readonly i18n = inject(I18n);
+
   readonly meeting = input.required<Meeting>();
   readonly selected = input(false);
   /** When true, this row shows why it can't be opened instead of silently swallowing the click. */
@@ -68,17 +72,17 @@ export class MeetingListItemComponent {
   protected readonly busy = computed(() => this.recording() || this.importing());
   protected readonly confirmLabel = computed(() => {
     if (this.recording()) {
-      return 'Stop and discard this recording? The audio and transcript will be deleted.';
+      return this.i18n.t('record.confirmDiscard');
     }
     if (this.importing()) {
-      return 'Cancel this import? The partially imported audio and transcript will be deleted.';
+      return this.i18n.t('meetings.confirmCancelImport');
     }
-    return 'Delete?';
+    return this.i18n.t('meetings.confirmDelete');
   });
   protected readonly meta = computed(() => formatMeetingListMeta(this.meeting().createdAt, this.meeting().durationSec));
   protected readonly displayTitle = computed(() => formatMeetingTitle(this.meeting().title));
   protected readonly disabledHint = computed<string | null>(() =>
-    this.disabled() ? SELECTION_DISABLED_HINT : null,
+    this.disabled() ? this.i18n.t('meetings.selectionDisabled') : null,
   );
   protected readonly dropEdge = signal<DropEdge | null>(null);
   /** Staleness guard, mirroring `FolderSectionComponent.effectiveHover`: `dropEdge()` alone can go stale once reordering is no longer legal for this row, so the visible indicator is gated on `dropIndicatorEnabled()` too. */
@@ -87,11 +91,11 @@ export class MeetingListItemComponent {
   );
 
   protected readonly menuOpen = signal(false);
-  protected readonly menuTriggerLabel = computed(() => `More actions for ${this.displayTitle()}`);
-  protected readonly archiveLabel = computed(() => (this.meeting().archived ? 'Unarchive' : 'Archive'));
+  protected readonly menuTriggerLabel = computed(() => this.i18n.t('meetings.moreActions', { title: this.displayTitle() }));
+  protected readonly archiveLabel = computed(() => this.i18n.t(this.meeting().archived ? 'meetings.unarchive' : 'meetings.archive'));
   /** "No folder" (top-level) always comes first, followed by `folders()` in display order. */
   protected readonly folderMenuOptions = computed<readonly FolderMenuOption[]>(() => [
-    { id: null, name: 'No folder' },
+    { id: null, name: this.i18n.t('folders.noFolder') },
     ...this.folders().map((folder) => ({ id: folder.id, name: folder.name })),
   ]);
 
