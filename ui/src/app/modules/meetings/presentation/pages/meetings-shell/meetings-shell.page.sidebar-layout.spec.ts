@@ -111,6 +111,11 @@ modelDownload: signal(undefined),
     });
   });
 
+  // The shell listens on `window`; a fixture left alive would answer the next test's key events too.
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
   const createFixture = () => {
     const fixture = TestBed.createComponent(MeetingsShellPage);
     fixture.detectChanges();
@@ -159,6 +164,8 @@ modelDownload: signal(undefined),
 
   it('ignores a bare B without Cmd/Ctrl', () => {
     createFixture();
+    // Only the keydown is under test, not whatever the first render forwarded.
+    setSidebarCollapsed.mockClear();
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true }));
 
@@ -169,6 +176,7 @@ modelDownload: signal(undefined),
     const fixture = createFixture();
     const input = document.createElement('input');
     fixture.nativeElement.appendChild(input);
+    setSidebarCollapsed.mockClear();
 
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', metaKey: true, bubbles: true }));
 

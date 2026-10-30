@@ -1,3 +1,4 @@
+import { provideI18n } from '../../../../../i18n/i18n.providers';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, type ParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -141,6 +142,7 @@ describe('MeetingsShellPage launch update check (real facade graph)', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        provideI18n(),
         provideRouter([]),
         provideMeetings(),
         {

@@ -98,7 +98,7 @@
             "buildTarget": "myna-ui:build:development",
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
-            "providersFile": "src/test-providers.ts",
+            "setupFiles": ["src/test-setup.ts"],
             "watch": false
           }
         },
