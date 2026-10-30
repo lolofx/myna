@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import { IDLE_MODEL_DOWNLOAD, type MeetingsErrorInfo, type ModelDownloadState } from '../../../application/stores/meetings.store';
 import type { ModelSlot, ModelsStatus } from '../../../core/models/models-status.model';
@@ -8,13 +10,13 @@ import { ErrorStateComponent } from '../error-state/error-state.component';
  * Rotating reassurance lines shown while models download. Deliberately
  * indeterminate — no fake %, MB, or ETA figures, funny tone only.
  */
-export const DOWNLOAD_WHIMSY: readonly string[] = [
-  'Teaching your computer to listen…',
-  'Unpacking words-in-a-box. No cloud harmed.',
-  'Still downloading — big brains take a minute.',
-  'Good time to grab a coffee.',
-  'Meetings stay on your computer. Promise.',
-  'Almost there — summaries are worth the wait.',
+export const DOWNLOAD_WHIMSY_KEYS: readonly string[] = [
+  'onboarding.whimsy.0',
+  'onboarding.whimsy.1',
+  'onboarding.whimsy.2',
+  'onboarding.whimsy.3',
+  'onboarding.whimsy.4',
+  'onboarding.whimsy.5',
 ];
 
 /** How long each reassurance line stays up before rotating to the next. */
@@ -36,12 +38,14 @@ interface ModelGroup {
  */
 @Component({
   selector: 'app-onboarding-panel',
-  imports: [ErrorStateComponent],
+  imports: [ErrorStateComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './onboarding-panel.component.html',
   styleUrl: './onboarding-panel.component.scss',
 })
 export class OnboardingPanelComponent {
+  private readonly i18n = inject(I18n);
+
   readonly status = input<ModelsStatus | undefined>(undefined);
   readonly error = input<MeetingsErrorInfo | undefined>(undefined);
   readonly modelDownload = input<ModelDownloadState | undefined>(undefined);
@@ -57,10 +61,10 @@ export class OnboardingPanelComponent {
   protected readonly isDownloading = computed(() => this.download().phase === 'running');
   protected readonly downloadFailed = computed(() => this.download().phase === 'failed');
 
-  /** Position in {@link DOWNLOAD_WHIMSY}; advanced by the rotation timer below. */
+  /** Position in {@link DOWNLOAD_WHIMSY_KEYS}; advanced by the rotation timer below. */
   protected readonly whimsyIndex = signal(0);
   protected readonly whimsy = computed(
-    (): string => DOWNLOAD_WHIMSY[this.whimsyIndex() % DOWNLOAD_WHIMSY.length] ?? '',
+    (): string => this.i18n.t(DOWNLOAD_WHIMSY_KEYS[this.whimsyIndex() % DOWNLOAD_WHIMSY_KEYS.length] ?? ''),
   );
 
   constructor() {
@@ -84,8 +88,8 @@ export class OnboardingPanelComponent {
       return [];
     }
     return [
-      { label: 'Transcription — turns speech into text', slot: current.parakeet },
-      { label: 'Voice detection — knows when someone is speaking', slot: current.silero },
+      { label: this.i18n.t('onboarding.groups.transcription'), slot: current.parakeet },
+      { label: this.i18n.t('onboarding.groups.voiceDetection'), slot: current.silero },
     ];
   });
 

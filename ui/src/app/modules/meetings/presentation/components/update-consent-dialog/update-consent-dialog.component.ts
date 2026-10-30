@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { isMacOs } from '../../platform.util';
 
@@ -13,6 +14,7 @@ import { isMacOs } from '../../platform.util';
  */
 @Component({
   selector: 'app-update-consent-dialog',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './update-consent-dialog.component.html',
   styleUrl: './update-consent-dialog.component.scss',

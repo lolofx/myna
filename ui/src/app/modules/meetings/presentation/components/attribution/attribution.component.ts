@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { UpdateCheck, UpdateConsent } from '../../../core/models/update.model';
 
 interface LicenceEntry {
   readonly name: string;
   readonly licence: string;
-  readonly note: string;
+  readonly noteKey: string;
 }
 
 /** Fixed licence obligations for the third-party models and runtimes Mynota embeds. */
@@ -13,43 +15,46 @@ const LICENCE_ENTRIES: readonly LicenceEntry[] = [
   {
     name: 'Parakeet-TDT weights',
     licence: 'CC-BY-4.0',
-    note: 'Attribution required — see NVIDIA NeMo Parakeet-TDT model card.',
+    noteKey: 'attribution.notes.parakeet',
   },
   {
     name: 'sherpa-onnx',
     licence: 'Apache-2.0',
-    note: 'Speech-to-text runtime.',
+    noteKey: 'attribution.notes.sherpa',
   },
   {
     name: 'llama.cpp',
     licence: 'MIT',
-    note: 'Embedded in-process LLM runtime for Qwen summarization.',
+    noteKey: 'attribution.notes.llama',
   },
   {
     name: 'Poppins & Inter',
     licence: 'SIL Open Font License 1.1',
-    note: 'Brand and product UI typefaces, self-hosted — no external font requests.',
+    noteKey: 'attribution.notes.fonts',
   },
   {
     name: 'Mynota',
     licence: 'MIT',
-    note: 'This application, a fork of Myna.',
+    noteKey: 'attribution.notes.mynota',
   },
   {
     name: 'Myna',
     licence: 'MIT',
-    note: 'The upstream project this application is forked from.',
+    noteKey: 'attribution.notes.myna',
   },
 ];
 
 /** Licence-obligation surface — not decoration. Reachable from an About entry point. */
 @Component({
   selector: 'app-attribution',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './attribution.component.html',
   styleUrl: './attribution.component.scss',
 })
 export class AttributionComponent {
+  private readonly i18n = inject(I18n);
+
   /** Sourced from `app_version()` via `MeetingsFacade.appVersion` — never hardcoded here. */
   readonly version = input<string | undefined>(undefined);
 
@@ -70,7 +75,7 @@ export class AttributionComponent {
   protected readonly autoCheckEnabled = computed(() => this.updateConsent() === 'granted');
   protected readonly checkNowDisabled = computed(() => this.checking() || this.recording());
   /** Session-only: no timestamp exists in `UpdateCheck`, so this never claims a precise elapsed time — just whether a check has run since launch. */
-  protected readonly lastCheckedLabel = computed(() => (this.lastCheck() === undefined ? 'Never' : 'Just now'));
+  protected readonly lastCheckedLabel = computed(() => (this.lastCheck() === undefined ? this.i18n.t('updates.never') : this.i18n.t('updates.justNow')));
 
   onAutoCheckToggled(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;

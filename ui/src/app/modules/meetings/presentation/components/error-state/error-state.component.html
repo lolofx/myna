@@ -1,6 +1,6 @@
 <div class="error-state" role="alert">
   <span class="icon" aria-hidden="true">&#9888;</span>
   <p class="message">{{ message() }}</p>
-  <button type="button" class="retry" (click)="retryClicked.emit()">Try again</button>
-  <button type="button" class="dismiss" (click)="dismissClicked.emit()">Close</button>
+  <button type="button" class="retry" (click)="retryClicked.emit()">{{ 'errors.tryAgain' | transloco }}</button>
+  <button type="button" class="dismiss" (click)="dismissClicked.emit()">{{ 'common.close' | transloco }}</button>
 </div>

@@ -6,7 +6,8 @@
     "no": "Non",
     "loading": "Chargement…",
     "sizeGb": "{{value}} Go",
-    "sizeMb": "{{value}} Mo"
+    "sizeMb": "{{value}} Mo",
+    "retry": "Réessayer"
   },
   "languages": {
     "en": "English",
@@ -19,7 +20,8 @@
     "checkNow": "Vérifier maintenant",
     "lastChecked": "Dernière vérification : {{when}}",
     "notThisSession": "Pas pendant cette session",
-    "justNow": "À l’instant"
+    "justNow": "À l’instant",
+    "never": "Jamais"
   },
   "settings": {
     "ariaLabel": "Paramètres de Mynota",
@@ -69,6 +71,118 @@
       "note": "Chaque réunion y est écrite dans un fichier Markdown (titre, date, intervenants, puis lignes horodatées) dès que sa transcription est prête, et mise à jour quand les intervenants ou les résumés changent.",
       "choose": "Choisir…",
       "turnOff": "Désactiver"
+    }
+  },
+  "updateBanner": {
+    "available": "Mynota {{version}} est disponible.",
+    "update": "Mettre à jour",
+    "whatsNew": "Nouveautés",
+    "dismiss": "Ignorer l’avis de mise à jour",
+    "macCaveat": "L’installation réinitialisera l’autorisation du microphone de Mynota — vous devrez la redonner dans les Réglages Système.",
+    "downloading": "Mynota {{version}} est en cours de téléchargement.",
+    "downloadingButton": "Téléchargement…",
+    "finishRecordingFirst": "Terminez d’abord votre enregistrement",
+    "restartNow": "Redémarrer maintenant",
+    "copied": "Copié !",
+    "copyLink": "Copier le lien de la version",
+    "installed": "Mynota {{version}} est installé. Redémarrez pour l’appliquer.",
+    "installedUnknown": "Installé, version inconnue. Redémarrez pour l’appliquer.",
+    "finishRecordingBeforeUpdate": "Terminez votre enregistrement avant de mettre à jour."
+  },
+  "updateConsent": {
+    "title": "Rechercher les mises à jour ?",
+    "intro": "Mynota fait tout sur cet ordinateur. L’enregistrement, la transcription et les résumés ne le quittent jamais, et rien n’est envoyé nulle part par défaut.",
+    "exception": "La recherche de mises à jour est la seule exception, et elle est désactivée tant que vous ne l’activez pas.",
+    "ifOn": "Si vous l’activez, à chaque lancement Mynota demande à GitHub si une version plus récente de Mynota existe (jamais pendant un enregistrement). Cette requête envoie :",
+    "sendsIp": "<strong>votre adresse IP</strong>, à <code>github.com</code> (et à <code>objects.githubusercontent.com</code>, vers lequel il redirige)",
+    "sendsNothing": "<strong>rien d’autre</strong> — ni audio de réunion, ni transcription, ni résumé, ni statistique d’usage, ni identifiant, ni compte",
+    "noVersion": "Votre numéro de version n’est pas envoyé non plus. Mynota télécharge le même fichier public que tous les utilisateurs et compare les versions ici, sur votre ordinateur.",
+    "onlyTells": "Mynota se contentera de <em>vous prévenir</em> qu’une mise à jour existe. Il ne la téléchargera ni ne l’installera jamais de lui-même.",
+    "macCaveat": "<strong>Remarque :</strong> cette version n’est pas signée avec un identifiant Apple Developer. Remplacer Mynota par une nouvelle version change son identité aux yeux de macOS, qui retirera donc l’autorisation du microphone de Mynota ; il faudra la réactiver dans Réglages Système › Confidentialité et sécurité › Microphone. C’est pourquoi Mynota vous donne un lien de téléchargement au lieu d’installer les mises à jour à votre place.",
+    "grant": "Activer la recherche de mises à jour",
+    "decline": "Non merci",
+    "footer": "Vous pouvez changer cela à tout moment dans À propos › Mises à jour."
+  },
+  "attribution": {
+    "ariaLabel": "Attribution des licences tierces",
+    "title": "Licences et attributions",
+    "version": "Mynota v{{version}}",
+    "notes": {
+      "parakeet": "Attribution obligatoire — voir la fiche du modèle NVIDIA NeMo Parakeet-TDT.",
+      "sherpa": "Moteur de reconnaissance vocale.",
+      "llama": "Moteur LLM intégré au processus, utilisé pour les résumés avec Qwen.",
+      "fonts": "Polices de la marque et de l’interface, hébergées localement — aucune requête de police externe.",
+      "mynota": "Cette application, un fork de Myna.",
+      "myna": "Le projet amont dont cette application est un fork."
+    }
+  },
+  "errors": {
+    "tryAgain": "Réessayer",
+    "BUSY": "Une autre opération est déjà en cours.",
+    "NOT_RECORDING": "Aucun enregistrement actif à arrêter.",
+    "NOT_FOUND": "Cette réunion est introuvable. Elle a peut-être été supprimée.",
+    "IO": "Un fichier n’a pas pu être lu ou écrit sur le disque.",
+    "STORE": "Le stockage local des réunions est indisponible pour le moment.",
+    "STT": "La reconnaissance vocale a échoué pendant le traitement de l’audio.",
+    "LLM": "Le générateur de résumés n’a pas pu produire de réponse.",
+    "AUDIO": "Impossible d’accéder au microphone.",
+    "MODELS_MISSING": "Des modèles locaux requis sont manquants.",
+    "PATH": "L’emplacement de fichier sélectionné n’est pas valide.",
+    "UPDATER": "Le programme de mise à jour n’a pas pu installer ou redémarrer l’application.",
+    "CANCELLED": "L’opération a été annulée.",
+    "AUDIO_CHUNKS_DROPPED": "Une partie de l’audio a été perdue pendant l’enregistrement ; la transcription peut être incomplète.",
+    "UNKNOWN": "Une erreur s’est produite."
+  },
+  "record": {
+    "record": "Enregistrer",
+    "stop": "Arrêter",
+    "preparing": "Préparation…",
+    "finalizing": "Finalisation…",
+    "preparingToRecord": "Préparation de l’enregistrement…",
+    "finalizingRecording": "Finalisation de l’enregistrement…",
+    "stalled": "Finalisation toujours en cours ; votre enregistrement reste récupérable…",
+    "effectiveSource": "Source audio système effective",
+    "micOnly": "Micro seul",
+    "micOnlyTitle": "L’autorisation d’audio système n’a pas été accordée — enregistrement du microphone uniquement.",
+    "confirmDiscard": "Arrêter et abandonner cet enregistrement ? L’audio et la transcription seront supprimés.",
+    "stopPhase": {
+      "stopping-capture": "Arrêt de la capture",
+      "finalizing-transcript": "Finalisation de la transcription",
+      "saving": "Enregistrement",
+      "discarding": "Suppression",
+      "recovering": "Récupération",
+      "completed": "Terminé",
+      "failed": "Échec"
+    }
+  },
+  "welcome": {
+    "title": "Bienvenue dans Mynota",
+    "hint": "Tout reste sur cet appareil.",
+    "preparing": "Préparation…",
+    "start": "Démarrer une réunion",
+    "import": "Importer un enregistrement"
+  },
+  "onboarding": {
+    "title": "Récupérons vos modèles d’IA",
+    "checking": "Vérification des modèles installés…",
+    "intro": "Mynota télécharge quelques modèles d’IA pour que la transcription et les résumés fonctionnent entièrement sur votre ordinateur — rien n’est jamais envoyé dans le cloud. Cela ne se fait qu’une seule fois.",
+    "downloading": "Téléchargement de {{artifact}} ({{index}} sur {{total}})",
+    "keepOpen": "Gardez Mynota ouvert jusqu’à la fin.",
+    "download": "Télécharger les modèles",
+    "failed": "Le téléchargement a échoué. Vérifiez votre connexion Internet et réessayez.",
+    "whatInstalled": "Ce qui est installé",
+    "checkAgain": "Vérifier à nouveau",
+    "groups": {
+      "transcription": "Transcription — transforme la parole en texte",
+      "voiceDetection": "Détection vocale — repère quand quelqu’un parle"
+    },
+    "whimsy": {
+      "0": "On apprend à votre ordinateur à écouter…",
+      "1": "Déballage de mots en boîte. Aucun nuage maltraité.",
+      "2": "Toujours en cours — les grands cerveaux prennent un moment.",
+      "3": "Bon moment pour prendre un café.",
+      "4": "Vos réunions restent sur votre ordinateur. Promis.",
+      "5": "Presque fini — les résumés valent l’attente."
     }
   }
 }

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * Empty-state content for the detail pane when no meeting is selected and
@@ -10,6 +11,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
  */
 @Component({
   selector: 'app-welcome-panel',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './welcome-panel.component.html',
   styleUrl: './welcome-panel.component.scss',

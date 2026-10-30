@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { MeetingsErrorCode } from '../../../core/models/recording-state.model';
 import type { UpdateCheck, UpdateInstallState } from '../../../core/models/update.model';
@@ -26,9 +28,6 @@ export function releasePageUrl(downloadUrl: string): string {
   return match === null ? FALLBACK_RELEASES_URL : `${match[1]}/releases/tag/${match[2]}`;
 }
 
-/** User-facing copy for the Rust install-gate recording refusal (Busy gate). */
-const RECORDING_REFUSAL_MESSAGE = 'Finish your recording before updating.';
-
 /**
  * Maps a Rust install-gate refusal to user-facing wording. The primary
  * signal is the stable {@link MeetingsErrorCode} the facade carries from
@@ -38,8 +37,8 @@ const RECORDING_REFUSAL_MESSAGE = 'Finish your recording before updating.';
  * (e.g. a failed `update://done` event); anything else is already
  * human-readable English from the updater and passes through verbatim.
  */
-export function describeInstallFailure(message: string, code?: MeetingsErrorCode): string {
-  return code === 'BUSY' || /recording/i.test(message) ? RECORDING_REFUSAL_MESSAGE : message;
+export function describeInstallFailure(message: string, code: MeetingsErrorCode | undefined, recordingRefusal: string): string {
+  return code === 'BUSY' || /recording/i.test(message) ? recordingRefusal : message;
 }
 
 /** Which slice of the install flow the banner renders; `'idle'` means "not started yet". */
@@ -62,11 +61,14 @@ type BannerMode = 'available' | 'downloading' | 'ready' | 'failed';
  */
 @Component({
   selector: 'app-update-banner',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './update-banner.component.html',
   styleUrl: './update-banner.component.scss',
 })
 export class UpdateBannerComponent {
+  private readonly i18n = inject(I18n);
+
   readonly check = input<UpdateCheck | undefined>(undefined);
   readonly dismissedVersion = input<string | null>(null);
   /** Drives the unsigned-build mic-permission-reset caveat; always `false` today — no signed build exists yet. */
@@ -121,13 +123,13 @@ export class UpdateBannerComponent {
       return '';
     }
     return state.version.length > 0
-      ? `Mynota ${state.version} is installed. Restart to apply.`
-      : 'Installed, version unknown. Restart to apply.';
+      ? this.i18n.t('updateBanner.installed', { version: state.version })
+      : this.i18n.t('updateBanner.installedUnknown');
   });
 
   protected readonly failureMessage = computed(() => {
     const state = this.installState();
-    return state.status === 'failed' ? describeInstallFailure(state.message, state.code) : '';
+    return state.status === 'failed' ? describeInstallFailure(state.message, state.code, this.i18n.t('updateBanner.finishRecordingBeforeUpdate')) : '';
   });
 
   /** Copies the GitHub release PAGE for the offered version — never the raw tarball URL. */

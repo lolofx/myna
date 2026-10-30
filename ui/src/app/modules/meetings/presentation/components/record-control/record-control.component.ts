@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, HostListener, computed, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, effect, input, output, signal, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { I18n } from '../../../../../i18n/i18n.service';
 
 import type { AudioDevice, AudioLevel } from '../../../core/models/audio-device.model';
 import type { AudioSource } from '../../../core/models/audio-source.model';
@@ -9,19 +11,6 @@ import { CaptureSettingsComponent } from '../capture-settings/capture-settings.c
 import { LevelMeterComponent } from '../level-meter/level-meter.component';
 import { RecordButtonComponent } from '../record-button/record-button.component';
 
-/** User-facing text per stop phase; the stopping state is never one generic label. */
-const STOP_PHASE_LABELS: Readonly<Record<StopPhase, string>> = {
-  'stopping-capture': 'Stopping capture',
-  'finalizing-transcript': 'Finalizing transcript',
-  saving: 'Saving',
-  discarding: 'Discarding',
-  recovering: 'Recovering',
-  completed: 'Completed',
-  failed: 'Failed',
-};
-
-/** Generic stopping label before the first `recording://stop-progress` event. */
-const GENERIC_FINALIZING_LABEL = 'Finalizing recording…';
 
 /**
  * How long a stop phase may sit unchanged before the UI reassures the user.
@@ -45,12 +34,14 @@ const STALL_WATCHDOG_MS = 10_000;
  */
 @Component({
   selector: 'app-record-control',
-  imports: [CaptureSettingsComponent, LevelMeterComponent, RecordButtonComponent],
+  imports: [CaptureSettingsComponent, LevelMeterComponent, RecordButtonComponent, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './record-control.component.html',
   styleUrl: './record-control.component.scss',
 })
 export class RecordControlComponent {
+  private readonly i18n = inject(I18n);
+
   readonly recordingState = input.required<RecordingState>();
   readonly devices = input<readonly AudioDevice[]>([]);
   readonly selectedDevice = input<AudioDevice | null>(null);
@@ -91,7 +82,7 @@ export class RecordControlComponent {
   /** Phase-specific stopping label; the generic finalizing text before the first stop-progress event. */
   protected readonly stopPhaseLabel = computed(() => {
     const phase = this.stopPhase();
-    return phase === null ? GENERIC_FINALIZING_LABEL : STOP_PHASE_LABELS[phase];
+    return this.i18n.t(phase === null ? 'record.finalizingRecording' : `record.stopPhase.${phase}`);
   });
 
   /** True once the current stop phase has sat unchanged for {@link STALL_WATCHDOG_MS}. */

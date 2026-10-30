@@ -1,35 +1,31 @@
 <section class="onboarding">
-  <h1>Let&rsquo;s get your AI models</h1>
+  <h1>{{ 'onboarding.title' | transloco }}</h1>
 
   @if (!status()) {
-    <p role="status" aria-live="polite" aria-busy="true">Checking installed models&hellip;</p>
+    <p role="status" aria-live="polite" aria-busy="true">{{ 'onboarding.checking' | transloco }}</p>
   } @else {
-    <p>
-      Mynota downloads a few AI models so transcription and summaries work
-      entirely on your computer &mdash; nothing is ever sent to the cloud. This only
-      needs to happen once.
-    </p>
+    <p>{{ 'onboarding.intro' | transloco }}</p>
 
     <div class="model-download">
       @if (isDownloading()) {
         <div class="download-status">
           <p class="download-progress" role="status" aria-live="polite">
-            Downloading {{ download().artifact }} ({{ download().index + 1 }} of {{ download().total }})<span
+            {{ 'onboarding.downloading' | transloco: { artifact: download().artifact, index: download().index + 1, total: download().total } }}<span
               class="ellipsis"
               aria-hidden="true"
               ><span>.</span><span>.</span><span>.</span></span
             >
             <span class="download-pulse" aria-hidden="true"></span>
           </p>
-          <p class="download-hint">Please keep Mynota open until it finishes.</p>
+          <p class="download-hint">{{ 'onboarding.keepOpen' | transloco }}</p>
           <p class="download-whimsy" role="status" aria-live="polite">{{ whimsy() }}</p>
         </div>
-        <button type="button" class="cancel-download" (click)="cancelDownload()">Cancel</button>
+        <button type="button" class="cancel-download" (click)="cancelDownload()">{{ 'common.cancel' | transloco }}</button>
       } @else {
-        <button type="button" class="start-download" (click)="startDownload()">Download models</button>
+        <button type="button" class="start-download" (click)="startDownload()">{{ 'onboarding.download' | transloco }}</button>
         @if (downloadFailed()) {
           <p class="download-error" role="alert">
-            Download failed. Check your internet connection and try again.
+            {{ 'onboarding.failed' | transloco }}
             @if (download().message; as message) {
               <span class="download-error-detail">{{ message }}</span>
             }
@@ -39,7 +35,7 @@
     </div>
 
     <div class="details">
-      <h2>What gets installed</h2>
+      <h2>{{ 'onboarding.whatInstalled' | transloco }}</h2>
       @for (group of groups(); track group.label) {
         <div class="group">
           <h3>{{ group.label }}</h3>
@@ -56,7 +52,7 @@
     </div>
   }
 
-  <button type="button" class="recheck" (click)="recheck()">Check again</button>
+  <button type="button" class="recheck" (click)="recheck()">{{ 'onboarding.checkAgain' | transloco }}</button>
 
   @if (error(); as err) {
     <app-error-state [code]="err.code" (retryClicked)="recheck()" (dismissClicked)="dismiss()" />

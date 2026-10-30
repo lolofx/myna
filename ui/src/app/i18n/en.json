@@ -6,7 +6,8 @@
     "no": "No",
     "loading": "Loading…",
     "sizeGb": "{{value}} GB",
-    "sizeMb": "{{value}} MB"
+    "sizeMb": "{{value}} MB",
+    "retry": "Retry"
   },
   "languages": {
     "en": "English",
@@ -19,7 +20,8 @@
     "checkNow": "Check now",
     "lastChecked": "Last checked: {{when}}",
     "notThisSession": "Not this session",
-    "justNow": "Just now"
+    "justNow": "Just now",
+    "never": "Never"
   },
   "settings": {
     "ariaLabel": "Mynota settings",
@@ -69,6 +71,118 @@
       "note": "Each meeting is written there as one Markdown file (title, date, speakers, then timestamped lines) as soon as its transcript is ready, and refreshed when speakers or summaries change.",
       "choose": "Choose…",
       "turnOff": "Turn off"
+    }
+  },
+  "updateBanner": {
+    "available": "Mynota {{version}} is available.",
+    "update": "Update",
+    "whatsNew": "What's new",
+    "dismiss": "Dismiss update notice",
+    "macCaveat": "Installing this will reset Mynota's microphone permission — you'll re-grant it in System Settings.",
+    "downloading": "Mynota {{version}} is downloading.",
+    "downloadingButton": "Downloading…",
+    "finishRecordingFirst": "Finish your recording first",
+    "restartNow": "Restart now",
+    "copied": "Copied!",
+    "copyLink": "Copy release link",
+    "installed": "Mynota {{version}} is installed. Restart to apply.",
+    "installedUnknown": "Installed, version unknown. Restart to apply.",
+    "finishRecordingBeforeUpdate": "Finish your recording before updating."
+  },
+  "updateConsent": {
+    "title": "Check for updates?",
+    "intro": "Mynota does everything on this computer. Recording, transcription and summaries never leave it, and nothing is sent anywhere by default.",
+    "exception": "Update checks are the one exception, and they are off until you turn them on.",
+    "ifOn": "If you turn them on, at every launch Mynota asks GitHub whether a newer version of Mynota exists (never while you are recording). That request sends:",
+    "sendsIp": "<strong>your IP address</strong>, to <code>github.com</code> (and to <code>objects.githubusercontent.com</code>, which it redirects to)",
+    "sendsNothing": "<strong>nothing else</strong> — no meeting audio, no transcripts, no summaries, no usage statistics, no identifier, no account",
+    "noVersion": "Your version number isn't sent either. Mynota downloads the same public file every user downloads and compares versions here on your computer.",
+    "onlyTells": "Mynota will only <em>tell you</em> an update exists. It will never download or install one on its own.",
+    "macCaveat": "<strong>Note:</strong> this build isn't signed with an Apple Developer ID. Replacing Mynota with a new version changes its identity as far as macOS is concerned, so macOS will drop Mynota's microphone permission and you'll have to switch it back on in System Settings › Privacy & Security › Microphone. That's why Mynota hands you a download link instead of installing updates for you.",
+    "grant": "Turn on update checks",
+    "decline": "No thanks",
+    "footer": "You can change this any time in About › Updates."
+  },
+  "attribution": {
+    "ariaLabel": "Third-party licence attribution",
+    "title": "Licences & attribution",
+    "version": "Mynota v{{version}}",
+    "notes": {
+      "parakeet": "Attribution required — see NVIDIA NeMo Parakeet-TDT model card.",
+      "sherpa": "Speech-to-text runtime.",
+      "llama": "Embedded in-process LLM runtime for Qwen summarization.",
+      "fonts": "Brand and product UI typefaces, self-hosted — no external font requests.",
+      "mynota": "This application, a fork of Myna.",
+      "myna": "The upstream project this application is forked from."
+    }
+  },
+  "errors": {
+    "tryAgain": "Try again",
+    "BUSY": "Another operation is already in progress.",
+    "NOT_RECORDING": "There is no active recording to stop.",
+    "NOT_FOUND": "That meeting could not be found. It may have been deleted.",
+    "IO": "A file could not be read or written on disk.",
+    "STORE": "The local meeting store is unavailable right now.",
+    "STT": "Speech-to-text failed while processing the audio.",
+    "LLM": "The summarizer failed to generate a response.",
+    "AUDIO": "The microphone could not be accessed.",
+    "MODELS_MISSING": "Required local models are missing.",
+    "PATH": "The selected file location is invalid.",
+    "UPDATER": "The updater could not install or restart the app.",
+    "CANCELLED": "The operation was cancelled.",
+    "AUDIO_CHUNKS_DROPPED": "Some audio was dropped during recording; the transcript may be incomplete.",
+    "UNKNOWN": "Something went wrong."
+  },
+  "record": {
+    "record": "Record",
+    "stop": "Stop",
+    "preparing": "Preparing…",
+    "finalizing": "Finalizing…",
+    "preparingToRecord": "Preparing to record…",
+    "finalizingRecording": "Finalizing recording…",
+    "stalled": "Still finalizing; your recording remains recoverable…",
+    "effectiveSource": "Effective system audio source",
+    "micOnly": "Mic only",
+    "micOnlyTitle": "System audio permission was not granted — recording microphone only.",
+    "confirmDiscard": "Stop and discard this recording? The audio and transcript will be deleted.",
+    "stopPhase": {
+      "stopping-capture": "Stopping capture",
+      "finalizing-transcript": "Finalizing transcript",
+      "saving": "Saving",
+      "discarding": "Discarding",
+      "recovering": "Recovering",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Mynota",
+    "hint": "Everything stays on this device.",
+    "preparing": "Preparing…",
+    "start": "Start a meeting",
+    "import": "Import a recording"
+  },
+  "onboarding": {
+    "title": "Let’s get your AI models",
+    "checking": "Checking installed models…",
+    "intro": "Mynota downloads a few AI models so transcription and summaries work entirely on your computer — nothing is ever sent to the cloud. This only needs to happen once.",
+    "downloading": "Downloading {{artifact}} ({{index}} of {{total}})",
+    "keepOpen": "Please keep Mynota open until it finishes.",
+    "download": "Download models",
+    "failed": "Download failed. Check your internet connection and try again.",
+    "whatInstalled": "What gets installed",
+    "checkAgain": "Check again",
+    "groups": {
+      "transcription": "Transcription — turns speech into text",
+      "voiceDetection": "Voice detection — knows when someone is speaking"
+    },
+    "whimsy": {
+      "0": "Teaching your computer to listen…",
+      "1": "Unpacking words-in-a-box. No cloud harmed.",
+      "2": "Still downloading — big brains take a minute.",
+      "3": "Good time to grab a coffee.",
+      "4": "Meetings stay on your computer. Promise.",
+      "5": "Almost there — summaries are worth the wait."
     }
   }
 }

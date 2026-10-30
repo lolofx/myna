@@ -16,7 +16,7 @@
     @if (startingRecording()) {
       <span class="preparing" role="status" aria-live="polite" aria-busy="true">
         <span class="spinner" aria-hidden="true"></span>
-        Preparing to record&hellip;
+        {{ 'record.preparingToRecord' | transloco }}
       </span>
     }
   } @else if (recordingState() === 'stopping') {
@@ -26,19 +26,19 @@
     </span>
     @if (stalled()) {
       <span class="stalled" role="status" aria-live="polite">
-        Still finalizing; your recording remains recoverable&hellip;
+        {{ 'record.stalled' | transloco }}
       </span>
     }
   } @else {
     <span class="live-indicator" aria-hidden="true"></span>
     <span class="timer">{{ elapsedLabel() }}</span>
     @if (effectiveSystemSource(); as source) {
-      <span class="effective-source" title="Effective system audio source">{{ source.name }}</span>
+      <span class="effective-source" [title]="'record.effectiveSource' | transloco">{{ source.name }}</span>
     } @else if (degradedToMicOnly()) {
       <span
         class="degraded-source"
-        title="System audio permission was not granted — recording microphone only."
-      >Mic only</span>
+        [title]="'record.micOnlyTitle' | transloco"
+      >{{ 'record.micOnly' | transloco }}</span>
     }
     <app-level-meter [level]="level()" />
   }
@@ -65,10 +65,10 @@
 
   @if (confirmingCancel()) {
     <div class="cancel-confirm" role="alert">
-      <span class="confirm-label">Stop and discard this recording? The audio and transcript will be deleted.</span>
+      <span class="confirm-label">{{ 'record.confirmDiscard' | transloco }}</span>
       <span class="confirm-actions">
-        <button type="button" class="confirm-yes" (click)="confirmCancel($event)">Yes</button>
-        <button type="button" class="confirm-no" (click)="dismissCancel($event)">No</button>
+        <button type="button" class="confirm-yes" (click)="confirmCancel($event)">{{ 'common.yes' | transloco }}</button>
+        <button type="button" class="confirm-no" (click)="dismissCancel($event)">{{ 'common.no' | transloco }}</button>
       </span>
     </div>
   }

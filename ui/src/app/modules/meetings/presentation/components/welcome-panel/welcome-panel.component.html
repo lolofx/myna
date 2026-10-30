@@ -2,8 +2,8 @@
   <div class="mark" aria-hidden="true"></div>
 
   <div class="welcome-content">
-    <h1>Welcome to Mynota</h1>
-    <p class="hint">Everything stays on this device.</p>
+    <h1>{{ 'welcome.title' | transloco }}</h1>
+    <p class="hint">{{ 'welcome.hint' | transloco }}</p>
     <button
       type="button"
       class="start-meeting"
@@ -11,9 +11,9 @@
       (click)="startRecordingRequested.emit()"
     >
       @if (startingRecording()) {
-        Preparing&hellip;
+        {{ 'welcome.preparing' | transloco }}
       } @else {
-        Start a meeting
+        {{ 'welcome.start' | transloco }}
       }
     </button>
     <button
@@ -22,7 +22,7 @@
       [disabled]="actionsDisabled()"
       (click)="importRequested.emit()"
     >
-      Import a recording
+      {{ 'welcome.import' | transloco }}
     </button>
   </div>
 </div>

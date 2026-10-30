@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { RecordingState } from '../../../core/models/recording-state.model';
 
 /** Dumb control surface for start/stop/cancel — the page owns all facade calls. */
 @Component({
   selector: 'app-record-button',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './record-button.component.html',
   styleUrl: './record-button.component.scss',

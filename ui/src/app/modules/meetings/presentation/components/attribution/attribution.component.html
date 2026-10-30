@@ -1,28 +1,28 @@
-<section class="attribution" aria-label="Third-party licence attribution">
+<section class="attribution" [attr.aria-label]="'attribution.ariaLabel' | transloco">
   <header>
     <div>
-      <h2>Licences &amp; attribution</h2>
+      <h2>{{ 'attribution.title' | transloco }}</h2>
       @if (version(); as appVersion) {
-        <p class="version">Mynota v{{ appVersion }}</p>
+        <p class="version">{{ 'attribution.version' | transloco: { version: appVersion } }}</p>
       }
     </div>
-    <button type="button" class="close" (click)="closed.emit()">Close</button>
+    <button type="button" class="close" (click)="closed.emit()">{{ 'common.close' | transloco }}</button>
   </header>
 
-  <section class="update-settings" aria-label="Updates">
-    <h3>Updates</h3>
+  <section class="update-settings" [attr.aria-label]="'updates.title' | transloco">
+    <h3>{{ 'updates.title' | transloco }}</h3>
     <label class="auto-check">
       <input
         type="checkbox"
         [checked]="autoCheckEnabled()"
         (change)="onAutoCheckToggled($event)"
       />
-      Check for updates automatically at every launch
+      {{ 'updates.autoCheck' | transloco }}
     </label>
-    <p class="privacy-note">At every launch, sends only your IP address to GitHub. Never any meeting data.</p>
+    <p class="privacy-note">{{ 'updates.privacyNote' | transloco }}</p>
     <div class="check-now-row">
-      <button type="button" class="check-now" [disabled]="checkNowDisabled()" (click)="checkNow()">Check now</button>
-      <span class="last-checked">Last checked: {{ lastCheckedLabel() }}</span>
+      <button type="button" class="check-now" [disabled]="checkNowDisabled()" (click)="checkNow()">{{ 'updates.checkNow' | transloco }}</button>
+      <span class="last-checked">{{ 'updates.lastChecked' | transloco: { when: lastCheckedLabel() } }}</span>
     </div>
   </section>
 
@@ -30,7 +30,7 @@
     @for (entry of entries; track entry.name) {
       <div class="entry">
         <dt>{{ entry.name }} &mdash; {{ entry.licence }}</dt>
-        <dd>{{ entry.note }}</dd>
+        <dd>{{ entry.noteKey | transloco }}</dd>
       </div>
     }
   </dl>

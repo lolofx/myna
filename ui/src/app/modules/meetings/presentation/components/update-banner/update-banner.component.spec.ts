@@ -174,7 +174,7 @@ describe('UpdateBannerComponent', () => {
     const button: HTMLButtonElement | null = banner(fixture)!.querySelector<HTMLButtonElement>('.restart');
     expect(button).toBeTruthy();
     expect(button!.disabled).toBe(true);
-    expect(button!.getAttribute('title')).toContain('finish your recording first');
+    expect(button!.getAttribute('title')).toContain('Finish your recording first');
   });
 
   it('ready: [Restart now] is disabled while a restart is in flight, even with no recording', () => {
