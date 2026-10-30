@@ -58,7 +58,7 @@ What has been checked on a Windows PC so far, with a development build: recordin
 
 ## Build from source
 
-Needs Rust, Node 20, and on Windows the Visual Studio C++ build tools, CMake and LLVM. Details: [docs/windows-recipe.md](docs/windows-recipe.md).
+Needs Rust, Node 22, and on Windows the Visual Studio C++ build tools, CMake and LLVM. Details: [docs/windows-recipe.md](docs/windows-recipe.md).
 
 ```powershell
 npm ci; npm --prefix ui ci

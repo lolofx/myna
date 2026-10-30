@@ -6,7 +6,7 @@ Background: [ADR 0017](adr/0017-record-then-transcribe-on-windows.md), [ADR 0018
 
 ## 0. Setup
 
-1. Install, once: Visual Studio Build Tools with the "Desktop development with C++" workload **and a Windows 10/11 SDK** (without the SDK, rustc reports `link.exe` as missing even though it is installed), CMake, LLVM (for `libclang`, needed by the bindings build), Git, Node.js 20, and Rust through `rustup` (the toolchain version is pinned by `rust-toolchain.toml` and installs itself). With `winget`: `Microsoft.WindowsSDK.10.0.26100`, `Kitware.CMake`, `LLVM.LLVM`, `Rustlang.Rustup`.
+1. Install, once: Visual Studio Build Tools with the "Desktop development with C++" workload **and a Windows 10/11 SDK** (without the SDK, rustc reports `link.exe` as missing even though it is installed), CMake, LLVM (for `libclang`, needed by the bindings build), Git, Node.js 22, and Rust through `rustup` (the toolchain version is pinned by `rust-toolchain.toml` and installs itself). With `winget`: `Microsoft.WindowsSDK.10.0.26100`, `Kitware.CMake`, `LLVM.LLVM`, `Rustlang.Rustup`.
 2. Clone and switch to the branch under test:
 
    ```powershell
