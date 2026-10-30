@@ -147,7 +147,18 @@ pub fn resolve_init_script(app: &AppHandle) -> Result<PathBuf, AppError> {
         &paths::repo_root(),
         app.path().resource_dir().ok().as_deref(),
     );
-    ensure_script_exists(&candidate)
+    ensure_script_exists(&strip_verbatim_prefix(&candidate))
+}
+
+/// Drops the Windows verbatim prefix (`\\?\C:\...`) that Tauri's resource
+/// directory carries: PowerShell cannot take the parent of such a script path.
+/// UNC verbatim paths (`\\?\UNC\...`) and ordinary paths are returned as is.
+fn strip_verbatim_prefix(path: &Path) -> PathBuf {
+    let text = path.to_string_lossy();
+    match text.strip_prefix(r"\\?\") {
+        Some(rest) if !rest.starts_with("UNC\\") => PathBuf::from(rest),
+        _ => path.to_path_buf(),
+    }
 }
 
 /// Pure core of [`resolve_init_script`], parameterized on debug-vs-release,
@@ -582,6 +593,22 @@ mod tests {
     use super::*;
 
     // ---- Pure seams: artifact derivation, path resolution, PATH build ----
+
+    #[test]
+    fn strip_verbatim_prefix_drops_the_drive_prefix_only() {
+        assert_eq!(
+            strip_verbatim_prefix(Path::new(r"\\?\C:\Users\a\scripts\x.ps1")),
+            PathBuf::from(r"C:\Users\a\scripts\x.ps1")
+        );
+        assert_eq!(
+            strip_verbatim_prefix(Path::new(r"\\?\UNC\server\share\x.ps1")),
+            PathBuf::from(r"\\?\UNC\server\share\x.ps1")
+        );
+        assert_eq!(
+            strip_verbatim_prefix(Path::new("/opt/app/scripts/x.sh")),
+            PathBuf::from("/opt/app/scripts/x.sh")
+        );
+    }
 
     #[test]
     fn missing_artifacts_derives_every_artifact_from_an_empty_models_root() {

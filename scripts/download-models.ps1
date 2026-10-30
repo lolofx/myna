@@ -12,12 +12,14 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 # Older Windows PowerShell defaults to TLS 1.0/1.1, which Hugging Face and GitHub refuse.
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# The app may start this script from a verbatim path (\\?\C:\...), from which Split-Path
+# returns nothing: the repo-relative legacy folder is then simply skipped.
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 if (-not $Dest) {
   if ($env:MYNA_MODELS_DIR) { $Dest = $env:MYNA_MODELS_DIR }
   else { $Dest = Join-Path $env:USERPROFILE "mynota\models" }
 }
-$LegacyDest = Join-Path $RepoRoot "models"
+$LegacyDest = if ($RepoRoot) { Join-Path $RepoRoot "models" } else { "" }
 $ParakeetBase = "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/main"
 $QwenBase = "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main"
 $Qwen3BBase = "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main"
@@ -30,8 +32,8 @@ function Fetch-One([string]$Name, [string]$DirName, [string]$MarkerRel, [scriptb
   $destDir = Join-Path $Dest $DirName
   $marker = Join-Path $destDir $MarkerRel
   if (Test-Path $marker) { Write-Output "SKIP (already present: $marker) - $Name"; return }
-  $legacyDir = Join-Path $LegacyDest $DirName
-  if (($destDir -ne $legacyDir) -and (Test-Path (Join-Path $legacyDir $MarkerRel))) {
+  $legacyDir = if ($LegacyDest) { Join-Path $LegacyDest $DirName } else { "" }
+  if ($legacyDir -and ($destDir -ne $legacyDir) -and (Test-Path (Join-Path $legacyDir $MarkerRel))) {
     if ($Migrate) {
       New-Item -ItemType Directory -Force -Path (Split-Path $destDir -Parent) | Out-Null
       Move-Item $legacyDir $destDir
